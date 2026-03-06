@@ -1,9 +1,16 @@
 ---
-name: chinese-novelist
+name: chinese-novelist-skill
 description: Use when the user wants to plan, write, continue, or revise a Chinese novel, web novel, serialized story, chapter outline, character bible, or chapter draft in Chinese.
 ---
 
 # Chinese Novelist
+
+## Version
+
+- **Version**: `0.2.1`
+- **Version Date**: `2026-03-06`
+- **Compatibility**: standard Markdown skill loaders that support `name` and `description` frontmatter
+- **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
 
 ## Overview
 

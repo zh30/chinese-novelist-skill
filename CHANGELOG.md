@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.1
+
+- Renamed the skill identifier in `SKILL.md` frontmatter to `chinese-novelist-skill`.
+- Added an explicit in-document version block to `SKILL.md`.
+
 ## v0.2.0
 
 - Rebuilt `SKILL.md` around a more stable novel-writing workflow and standard skill metadata.
