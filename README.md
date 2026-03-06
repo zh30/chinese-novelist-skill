@@ -1,34 +1,72 @@
-# chinese-novelist skill
+# chinese-novelist-skill
 
-一个面向中文小说和网文创作的 skill，重点解决三件事：
+一个面向中文小说与网文创作的 Markdown skill。
 
-- 从模糊想法快速落到可执行的大纲
-- 在长篇连载里持续维护人物、伏笔、时间线和文风稳定
-- 让章节更像“可追更的中文小说”，而不是模板化 AI 文
+它不是“随便写个故事”的提示词集合，而是一套更稳定的长篇创作工作流：先锁定设定与大纲，再按章节推进，持续维护人物、伏笔、时间线、文风和结局兑现。
 
-## 适用场景
+## 为什么用它
 
-- 从零开始写中文长篇 / 网文 / 连载小说
-- 已有设定，想补总纲、人物档案、世界观台账
-- 已写了几章，想继续续写
-- 想重写某章，提高钩子、对白、节奏、悬念强度
+- 把模糊脑洞快速落成可执行的大纲
+- 让长篇连载不容易写散、写崩、写成模板文
+- 强化首章钩子、对白张力、场景拆分和结局收束
+- 降低常见 AI 痕迹，例如空泛情绪句、解释腔和四字词堆砌
+
+## 适合谁
+
+- 想从零开始写中文长篇小说或网文的人
+- 已经有设定，但缺总纲、人物档案或分章规划的人
+- 已经写了几章，想继续续写并保持前后连贯的人
+- 想重写某一章，让它更抓人、更像中文小说的人
+
+## 快速开始
+
+安装后，直接在支持 skill 的工具里用自然语言触发即可：
+
+```text
+使用 chinese-novelist-skill，帮我策划一部 20 章的悬疑小说。
+```
+
+```text
+使用 chinese-novelist-skill，继续写 novels/夜雨旧案/ 里的下一章。
+```
+
+```text
+使用 chinese-novelist-skill，重写第 1 章开头，让钩子更强、对白更自然。
+```
+
+如果你的工具支持按 skill 名调用，优先显式写出 `chinese-novelist-skill`。
 
 ## 推荐工作流
 
-### 1. 先确定模式
+这个 skill 默认按四种模式工作：
 
-- `策划模式`：只做大纲和设定
-- `试写模式`：大纲 + 样章
-- `连载模式`：一章一章推进
-- `完稿模式`：整本初稿
+- `策划模式`：先做题材定位、故事引擎、大纲、人物、世界观与伏笔台账
+- `试写模式`：在策划完成后，先写首章或样章
+- `连载模式`：一章一章推进，持续维护故事状态
+- `完稿模式`：在用户明确要求时，连续完成整本初稿
 
-默认不建议一上来直接 30-50 章全自动暴写。更稳的顺序是：
+如果你是第一次使用，推荐顺序是：
 
-1. 先锁定故事引擎
-2. 再做章节规划
-3. 最后进入章节创作
+1. 先做总纲
+2. 再生成人物档案和世界观台账
+3. 然后试写首章
+4. 最后进入逐章连载
 
-### 2. 维护四个核心文件
+不建议一开始就让它直接从第 1 章写到第 30 章。
+
+## 安装
+
+这是一个纯 Markdown skill 项目。安装方式取决于你使用的工具，但基本思路一致：
+
+1. 下载或克隆本仓库
+2. 把整个目录放到对应工具的 skill 目录中
+3. 让工具重新加载 skill
+
+`Codex`、`Claude Code`、`OpenCode`、`OpenClaw` 等工具的具体路径和加载方式可能不同，请以对应工具文档为准。
+
+## 它会产出什么
+
+推荐的工作目录如下：
 
 ```text
 novels/
@@ -37,55 +75,52 @@ novels/
     ├── 01-人物档案.md
     ├── 02-世界观与伏笔.md
     ├── 第01章-章节标题.md
+    ├── 第02章-章节标题.md
     └── ...
 ```
 
-### 3. 每章都走闭环
+- `00-大纲.md`：总纲、章节规划、悬念和进度
+- `01-人物档案.md`：主角、反派、配角、关系变化
+- `02-世界观与伏笔.md`：规则、时间线、势力、伏笔和角色状态
+- `第XX章-标题.md`：单章任务卡、正文和章节复盘
 
-1. 读总纲、人物档案、伏笔台账
-2. 明确本章目标、阻碍、转折、钩子
-3. 拆 3-6 个场景再写正文
-4. 自查质量清单
-5. 更新章节摘要、人物状态、伏笔状态
+## 内置能力
 
-## 这次优化后的重点
-
-- `SKILL.md` 现在使用更标准的 skill frontmatter，触发条件更清晰
-- 不再依赖不存在的 `AskUserQuestion` 工具，而是改成兼容普通 agent 对话的问询方式
-- 新增 `02-世界观与伏笔.md`，补上长篇连载最容易丢的状态管理层
-- 新增场景设计和文风打磨指南，补上“会写完”和“写得像中文小说”之间的差距
-- 新增首章设计和结局兑现指南，把开篇命中率与收尾完成度单独拉起来
-- 大纲、人物、章节模板重写后，更适合中文长篇连载的节奏
-- 质量清单从“泛泛而谈”改成更贴近中文小说的具体检查项
-
-## 内置参考资料
-
-| 文件 | 作用 |
-|------|------|
-| `references/chapter-guide.md` | 强开头与章节结构 |
-| `references/opening-design.md` | 首章设计与追读钩子 |
-| `references/hook-techniques.md` | 章节结尾钩子 |
-| `references/ending-design.md` | 结局兑现与终章收束 |
-| `references/dialogue-writing.md` | 中文对白质量 |
-| `references/content-expansion.md` | 合理扩写 |
-| `references/consistency.md` | 连贯性维护 |
-| `references/scene-design.md` | 场景推进与章节拆场 |
-| `references/style-polishing.md` | 去 AI 味与中文文风修整 |
-| `references/plot-structures.md` | 结构模板 |
-| `references/outline-template.md` | 总纲模板 |
-| `references/character-template.md` | 人物档案模板 |
-| `references/story-bible-template.md` | 世界观 / 伏笔 / 时间线台账 |
-| `references/chapter-template.md` | 单章模板 |
-| `references/quality-checklist.md` | 交付前自查 |
+- 开篇与章节推进：[chapter-guide.md](references/chapter-guide.md)、[opening-design.md](references/opening-design.md)、[scene-design.md](references/scene-design.md)、[hook-techniques.md](references/hook-techniques.md)
+- 人物、对白与文风：[dialogue-writing.md](references/dialogue-writing.md)、[style-polishing.md](references/style-polishing.md)、[character-template.md](references/character-template.md)
+- 长篇连贯与结构规划：[plot-structures.md](references/plot-structures.md)、[consistency.md](references/consistency.md)、[story-bible-template.md](references/story-bible-template.md)、[outline-template.md](references/outline-template.md)
+- 扩写与收尾：[content-expansion.md](references/content-expansion.md)、[ending-design.md](references/ending-design.md)、[quality-checklist.md](references/quality-checklist.md)
 
 ## 字数检查
 
+仓库内提供了一个简单的字数检查脚本，用来优先统计章节文件里的 `## 正文` 区块。
+
 ```bash
-python scripts/check_chapter_wordcount.py novels/书名/第01章-标题.md
-python scripts/check_chapter_wordcount.py --all novels/书名
-python scripts/check_chapter_wordcount.py novels/书名/第01章-标题.md 3500
+python3 scripts/check_chapter_wordcount.py novels/书名/第01章-标题.md
+python3 scripts/check_chapter_wordcount.py --all novels/书名
+python3 scripts/check_chapter_wordcount.py novels/书名/第01章-标题.md 3500
 ```
 
-## 安装
+## 兼容性与版本
 
-把这个目录放到你所用 agent 的 skills 目录即可。不同 agent 的安装路径不同，但目录结构保持不变。
+- 当前版本：`0.2.1`
+- 版本记录：见 [CHANGELOG.md](CHANGELOG.md)
+- `SKILL.md` frontmatter 保持最小化，优先兼容只识别 `name` 与 `description` 的 skill loader
+
+## 常见问题
+
+### 为什么不建议直接一次写完整本书？
+
+因为中文长篇最容易在中段失控。先规划、再试写、再连载，通常质量更稳。
+
+### 这个 skill 适合哪些题材？
+
+悬疑、言情、奇幻、仙侠、科幻、都市现实、群像长篇都可以。它更偏长篇叙事流程，而不是某个单一题材。
+
+### 它只适合某一个工具吗？
+
+不是。它尽量保持对主流 skill 工具的兼容性，但具体加载方式仍取决于工具本身。
+
+## 许可证
+
+MIT
