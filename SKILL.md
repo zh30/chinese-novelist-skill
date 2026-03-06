@@ -1,195 +1,109 @@
 ---
 name: chinese-novelist
-description: |
-  分章节创作引人入胜的中文小说。支持各种题材（悬疑/言情/奇幻/科幻/历史等），支持10-50章长篇创作，每章3000-5000字，结尾设置悬念钩子。强调深度润色去除AI痕迹，确保文字自然流畅。
-  当用户要求：写小说、创作故事、分章节写作、连续剧情、章节悬念、长篇小说时使用。
-metadata:
-  trigger: 创作中文小说、分章节故事、长篇小说创作
-  source: 基于小说创作最佳实践设计
+description: Use when the user wants to plan, write, continue, or revise a Chinese novel, web novel, serialized story, chapter outline, character bible, or chapter draft in Chinese.
 ---
 
-# Chinese Novelist: 中文小说创作助手
+# Chinese Novelist
 
-## 核心流程
+## Overview
 
-### 第一阶段：5问确认
+为中文长篇小说和网文创作提供一套可持续执行的工作流：先稳住设定与大纲，再按章节推进，持续维护人物状态、悬念台账和文风质量，避免写到后面失控、注水或前后打架。
 
-**使用 AskUserQuestion 工具逐一询问用户，每个问题提供选项供用户选择。**
+## When to Use
 
----
+- 用户要从零开始写中文小说、网文、长篇故事、连载故事
+- 用户已有设定，想补大纲、人物档案、世界观、章节规划
+- 用户要续写已有章节，要求前后连贯
+- 用户要重写某章，增强钩子、节奏、对白、人物张力或减少 AI 味
 
-**问题1：题材与风格**
+## Default Working Mode
 
-```
-Question: 你想要创作什么题材的小说？
-Options:
-- 悬疑推理（侦探、破案、解谜）
-- 现代言情（都市、职场、恋爱）
-- 古代言情（宫廷、江湖、穿越）
-- 奇幻玄幻（魔法、异世界、修真）
-- 科幻未来（科技、太空、末世）
-- 武侠仙侠（江湖、门派、飞升）
-- 历史架空（朝堂、战争、权谋）
-- 都市现实（生活、成长、社会）
-```
+先判断用户要的交付深度，再选最轻的有效模式：
 
-用户选择后记录：`题材 = [用户选择]`
+1. `策划模式`：只做题材定位、故事引擎、大纲、人物、世界观、伏笔台账
+2. `试写模式`：策划完成后，只写首章或样章
+3. `连载模式`：按章推进，每次交付 1 章或少量连续章节
+4. `完稿模式`：只有在用户明确要求整本初稿时，才连续写完整部长篇
 
----
+如果用户没有说清楚：
+- 新项目默认 `策划模式`
+- 已有章节的项目默认 `连载模式`
 
-**问题2：主角设定**
+## Intake
 
-```
-Question: 主角是什么设定？
-Options:
-- 男性主角（独角戏）
-- 女性主角（独角戏）
-- 双主角（男女双线）
-- 群像戏（多线叙事）
-```
+只补问真正缺失的关键信息，优先补齐以下 6 项：
 
-用户选择后，如需进一步询问职业/身份，继续追问。
+- 题材 / 子类型
+- 一句话 premise 或核心冲突
+- 主角身份、最大欲望、致命缺陷
+- 目标读者、文风关键词、禁忌
+- 叙事视角（第一人称 / 第三人称 / 群像）
+- 篇幅目标与交付模式
 
-记录：`主角 = [用户选择]` + `职业/身份 = [用户回答]`
+如果用户只给了模糊想法，不要空泛追问；应给出具体备选并推荐更稳的方案。
 
----
+## Required Files
 
-**问题3：主角性格**
+在 `novels/<书名>/` 内创建或更新：
 
-```
-Question: 主角的核心性格是？
-Options:
-- 热血正义（积极、勇敢、有担当）
-- 冷静智慧（理性、谋略、高智商）
-- 温暖治愈（善良、温柔、有同理心）
-- 高冷孤傲（冷漠、独立、强大）
-- 阴暗腹黑（心机、算计、复仇）
-- 成长逆袭（从弱到强、打脸升级）
-```
+- `00-大纲.md` → 使用 [outline-template.md](references/outline-template.md)
+- `01-人物档案.md` → 使用 [character-template.md](references/character-template.md)
+- `02-世界观与伏笔.md` → 使用 [story-bible-template.md](references/story-bible-template.md)
+- `第XX章-标题.md` → 使用 [chapter-template.md](references/chapter-template.md)
 
-记录：`性格 = [用户选择]`
+## Planning Rules
 
----
+开始批量写章节前，至少锁定以下内容：
 
-**问题4：核心冲突**
+- `logline`
+- 主线冲突、对抗力量、利害关系
+- 主角外部目标与内在成长弧线
+- 结局类型与兑现方式
+- 采用的结构模板（参见 [plot-structures.md](references/plot-structures.md)）
+- 逐章功能分配
+- 未回收悬念、伏笔、时间线、关系状态
 
-```
-Question: 小说的核心冲突是什么？
-Options:
-- 生死存亡（生存危机、逃出生天）
-- 查明真相（寻找答案、揭露秘密）
-- 爱情阻碍（追求真爱、克服阻碍）
-- 复仇雪恨（复仇计划、伸张正义）
-- 权力争夺（竞争上位、资源争夺）
-- 成长突破（自我突破、实现价值）
-- 守护保护（守护重要的人或事）
-```
+除非用户明确要求跳过规划，否则不要直接写完全书。即使用户要求“直接开写”，也先产出一页精简总纲再动笔。
 
-记录：`核心冲突 = [用户选择]`
+## Chapter Loop
 
----
+每写一章都按这个循环执行：
 
-**问题5：章节数量**
+1. 读取 `00-大纲.md`、最近章节摘要、`02-世界观与伏笔.md`
+2. 明确 `本章目标 / 阻碍 / 转折 / 结尾钩子`
+3. 先拆 3-6 个场景，再落正文
+4. 开头前 20% 必须尽快进入冲突，参考 [chapter-guide.md](references/chapter-guide.md)
+   - 如果在写首章，额外参考 [opening-design.md](references/opening-design.md)
+5. 对话、扩写、连贯性、结尾钩子分别参考：
+   - [dialogue-writing.md](references/dialogue-writing.md)
+   - [content-expansion.md](references/content-expansion.md)
+   - [consistency.md](references/consistency.md)
+   - [hook-techniques.md](references/hook-techniques.md)
+   - [scene-design.md](references/scene-design.md)
+   - [style-polishing.md](references/style-polishing.md)
+6. 长章节交付前，运行：
+   - `python scripts/check_chapter_wordcount.py <章节文件路径>`
+7. 交付前用 [quality-checklist.md](references/quality-checklist.md) 自查
+8. 回写章节摘要、人物状态、伏笔状态与章节进度
 
-```
-Question: 你计划创作多少章？
-Options:
-- 10章（短篇，约3-5万字）
-- 15章（中短篇，约4.5-7.5万字）
-- 20章（中篇，约6-10万字）
-- 30章（中长篇，约9-15万字）
-- 50章（长篇，约15-25万字）
-- 自定义（输入具体章节数）
-```
+## Quality Bar
 
-记录：`章节数 = [用户选择]`
+每章至少满足：
 
----
+- 本章发生了不能删除的变化
+- 回应、升级或偏转至少一条已有悬念
+- 结尾钩子强度与全书位置匹配
+- 人物通过动作、选择、对白被展示，而不是只被描述
+- 避免空泛形容词堆砌、抽象情绪总结、整段均匀句式和过度书面腔
+- 每个章节至少包含若干有任务的场景，而不是流水账拼接
 
-**5问收集完成后**然后进入"第二阶段：规划"。
+## Completion
 
----
+在 `完稿模式` 收尾时，必须额外检查：
 
-### 第二阶段：规划 + 二次确认
-
-执行以下步骤：
-
-1. **创建项目文件夹**：`novels/[小说名称]/`
-2. **生成大纲**：创建 `00-大纲.md`，使用 `references/outline-template.md` 模板，填入完整的章节规划
-3. **生成人物档案**：创建 `01-人物档案.md`，使用 `references/character-template.md` 模板，创建主角、反派、配角档案
-
-完成后，向用户展示规划摘要并请求确认，等待用户确认。用户同意后，进入"第三阶段：疯狂创作"。
-
----
-
-### 第三阶段：疯狂创作
-
-**重要：全程无需再次向用户确认，必须逐一章创作**
-
-按顺序逐章创作，每章执行完整的创作流程（见下方"逐章创作"），完成一章后自动继续下一章，直到所有章节完成。
-
----
-
-## 疯狂创作——逐章创作流程
-
-每章创作时严格执行以下步骤：
-
-#### 1. 写前分析
-
-1. 读取 `00-大纲.md` - 查看TODO list和已完成章节的摘要
-2. 读取 `00-大纲.md` 中上一章的摘要
-3. 更新`00-大纲.md` 中 TODO list - 将本章标记为"进行中"
-4. 设计开头钩子 - **最关键**：前20%必须有即时冲突 → [chapter-guide.md](references/chapter-guide.md)（10种开头技巧）
-5. 规划场景 - 确定本章需要3-5个场景
-
-#### 2. 撰写
-
-6. 创建章节文件 - 使用`references/chapter-template.md` 模板
-7. 撰写正文 - **每章必须达到3000-5000字**
-   - 开头检查：前20%是否极其吸引人？
-   - 对话规范 → [dialogue-writing.md](references/dialogue-writing.md)
-   - 内容不足？使用 [content-expansion.md](references/content-expansion.md) 扩充技巧
-8. 设置结尾钩子 → [hook-techniques.md](references/hook-techniques.md)（10种钩子类型）
-9. **字数检查** - 必须使用脚本检查字数：`python scripts/check_chapter_wordcount.py <章节文件路径>` 低于3000字必须使用扩充技巧重写
-
-#### 3. 撰写后优化
-
-10. 连贯性检查 → [consistency.md](references/consistency.md) - 人物一致性、情节连贯、节奏控制
-11. **深度润色（去除AI味）** - 重点检查并修改：
-    - **去除过度修饰的形容词**：删减"璀璨"、"瑰丽"、"绚烂"等AI常用词堆砌
-    - **减少抽象陈述**：把"心中涌起复杂的情感"改为具体动作/对话
-    - **打破四字格律**：避免"心潮澎湃、热血沸腾"等陈词滥调
-    - **增加口语化表达**：人物对话要有个性，避免"书面语套话"
-    - **优化节奏感**：长句和短句交替，避免句式单调
-    - **细节具象化**：用具体的视觉/听觉/嗅觉细节替代笼统描述
-12. **字数检查** - 必须使用脚本检查字数：`python scripts/check_chapter_wordcount.py <章节文件路径>` 低于3000字必须使用扩充技巧重写
-
-#### 4. 最后收尾
-
-13. 生成章节摘要 - 在 `00-大纲.md` 添加摘要（300-500字）
-14. 更新状态 - `00-大纲.md` 中 TODO list - 将本章标记为"完成"
-
----
-
-## 三大黄金法则
-
-1. **展示而非讲述** - 用动作和对话表现，不要直接陈述
-2. **冲突驱动剧情** - 每章必须有冲突或转折
-3. **悬念承上启下** - 每章结尾必须留下钩子
-
-### 字数检查脚本
-
-使用 `scripts/check_chapter_wordcount.py` 检查章节字数：
-
-```bash
-# 检查单个章节
-python scripts/check_chapter_wordcount.py novels/小说名/第01章.md
-
-# 检查所有章节
-python scripts/check_chapter_wordcount.py --all novels/小说名/
-
-# 自定义最小字数
-python scripts/check_chapter_wordcount.py novels/小说名/第01章.md 3500
-```
-
-低于3000字的章节必须使用 [content-expansion.md](references/content-expansion.md) 的扩充技巧进行扩充。
+- 主线悬念是否回收
+- 主角弧线是否完成
+- 设定规则是否前后一致
+- 是否存在遗失角色、断裂线索、无兑现伏笔
+- 是否需要留下续作钩子；只有用户要时才保留
+- 终稿收尾方式参考 [ending-design.md](references/ending-design.md)

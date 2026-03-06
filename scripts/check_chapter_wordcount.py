@@ -5,7 +5,6 @@
 检查指定章节文件的字数，低于3000字时提示需要扩充
 """
 
-import os
 import re
 import sys
 from pathlib import Path
@@ -33,21 +32,34 @@ def count_chinese_words(text: str) -> int:
 
 
 def extract_content_from_chapter(file_path: Path) -> str:
-    """从章节文件中提取正文内容（排除标题等元数据）"""
+    """从章节文件中提取正文内容，优先只统计 `## 正文` 区块"""
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # 查找正文开始位置（通常是第一个一级标题或二级标题之后）
     lines = content.split('\n')
 
-    # 跳过开头的元数据（如 # 第XX章 标题）
+    body_start = None
+    body_end = None
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped == '## 正文':
+            body_start = i + 1
+            continue
+        if body_start is not None and stripped.startswith('## '):
+            body_end = i
+            break
+
+    if body_start is not None:
+        return '\n'.join(lines[body_start:body_end]).strip()
+
+    # 兼容旧模板：如果没有 `## 正文`，则退回到章节标题之后的所有内容
     content_start = 0
     for i, line in enumerate(lines):
         if line.startswith('#') and '章' in line:
             content_start = i + 1
             break
 
-    # 提取正文
     main_content = '\n'.join(lines[content_start:])
     return main_content
 
@@ -149,14 +161,14 @@ def main():
 
     if len(sys.argv) < 2:
         print('用法:')
-        print('  检查单个章节: python check_chapter_wordcount.py <章节文件路径> [最小字数]')
-        print('  检查所有章节: python check_chapter_wordcount.py --all <目录路径> [最小字数]')
+        print('  检查单个章节: python scripts/check_chapter_wordcount.py <章节文件路径> [最小字数]')
+        print('  检查所有章节: python scripts/check_chapter_wordcount.py --all <目录路径> [最小字数]')
         print('')
         print('示例:')
-        print('  python check_chapter_wordcount.py novels/故事/第01章.md')
-        print('  python check_chapter_wordcount.py novels/故事/第01章.md 3500')
-        print('  python check_chapter_wordcount.py --all novels/故事')
-        print('  python check_chapter_wordcount.py --all novels/故事 3500')
+        print('  python scripts/check_chapter_wordcount.py novels/故事/第01章.md')
+        print('  python scripts/check_chapter_wordcount.py novels/故事/第01章.md 3500')
+        print('  python scripts/check_chapter_wordcount.py --all novels/故事')
+        print('  python scripts/check_chapter_wordcount.py --all novels/故事 3500')
         return
 
     if sys.argv[1] == '--all':
