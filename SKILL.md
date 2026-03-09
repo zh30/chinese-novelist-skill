@@ -7,7 +7,7 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 ## Version
 
-- **Version**: `0.5.0`
+- **Version**: `0.6.0`
 - **Version Date**: `2026-03-09`
 - **Compatibility**: standard Markdown skill loaders that support `name` and `description` frontmatter
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
@@ -138,17 +138,64 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 ### 执行流程
 
+**第一步：准备阶段**
 1. 确认小说目录和翻译范围（全本 / 部分章节）
 2. 读取上下文文件：
    - `00-大纲.md` → 书名、作者、类型、简介
    - `01-人物档案.md` → 人物信息
    - `02-世界观与伏笔.md` → 世界观要点
-3. 使用并行 subagent 翻译：
-   - 将章节分成多个批次（每批 2-3 章）
-   - 为每个批次创建一个 subagent，并行翻译
-   - 每个 subagent 携带完整的小说上下文
-4. 汇总所有翻译结果，写入 `en/` 目录：
+
+**第二步：生成术语表**
+3. 分析小说内容，提取需要统一的术语：
+   - 角色人名及拼音
+   - 修炼体系/境界名称
+   - 武器、法宝、门派名称
+   - 中文特有词汇（功夫、气功、灵气等）
+   - 量词和时间表达
+
+**第三步：并行翻译**
+4. 将章节分成多个批次（每批 2-3 章，相邻章节在同一批次）
+5. 为每个批次创建一个 subagent，并行翻译
+6. 每个 subagent 携带：小说信息 + 术语表 + 翻译规则
+
+**第四步：最终校对**
+7. 所有翻译完成后，派一个 subagent 做全局校对：
+   - 检查术语一致性
+   - 检查人名一致性
+   - 检查剧情衔接
+   - 修正发现的问题
+
+**第五步：保存结果**
+8. 汇总所有翻译结果，写入 `en/` 目录：
    - `Chapter-001.md`, `Chapter-002.md` 等
+
+### 术语表格式
+
+```
+## 统一术语表（必须严格遵守）
+
+### 人物名称
+- [角色名] → [Pinyin]
+- 张三 → Zhang San
+- 李四 → Li Si
+
+### 修炼体系
+- 筑基 → Foundation Building
+- 金丹 → Golden Core
+- 元婴 → Nascent Soul
+- 灵气 → Spiritual Energy
+- 真气 → True Qi
+
+### 门派与武器
+- [门派名] → [Pinyin or English]
+- 青云门 → Qingyun Sect
+- 太极剑 → Taiji Sword
+
+### 中文特有表达
+- 盏茶 → the time it takes to drink a cup of tea
+- 片刻 → a moment
+- 一盏茶时间 → the time needed to finish a cup of tea
+```
 
 ### Subagent 翻译提示词
 
@@ -163,28 +210,31 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - 类型：[类型]
 - 简介：[简介]
 
-## 人物
+## 人物（必须使用以下统一译名）
 [人物档案要点]
 
 ## 世界观
 [世界观与伏笔要点]
 
-## 翻译要求
+## 统一术语表（必须严格遵守）
+[术语表内容]
+
+## 翻译规则
 1. 保持故事的叙事节奏和情感张力
-2. 角色名字用拼音（如 Zhang Wei）
-3. 中文特有词汇（功夫、气功）保留拼音或解释性翻译
+2. 角色名字必须使用上面的统一译名
+3. 术语必须使用统一术语表中的翻译
 4. 使用现代英语，避免生硬的直译
-5. 对话自然流畅
+5. 对话自然流畅，符合人物性格
 6. 翻译后的章节保存为 Markdown 格式
 
-## 待翻译章节列表
+## 待翻译章节（同一批次，情节连贯）
 [章节1: 标题]
 [章节1内容]
 
 [章节2: 标题]
 [章节2内容]
 
-## 输出
+## 输出要求
 为每个章节创建 Markdown 文件，文件名格式：Chapter-XXX.md
 文件内容格式：
 ## 章节标题
@@ -192,6 +242,30 @@ description: Use when the user wants to plan, write, continue, revise, or export
 ## Body
 
 翻译正文...
+```
+
+### 校对 subagent 提示词
+
+```
+# 翻译校对任务
+
+请检查以下所有翻译章节，确保一致性：
+
+## 统一术语表
+[术语表内容]
+
+## 翻译规则
+1. 所有角色名字是否统一
+2. 所有术语翻译是否一致
+3. 连续章节的剧情是否衔接顺畅
+4. 语气和风格是否统一
+
+## 待检查章节
+[所有已翻译的章节内容]
+
+## 输出
+列出发现的问题及修正建议。如果没有问题，回复"校对通过"。
+```
 ```
 
 ### 英文版导出
