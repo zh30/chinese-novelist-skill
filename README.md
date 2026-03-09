@@ -101,9 +101,65 @@ python3 scripts/check_chapter_wordcount.py --all novels/书名
 python3 scripts/check_chapter_wordcount.py novels/书名/第01章-标题.md 3500
 ```
 
+## 导出 EPUB 电子书
+
+当你的小说写到一定篇幅后，可以将其导出为 EPUB 格式的电子书，方便在各种阅读器上阅读。
+
+### 基本用法
+
+```bash
+# 将小说导出为 EPUB（默认输出到小说目录下）
+python3 scripts/generate_epub.py novels/书名
+```
+
+这会在小说目录下生成 `书名.epub` 文件。
+
+### 常用选项
+
+```bash
+# 指定输出文件路径
+python3 scripts/generate_epub.py novels/书名 -o ~/Desktop/我的小说.epub
+
+# 覆盖大纲中的作者名
+python3 scripts/generate_epub.py novels/书名 --author "金庸"
+
+# 同时指定作者和输出路径
+python3 scripts/generate_epub.py novels/书名 --author "金庸" -o output.epub
+```
+
+### 前提条件
+
+1. 小说目录下必须有 `00-大纲.md` 文件
+2. 大纲文件第一行格式为：`# 书名 大纲`
+3. 作者信息在「项目定位」部分，格式为：`- **作者 / 笔名**：金庸`
+4. 目录下有以 `第` 开头的章节文件（如 `第01章-标题.md`）
+
+### 输出内容
+
+生成的 EPUB 包含：
+- 封面页（显示书名和作者）
+- 目录页（可跳转至各章节）
+- 所有章节内容（只提取 `## 正文` 部分）
+
+### 完整示例
+
+```bash
+# 1. 检查当前小说的大纲
+cat novels/我的小说/00-大纲.md
+
+# 2. 查看有哪些章节
+ls novels/我的小说/第*.md
+
+# 3. 导出为 EPUB
+python3 scripts/generate_epub.py novels/我的小说
+
+# 4. 查看生成的文件
+ls -la novels/我的小说/*.epub
+```
+
 ## 兼容性与版本
 
-- 当前版本：`0.2.1`
+- 当前版本：`0.3.0`
 - 版本记录：见 [CHANGELOG.md](CHANGELOG.md)
 - `SKILL.md` frontmatter 保持最小化，优先兼容只识别 `name` 与 `description` 的 skill loader
 

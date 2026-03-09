@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.0
+
+- Added EPUB export script (`scripts/generate_epub.py`) to generate EPUB e-books from novel projects.
+- Added author/pseudonym field to outline template.
+- Added comprehensive tests for the EPUB generation script.
+
 ## v0.2.1
 
 - Renamed the skill identifier in `SKILL.md` frontmatter to `chinese-novelist-skill`.
