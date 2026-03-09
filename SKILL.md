@@ -130,3 +130,24 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - 是否存在遗失角色、断裂线索、无兑现伏笔
 - 是否需要留下续作钩子；只有用户要时才保留
 - 终稿收尾方式参考 [ending-design.md](references/ending-design.md)
+
+## Translation
+
+当用户要求翻译成英文时执行：
+
+1. 确认小说目录和翻译范围（全本 / 部分章节）
+2. 读取上下文文件：
+   - `00-大纲.md` → 书名、作者、类型、简介
+   - `01-人物档案.md` → 人物信息
+   - `02-世界观与伏笔.md` → 世界观要点
+3. 运行翻译脚本：
+   ```bash
+   python3 scripts/translate_to_english.py <小说目录路径>
+   ```
+4. 可选参数：
+   - `--chapters "1,3-5"` 指定翻译章节范围
+   - `-o <输出目录>` 指定输出目录（默认 `en/`）
+5. 英文版也支持 EPUB 导出：
+   ```bash
+   python3 scripts/generate_epub.py <小说目录路径> --lang en
+   ```
