@@ -7,7 +7,7 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 ## Version
 
-- **Version**: `0.3.0`
+- **Version**: `0.4.0`
 - **Version Date**: `2026-03-09`
 - **Compatibility**: standard Markdown skill loaders that support `name` and `description` frontmatter
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
@@ -107,12 +107,8 @@ description: Use when the user wants to plan, write, continue, revise, or export
 3. 可选参数：
    - `--author <作者名>` 覆盖大纲中的作者
    - `-o <输出路径>` 指定输出文件位置
-   - `--lang <语言>` 指定语言 (zh-CN 中文 / en 英文)
-4. 英文版 EPUB 导出示例：
-   ```bash
-   python3 scripts/generate_epub.py <小说目录路径> --lang en
-   ```
-5. 告诉用户生成的 EPUB 文件路径
+   - `--lang en` 导出英文版（需要先通过翻译功能生成 `en/` 目录）
+4. 告诉用户生成的 EPUB 文件路径
 
 ## Quality Bar
 
@@ -140,19 +136,49 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 当用户要求翻译成英文时执行：
 
+### 执行流程
+
 1. 确认小说目录和翻译范围（全本 / 部分章节）
 2. 读取上下文文件：
    - `00-大纲.md` → 书名、作者、类型、简介
    - `01-人物档案.md` → 人物信息
    - `02-世界观与伏笔.md` → 世界观要点
-3. 运行翻译脚本：
-   ```bash
-   python3 scripts/translate_to_english.py <小说目录路径>
-   ```
-4. 可选参数：
-   - `--chapters "1,3-5"` 指定翻译章节范围
-   - `-o <输出目录>` 指定输出目录（默认 `en/`）
-5. 英文版也支持 EPUB 导出：
-   ```bash
-   python3 scripts/generate_epub.py <小说目录路径> --lang en
-   ```
+3. 直接在对话中逐章翻译，使用以下提示词框架：
+
+```
+# 翻译任务
+
+你是专业的小说翻译专家。请将以下中文小说章节翻译为流畅的英文。
+
+## 小说信息
+- 书名：[书名]
+- 作者：[作者]
+- 类型：[类型]
+- 简介：[简介]
+
+## 人物
+[人物档案要点]
+
+## 世界观
+[世界观与伏笔要点]
+
+## 翻译要求
+1. 保持故事的叙事节奏和情感张力
+2. 角色名字用拼音（如 Zhang Wei）
+3. 中文特有词汇（功夫、气功）保留拼音或解释性翻译
+4. 使用现代英语，避免生硬的直译
+5. 对话自然流畅
+
+## 待翻译章节
+[章节内容]
+```
+
+4. 将翻译后的英文章节保存到 `en/` 目录：
+   - `Chapter-001.md`, `Chapter-002.md` 等
+
+### 英文版导出
+
+英文版也支持 EPUB 导出：
+```bash
+python3 scripts/generate_epub.py <小说目录路径> --lang en
+```
