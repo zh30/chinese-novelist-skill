@@ -135,21 +135,65 @@ def convert_markdown_to_xhtml(content: str) -> str:
 def generate_epub(
     novel_dir: Path,
     output_path: Path,
-    author_override: str = None
+    author_override: str = None,
+    lang: str = 'zh-CN'
 ) -> bool:
-    """生成 EPUB 文件"""
+    """生成 EPUB 文件
+
+    Args:
+        novel_dir: 小说项目目录路径
+        output_path: 输出 EPUB 文件路径
+        author_override: 覆盖大纲中的作者
+        lang: 语言设置，'zh-CN' 中文 或 'en' 英文
+    """
     novel_dir = Path(novel_dir)
+    original_novel_dir = novel_dir
 
     if not novel_dir.exists() or not novel_dir.is_dir():
         print(f'错误: 目录不存在 - {novel_dir}')
         return False
 
-    # 解析大纲
-    outline_path = novel_dir / '00-大纲.md'
-    metadata = parse_outline(outline_path)
-
-    title = metadata['title']
-    author = author_override if author_override else metadata['author']
+    # 处理英文版
+    output_lang = lang
+    if lang == 'en':
+        en_dir = novel_dir / 'en'
+        if en_dir.exists():
+            novel_dir = en_dir
+            print(f'使用英文目录: {en_dir}')
+            # 尝试读取英文大纲获取英文书名
+            en_outline_files = list(novel_dir.glob('*.md'))
+            if en_outline_files:
+                try:
+                    with open(en_outline_files[0], 'r', encoding='utf-8') as f:
+                        en_content = f.read()
+                    en_title_match = re.search(r'^#\s+(.+?)$', en_content, re.MULTILINE)
+                    if en_title_match:
+                        title = en_title_match.group(1).strip()
+                        author = author_override if author_override else 'Unknown Author'
+                        metadata = {'title': title, 'author': author}
+                    else:
+                        metadata = {'title': 'English Title', 'author': author_override or 'Unknown Author'}
+                        title = metadata['title']
+                        author = metadata['author']
+                except Exception:
+                    metadata = {'title': 'English Title', 'author': author_override or 'Unknown Author'}
+                    title = metadata['title']
+                    author = metadata['author']
+            else:
+                metadata = {'title': 'English Title', 'author': author_override or 'Unknown Author'}
+                title = metadata['title']
+                author = metadata['author']
+        else:
+            print(f'警告: 英文目录不存在: {en_dir}')
+            metadata = {'title': 'English Title', 'author': author_override or 'Unknown Author'}
+            title = metadata['title']
+            author = metadata['author']
+    else:
+        # 解析大纲
+        outline_path = novel_dir / '00-大纲.md'
+        metadata = parse_outline(outline_path)
+        title = metadata['title']
+        author = author_override if author_override else metadata['author']
 
     # 查找章节
     chapters = find_chapters(novel_dir)
@@ -186,7 +230,7 @@ def generate_epub(
     <dc:identifier id="book-id">{book_id}</dc:identifier>
     <dc:title>{xml_escape(title)}</dc:title>
     <dc:creator>{xml_escape(author)}</dc:creator>
-    <dc:language>zh-CN</dc:language>
+    <dc:language>{output_lang}</dc:language>
     <meta property="dcterms:modified">{timestamp}</meta>
   </metadata>
   <manifest>
@@ -308,11 +352,14 @@ def main():
   python scripts/generate_epub.py novels/书名 --author "金庸"
   python scripts/generate_epub.py novels/书名 -o output.epub
   python scripts/generate_epub.py novels/书名 --author "金庸" -o output.epub
+  python scripts/generate_epub.py novels/书名 --lang en
 '''
     )
     parser.add_argument('novel_dir', help='小说项目目录路径')
     parser.add_argument('-o', '--output', help='输出 EPUB 文件路径 (默认: <书名>.epub)')
     parser.add_argument('--author', help='覆盖大纲中的作者')
+    parser.add_argument('--lang', default='zh-CN', choices=['zh-CN', 'en'],
+                        help='语言: zh-CN (中文) 或 en (英文，默认: zh-CN)')
 
     args = parser.parse_args()
 
@@ -331,10 +378,13 @@ def main():
         metadata = parse_outline(outline_path)
         # 清理书名中的非法字符
         safe_title = re.sub(r'[<>:"/\\|?*]', '', metadata['title'])
-        output_path = novel_dir / f'{safe_title}.epub'
+        if args.lang == 'en':
+            output_path = novel_dir / f'{safe_title}-en.epub'
+        else:
+            output_path = novel_dir / f'{safe_title}.epub'
 
     # 生成 EPUB
-    success = generate_epub(novel_dir, output_path, args.author)
+    success = generate_epub(novel_dir, output_path, args.author, args.lang)
     sys.exit(0 if success else 1)
 
 
