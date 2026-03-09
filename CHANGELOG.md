@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.1
+
+- Added EPUB export and word count check to skill trigger description for natural language activation.
+- Added Export section to SKILL.md with usage instructions.
+
 ## v0.3.0
 
 - Added EPUB export script (`scripts/generate_epub.py`) to generate EPUB e-books from novel projects.

@@ -1,14 +1,14 @@
 ---
 name: chinese-novelist-skill
-description: Use when the user wants to plan, write, continue, or revise a Chinese novel, web novel, serialized story, chapter outline, character bible, or chapter draft in Chinese.
+description: Use when the user wants to plan, write, continue, revise, or export a Chinese novel, web novel, serialized story, chapter outline, character bible, or chapter draft in Chinese. Also use when user wants to export novel as EPUB or check chapter word count.
 ---
 
 # Chinese Novelist
 
 ## Version
 
-- **Version**: `0.2.1`
-- **Version Date**: `2026-03-06`
+- **Version**: `0.3.0`
+- **Version Date**: `2026-03-09`
 - **Compatibility**: standard Markdown skill loaders that support `name` and `description` frontmatter
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
 
@@ -22,6 +22,8 @@ description: Use when the user wants to plan, write, continue, or revise a Chine
 - 用户已有设定，想补大纲、人物档案、世界观、章节规划
 - 用户要续写已有章节，要求前后连贯
 - 用户要重写某章，增强钩子、节奏、对白、人物张力或减少 AI 味
+- 用户要将小说导出为 EPUB 电子书（如"帮我导出 epub"、"把这本书导出为电子书"）
+- 用户要检查章节字数（如"帮我看看这章多少字"）
 
 ## Default Working Mode
 
@@ -89,9 +91,23 @@ description: Use when the user wants to plan, write, continue, or revise a Chine
    - [scene-design.md](references/scene-design.md)
    - [style-polishing.md](references/style-polishing.md)
 6. 长章节交付前，运行：
-   - `python scripts/check_chapter_wordcount.py <章节文件路径>`
+   - `python3 scripts/check_chapter_wordcount.py <章节文件路径>`
 7. 交付前用 [quality-checklist.md](references/quality-checklist.md) 自查
 8. 回写章节摘要、人物状态、伏笔状态与章节进度
+
+## Export
+
+当用户要求导出 EPUB 时：
+
+1. 确认小说目录路径（用户已提供或在 novels/ 下查找）
+2. 运行导出脚本：
+   ```bash
+   python3 scripts/generate_epub.py <小说目录路径>
+   ```
+3. 可选参数：
+   - `--author <作者名>` 覆盖大纲中的作者
+   - `-o <输出路径>` 指定输出文件位置
+4. 告诉用户生成的 EPUB 文件路径
 
 ## Quality Bar
 
