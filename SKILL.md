@@ -107,7 +107,12 @@ description: Use when the user wants to plan, write, continue, revise, or export
 3. 可选参数：
    - `--author <作者名>` 覆盖大纲中的作者
    - `-o <输出路径>` 指定输出文件位置
-4. 告诉用户生成的 EPUB 文件路径
+   - `--lang <语言>` 指定语言 (zh-CN 中文 / en 英文)
+4. 英文版 EPUB 导出示例：
+   ```bash
+   python3 scripts/generate_epub.py <小说目录路径> --lang en
+   ```
+5. 告诉用户生成的 EPUB 文件路径
 
 ## Quality Bar
 
