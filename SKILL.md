@@ -7,7 +7,7 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 ## Version
 
-- **Version**: `0.4.0`
+- **Version**: `0.5.0`
 - **Version Date**: `2026-03-09`
 - **Compatibility**: standard Markdown skill loaders that support `name` and `description` frontmatter
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
@@ -143,7 +143,14 @@ description: Use when the user wants to plan, write, continue, revise, or export
    - `00-大纲.md` → 书名、作者、类型、简介
    - `01-人物档案.md` → 人物信息
    - `02-世界观与伏笔.md` → 世界观要点
-3. 直接在对话中逐章翻译，使用以下提示词框架：
+3. 使用并行 subagent 翻译：
+   - 将章节分成多个批次（每批 2-3 章）
+   - 为每个批次创建一个 subagent，并行翻译
+   - 每个 subagent 携带完整的小说上下文
+4. 汇总所有翻译结果，写入 `en/` 目录：
+   - `Chapter-001.md`, `Chapter-002.md` 等
+
+### Subagent 翻译提示词
 
 ```
 # 翻译任务
@@ -168,13 +175,24 @@ description: Use when the user wants to plan, write, continue, revise, or export
 3. 中文特有词汇（功夫、气功）保留拼音或解释性翻译
 4. 使用现代英语，避免生硬的直译
 5. 对话自然流畅
+6. 翻译后的章节保存为 Markdown 格式
 
-## 待翻译章节
-[章节内容]
+## 待翻译章节列表
+[章节1: 标题]
+[章节1内容]
+
+[章节2: 标题]
+[章节2内容]
+
+## 输出
+为每个章节创建 Markdown 文件，文件名格式：Chapter-XXX.md
+文件内容格式：
+## 章节标题
+
+## Body
+
+翻译正文...
 ```
-
-4. 将翻译后的英文章节保存到 `en/` 目录：
-   - `Chapter-001.md`, `Chapter-002.md` 等
 
 ### 英文版导出
 
