@@ -7,7 +7,7 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 ## Version
 
-- **Version**: `0.6.0`
+- **Version**: `0.6.1`
 - **Version Date**: `2026-03-09`
 - **Compatibility**: standard Markdown skill loaders that support `name` and `description` frontmatter
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)

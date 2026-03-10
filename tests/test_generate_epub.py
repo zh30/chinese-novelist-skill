@@ -6,6 +6,7 @@ from pathlib import Path
 
 from scripts.generate_epub import (
     convert_markdown_to_xhtml,
+    extract_content_from_chapter,
     find_chapters,
     generate_epub,
     parse_outline,
@@ -53,7 +54,8 @@ class ParseOutlineTests(unittest.TestCase):
             result = parse_outline(path)
 
         self.assertEqual(result["title"], "测试小说")
-        self.assertEqual(result["author"], "未知作者")
+        # 当作者字段为空时，返回空字符串（后续会提示用户输入）
+        self.assertEqual(result["author"], "")
 
 
 class FindChaptersTests(unittest.TestCase):
@@ -73,11 +75,110 @@ class FindChaptersTests(unittest.TestCase):
         self.assertEqual(chapters[1]["title"], "发展")
         self.assertEqual(chapters[2]["title"], "高潮")
 
+    def test_finds_chapter_title_excluding_task_card(self):
+        """测试：章节标题应该是真正的章节标题，而不是本章任务卡"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+
+            # 创建带有本章任务卡的章节文件
+            content = """# 第01章-林墨的抉择
+
+## 本章任务卡
+- **章节功能**：
+- **承接上章**：
+
+## 场景拆分
+1. 场景一
+
+---
+
+## 正文
+
+林墨站在破碎的甲板上，看着远方的星空。他知道，这是最后的机会了。
+
+---
+
+## 章节复盘
+- **本章摘要**：
+"""
+            (tmppath / "第01章-林墨的抉择.md").write_text(content, encoding="utf-8")
+
+            chapters = find_chapters(tmppath)
+
+        self.assertEqual(len(chapters), 1)
+        # 标题不应该是"本章任务卡"，应该是从文件名提取或跳过任务卡
+        self.assertNotEqual(chapters[0]["title"], "本章任务卡")
+
     def test_returns_empty_list_when_no_chapters(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             chapters = find_chapters(Path(tmpdir))
 
         self.assertEqual(chapters, [])
+
+
+class ExtractContentFromChapterTests(unittest.TestCase):
+    def test_extracts_only_body_content(self):
+        """测试：只提取 ## 正文 区块的内容，不包含任务卡、摘要、钩子等"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+
+            content = """# 第01章 林墨的抉择
+
+## 本章任务卡
+- **章节功能**：
+- **承接上章**：
+
+## 场景拆分
+1. 场景一
+
+---
+
+## 正文
+
+林墨站在破碎的甲板上，看着远方的星空。他知道，这是最后的机会了。
+
+苏晴紧紧握住他的手："一定要回来。"
+
+---
+
+## 章节复盘
+- **本章摘要**：林墨决定牺牲自己
+- **章节钩子**：老马说的还有一个人能救地球
+"""
+            (tmppath / "第01章-林墨的抉择.md").write_text(content, encoding="utf-8")
+
+            result = extract_content_from_chapter(tmppath / "第01章-林墨的抉择.md")
+
+        # 验证不包含任务卡、摘要、钩子等内容
+        self.assertNotIn("本章任务卡", result)
+        self.assertNotIn("章节摘要", result)
+        self.assertNotIn("章节钩子", result)
+        self.assertNotIn("章节复盘", result)
+        # 验证包含正文内容
+        self.assertIn("林墨站在破碎的甲板上", result)
+        self.assertIn("苏晴紧紧握住他的手", result)
+
+    def test_handles_missing_body_section(self):
+        """测试：没有 ## 正文 时的回退行为"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+
+            # 旧模板：没有 ## 正文
+            content = """# 第01章 开始
+
+这是第一章的内容。
+故事从这里开始。
+
+## 本章任务卡
+任务内容
+"""
+            (tmppath / "第01章-开始.md").write_text(content, encoding="utf-8")
+
+            result = extract_content_from_chapter(tmppath / "第01章-开始.md")
+
+        # 应该包含正文内容，但不包含任务卡
+        self.assertIn("这是第一章的内容", result)
+        self.assertNotIn("本章任务卡", result)
 
 
 class ConvertMarkdownToXhtmlTests(unittest.TestCase):

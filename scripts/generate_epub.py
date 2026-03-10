@@ -21,6 +21,16 @@ if sys.platform == 'win32':
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 
+# 非正文部分的章节标题模式（这些不是真正的章节标题）
+NON_CONTENT_SECTIONS = {
+    '本章任务卡', '场景拆分', '正文', '章节复盘',
+    '章节摘要', '章节钩子', '本章摘要', '本章钩子',
+    '人物状态变化', '下一章必须处理', '新增信息', '已回应悬念',
+    '承接上章', '本章目标', '主要阻碍', '情绪推进', '关键转折',
+    '结尾钩子', '章节功能'
+}
+
+
 def extract_content_from_chapter(file_path: Path) -> str:
     """从章节文件中提取正文内容，优先只统计 `## 正文` 区块"""
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -33,24 +43,41 @@ def extract_content_from_chapter(file_path: Path) -> str:
 
     for i, line in enumerate(lines):
         stripped = line.strip()
-        if stripped == '## 正文':
+        # 匹配 ## 正文，允许前后有空格
+        if stripped == '## 正文' or stripped == '##正文':
             body_start = i + 1
             continue
         if body_start is not None and stripped.startswith('## '):
+            # 遇到下一个 ## 标题时停止，包括 ## 章节复盘 等
             body_end = i
             break
 
     if body_start is not None:
-        return '\n'.join(lines[body_start:body_end]).strip()
+        body_content = '\n'.join(lines[body_start:body_end]).strip()
+        # 移除 --- 分隔符
+        body_content = re.sub(r'^---+\s*$', '', body_content, flags=re.MULTILINE).strip()
+        return body_content
 
-    # 兼容旧模板：如果没有 `## 正文`，则退回到章节标题之后的所有内容
+    # 兼容旧模板：如果没有 `## 正文`，则退回到章节标题之后、下一个 ## 之前的内容
     content_start = 0
+    content_end = None
     for i, line in enumerate(lines):
-        if line.startswith('#') and '章' in line:
+        stripped = line.strip()
+        # 找到章节标题（# 第X章）
+        if stripped.startswith('#') and '章' in stripped and not stripped.startswith('##'):
             content_start = i + 1
+            continue
+        # 找到下一个 ## 标题时停止
+        if content_start > 0 and stripped.startswith('## '):
+            content_end = i
             break
 
-    main_content = '\n'.join(lines[content_start:])
+    if content_end is None:
+        content_end = len(lines)
+
+    main_content = '\n'.join(lines[content_start:content_end]).strip()
+    # 移除 --- 分隔符
+    main_content = re.sub(r'^---+\s*$', '', main_content, flags=re.MULTILINE).strip()
     return main_content
 
 
@@ -68,7 +95,11 @@ def parse_outline(outline_path: Path) -> dict:
 
     # 提取作者
     author_match = re.search(r'\*\*作者\s*/\s*笔名\*\*[：:]\s*(.+)', content)
-    author = author_match.group(1).strip() if author_match else '未知作者'
+    author = author_match.group(1).strip() if author_match else ''
+
+    # 如果作者为空或只有空白字符，设置为空字符串（后续会提示用户输入）
+    if not author or not author.strip():
+        author = ''
 
     return {'title': title, 'author': author}
 
@@ -83,7 +114,7 @@ def find_chapters(novel_dir: Path) -> list:
         with open(chapter_file, 'r', encoding='utf-8') as f:
             first_line = f.readline().strip()
 
-        # 从文件名或第一行提取标题
+        # 从文件名提取标题作为后备
         title_match = re.search(r'第\d+章[-(]*(.+?)\.md$', chapter_file.name)
         if title_match:
             chapter_title = title_match.group(1)
@@ -91,11 +122,19 @@ def find_chapters(novel_dir: Path) -> list:
             chapter_title = chapter_file.stem
 
         # 从文件内容中提取标题（优先使用文件内的标题）
+        # 跳过非内容章节：## 本章任务卡, ## 场景拆分, ## 正文, ## 章节复盘 等
         with open(chapter_file, 'r', encoding='utf-8') as f:
             content = f.read()
-        content_title_match = re.search(r'^##\s+(.+?)$', content, re.MULTILINE)
-        if content_title_match and content_title_match.group(1) != '正文':
-            chapter_title = content_title_match.group(1).strip()
+
+        # 查找所有 ## 标题
+        content_title_matches = re.findall(r'^##\s+(.+?)$', content, re.MULTILINE)
+
+        # 找到第一个不是非内容章节的标题
+        for match in content_title_matches:
+            section_title = match.strip()
+            if section_title not in NON_CONTENT_SECTIONS:
+                chapter_title = section_title
+                break
 
         chapters.append({
             'file': chapter_file,
@@ -132,6 +171,16 @@ def convert_markdown_to_xhtml(content: str) -> str:
     return '\n'.join(xhtml_paragraphs)
 
 
+def prompt_for_author(book_title: str) -> str:
+    """提示用户输入作者名字"""
+    print(f'\n图书 "{book_title}" 的作者名字未设置。')
+    while True:
+        author = input('请输入作者名字: ').strip()
+        if author:
+            return author
+        print('作者名字不能为空，请重新输入。')
+
+
 def generate_epub(
     novel_dir: Path,
     output_path: Path,
@@ -160,29 +209,51 @@ def generate_epub(
         if en_dir.exists():
             novel_dir = en_dir
             print(f'使用英文目录: {en_dir}')
-            # 尝试读取英文大纲获取英文书名
+            # 尝试读取原大纲获取中文书名，然后翻译
+            original_outline = original_novel_dir / '00-大纲.md'
+            original_metadata = parse_outline(original_outline)
+            original_title = original_metadata.get('title', 'Unknown')
+
+            # 尝试从英文目录获取英文书名（查找包含书名信息的文件）
+            en_title = None
             en_outline_files = list(novel_dir.glob('*.md'))
-            if en_outline_files:
+            for en_file in en_outline_files:
+                # 跳过章节文件，查找可能有书名的文件
+                if en_file.name.startswith('第') or en_file.name.startswith('Chapter'):
+                    continue
                 try:
-                    with open(en_outline_files[0], 'r', encoding='utf-8') as f:
+                    with open(en_file, 'r', encoding='utf-8') as f:
                         en_content = f.read()
-                    en_title_match = re.search(r'^#\s+(.+?)$', en_content, re.MULTILINE)
+                    # 查找类似 "# Book Title" 的标题，且不是章节标题
+                    en_title_match = re.search(r'^#\s+(.+?)(?:\s+大纲|\s+简介|$)', en_content, re.MULTILINE)
                     if en_title_match:
-                        title = en_title_match.group(1).strip()
-                        author = author_override if author_override else 'Unknown Author'
-                        metadata = {'title': title, 'author': author}
-                    else:
-                        metadata = {'title': 'English Title', 'author': author_override or 'Unknown Author'}
-                        title = metadata['title']
-                        author = metadata['author']
+                        en_title = en_title_match.group(1).strip()
+                        break
                 except Exception:
-                    metadata = {'title': 'English Title', 'author': author_override or 'Unknown Author'}
-                    title = metadata['title']
-                    author = metadata['author']
+                    continue
+
+            title = en_title if en_title else f'{original_title} (English)'
+
+            # 处理作者
+            if author_override:
+                author = author_override
             else:
-                metadata = {'title': 'English Title', 'author': author_override or 'Unknown Author'}
-                title = metadata['title']
-                author = metadata['author']
+                # 尝试从英文大纲获取作者
+                author = 'Unknown Author'
+                for en_file in en_outline_files:
+                    if en_file.name.startswith('第') or en_file.name.startswith('Chapter'):
+                        continue
+                    try:
+                        with open(en_file, 'r', encoding='utf-8') as f:
+                            en_content = f.read()
+                        en_author_match = re.search(r'(?:作者|Author)[：:\s]+(.+)', en_content, re.MULTILINE)
+                        if en_author_match:
+                            author = en_author_match.group(1).strip()
+                            break
+                    except Exception:
+                        continue
+
+            metadata = {'title': title, 'author': author}
         else:
             print(f'警告: 英文目录不存在: {en_dir}')
             metadata = {'title': 'English Title', 'author': author_override or 'Unknown Author'}
@@ -194,6 +265,11 @@ def generate_epub(
         metadata = parse_outline(outline_path)
         title = metadata['title']
         author = author_override if author_override else metadata['author']
+
+        # 如果作者为空，提示用户输入
+        if not author or author.strip() == '':
+            author = prompt_for_author(title)
+            print(f'已设置作者: {author}')
 
     # 查找章节
     chapters = find_chapters(novel_dir)
@@ -374,10 +450,41 @@ def main():
         output_path = Path(args.output)
     else:
         # 从大纲获取书名作为默认文件名
-        outline_path = novel_dir / '00-大纲.md'
-        metadata = parse_outline(outline_path)
+        if args.lang == 'en':
+            # 尝试获取英文书名
+            en_dir = novel_dir / 'en'
+            if en_dir.exists():
+                en_outline_files = list(en_dir.glob('*.md'))
+                title = None
+                for en_file in en_outline_files:
+                    if en_file.name.startswith('第') or en_file.name.startswith('Chapter'):
+                        continue
+                    try:
+                        with open(en_file, 'r', encoding='utf-8') as f:
+                            en_content = f.read()
+                        en_title_match = re.search(r'^#\s+(.+?)(?:\s+大纲|\s+简介|$)', en_content, re.MULTILINE)
+                        if en_title_match:
+                            title = en_title_match.group(1).strip()
+                            break
+                    except Exception:
+                        continue
+
+                if not title:
+                    # 回退到中文书名
+                    outline_path = novel_dir / '00-大纲.md'
+                    metadata = parse_outline(outline_path)
+                    title = f"{metadata['title']} (English)"
+            else:
+                outline_path = novel_dir / '00-大纲.md'
+                metadata = parse_outline(outline_path)
+                title = f"{metadata['title']} (English)"
+        else:
+            outline_path = novel_dir / '00-大纲.md'
+            metadata = parse_outline(outline_path)
+            title = metadata['title']
+
         # 清理书名中的非法字符
-        safe_title = re.sub(r'[<>:"/\\|?*]', '', metadata['title'])
+        safe_title = re.sub(r'[<>:"/\\|?*]', '', title)
         if args.lang == 'en':
             output_path = novel_dir / f'{safe_title}-en.epub'
         else:

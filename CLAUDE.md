@@ -6,15 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Claude Code skill for Chinese novel/web novel writing. It provides a structured workflow for planning, writing, and maintaining long-form Chinese fiction with consistent characters, plot threads, and writing quality.
 
+The skill is loaded from `SKILL.md` - this is the main entry point that defines the novel writing workflow.
+
 ## Project Structure
 
 ```
-├── SKILL.md           # Main skill file - loaded by Claude Code
-├── README.md          # Documentation
-├── references/        # 16 reference documents for novel writing
-├── scripts/           # Utility scripts
-│   └── check_chapter_wordcount.py  # Word count checker
-└── tests/             # Unit tests
+├── SKILL.md              # Main skill file - loaded by Claude Code
+├── README.md             # Documentation
+├── references/           # 16 reference documents for novel writing
+├── scripts/             # Utility scripts
+│   ├── check_chapter_wordcount.py  # Word count checker
+│   ├── generate_epub.py             # EPUB exporter
+│   └── translate_to_english.py     # English translation
+├── tests/               # Unit tests
+└── docs/                # Design docs and implementation plans
+    └── plans/
 ```
 
 ## Commands
@@ -22,13 +28,13 @@ This is a Claude Code skill for Chinese novel/web novel writing. It provides a s
 ### Run Tests
 ```bash
 python -m pytest tests/
-# or
-python tests/test_check_chapter_wordcount.py
+# or run a specific test
+python -m pytest tests/test_check_chapter_wordcount.py
 ```
 
 ### Check Chapter Word Count
 ```bash
-# Single chapter
+# Single chapter (default min: 3000)
 python scripts/check_chapter_wordcount.py novels/书名/第01章-标题.md
 
 # Single chapter with custom minimum
@@ -36,6 +42,30 @@ python scripts/check_chapter_wordcount.py novels/书名/第01章-标题.md 3500
 
 # All chapters in a directory
 python scripts/check_chapter_wordcount.py --all novels/书名
+```
+
+### Export to EPUB
+```bash
+# Export Chinese version
+python scripts/generate_epub.py novels/书名
+
+# Export with custom author
+python scripts/generate_epub.py novels/书名 --author "作者名"
+
+# Export to custom path
+python scripts/generate_epub.py novels/书名 -o output.epub
+
+# Export English version (requires en/ directory)
+python scripts/generate_epub.py novels/书名 --lang en
+```
+
+### Translate to English
+```bash
+# Translate entire novel
+python scripts/translate_to_english.py novels/书名
+
+# Translate specific chapters
+python scripts/translate_to_english.py novels/书名 --chapters 1-10
 ```
 
 ## Writing Workflow
