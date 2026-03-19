@@ -219,7 +219,7 @@ python3 scripts/generate_epub.py novels/书名 --lang en
 
 ## 兼容性与版本
 
-- 当前版本：`0.6.1`
+- 当前版本：`0.7.0`
 - 版本记录：见 [CHANGELOG.md](CHANGELOG.md)
 - `SKILL.md` frontmatter 保持最小化，优先兼容只识别 `name` 与 `description` 的 skill loader
 
