@@ -129,10 +129,12 @@ def find_chapters(novel_dir: Path) -> list:
         # 查找所有 ## 标题
         content_title_matches = re.findall(r'^##\s+(.+?)$', content, re.MULTILINE)
 
-        # 找到第一个不是非内容章节的标题
+        # 找到第一个不是非内容章节的标题（前缀匹配，支持 "本章任务卡：xxx" 格式）
         for match in content_title_matches:
             section_title = match.strip()
-            if section_title not in NON_CONTENT_SECTIONS:
+            # 检查是否以非内容章节标题开头
+            is_non_content = any(section_title.startswith(prefix) for prefix in NON_CONTENT_SECTIONS)
+            if not is_non_content:
                 chapter_title = section_title
                 break
 
