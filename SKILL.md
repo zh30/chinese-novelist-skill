@@ -109,6 +109,7 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - `01-人物档案.md` → 使用 [character-template.md](references/character-template.md)
 - `02-世界观与伏笔.md` → 使用 [story-bible-template.md](references/story-bible-template.md)
 - `第XX章-标题.md` → 使用 [chapter-template.md](references/chapter-template.md)
+- `03-多线管理.md` → 使用 [references/03-多线管理.md](references/03-多线管理.md)（仅多线叙事小说需要）
 
 ## Planning Rules
 
