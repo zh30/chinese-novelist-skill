@@ -241,6 +241,26 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - 运行字数检查：`python3 scripts/check_chapter_wordcount.py <章节文件路径>`
 - 确认字数没有严重缩水（轻度修改不应影响总字数）
 
+## 节奏检查
+
+每写完5-10章后，运行节奏检查脚本，生成健康报告：
+
+```bash
+python3 scripts/check_rhythm.py <小说目录路径>
+```
+
+**检查项：**
+- 场景重复警告（连续3+章同一场景类型）
+- 字数统计（平均、最高、最低）
+- 伏笔回收状态（需要配合 02-世界观与伏笔.md）
+- 多线均衡状态（需要配合 03-多线管理.md）
+
+**报告模板：** [references/05-节奏健康报告.md](references/05-节奏健康报告.md)
+
+**触发时机：**
+- 每写完5-10章后
+- 用户说"检查节奏"时
+
 ## Export
 
 当用户要求导出 EPUB 时：
