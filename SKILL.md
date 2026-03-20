@@ -40,8 +40,9 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 ## Intake
 
-只补问真正缺失的关键信息，优先补齐以下 6 项：
+只补问真正缺失的关键信息，优先补齐以下 7 项：
 
+- 故事引擎（核心机制、代价/资源、升级规则）
 - 题材 / 子类型
 - 一句话 premise 或核心冲突
 - 主角身份、最大欲望、致命缺陷
@@ -50,6 +51,11 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - 篇幅目标与交付模式
 
 如果用户只给了模糊想法，不要空泛追问；应给出具体备选并推荐更稳的方案。
+
+**关于故事引擎：** 如果用户说不清引擎，用引导问题帮助提炼：
+- 「读者追这本书的理由是什么？是主角的成长？还是谜题解开的那一刻爽感？」
+- 「主角每赢一次，代价是什么？代价会越来越大吗？」
+- 「这个故事到最后，代价会大到什么程度？」
 
 ## 书名生成
 
