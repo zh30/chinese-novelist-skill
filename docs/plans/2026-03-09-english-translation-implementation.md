@@ -266,15 +266,15 @@ def translate_novel(
     novel_dir = Path(novel_dir)
 
     if not novel_dir.exists():
-        print(f"错误: 目录不存在 - {novel_dir}")
+        print(f"错误：目录不存在 - {novel_dir}")
         return False
 
-    print(f"开始翻译: {novel_dir.name}")
+    print(f"开始翻译：{novel_dir.name}")
 
     # 提取小说信息
     novel_info = extract_novel_info(novel_dir)
-    print(f"书名: {novel_info['title']}")
-    print(f"作者: {novel_info['author']}")
+    print(f"书名：{novel_info['title']}")
+    print(f"作者：{novel_info['author']}")
 
     # 确定输出目录
     output_path = novel_dir / output_dir
@@ -283,7 +283,7 @@ def translate_novel(
     chapter_files = find_chapters(novel_dir)
 
     if not chapter_files:
-        print(f"错误: 未找到章节文件")
+        print(f"错误：未找到章节文件")
         return False
 
     print(f"找到 {len(chapter_files)} 个章节")
@@ -298,7 +298,7 @@ def translate_novel(
         if chapters_to_translate and chapter['number'] not in chapters_to_translate:
             continue
 
-        print(f"\n翻译第 {chapter['number']} 章: {chapter['title']}")
+        print(f"\n翻译第 {chapter['number']} 章：{chapter['title']}")
 
         # 提取章节内容
         content = extract_chapter_content(chapter['file'])
@@ -314,16 +314,16 @@ def translate_novel(
             output_file = output_path / f"Chapter-{chapter['number']:03d}.md"
             save_translated_chapter(output_file, chapter['title'], translated_content)
 
-            print(f"已保存: {output_file}")
+            print(f"已保存：{output_file}")
 
         except NotImplementedError as e:
-            print(f"错误: {e}")
+            print(f"错误：{e}")
             return False
         except Exception as e:
-            print(f"翻译第 {chapter['number']} 章失败: {e}")
+            print(f"翻译第 {chapter['number']} 章失败：{e}")
             continue
 
-    print(f"\n翻译完成！英文版保存在: {output_path}")
+    print(f"\n翻译完成！英文版保存在：{output_path}")
     return True
 
 
@@ -348,14 +348,14 @@ def main():
         description='将中文小说翻译为英文版本',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
-示例:
+示例：
   python scripts/translate_to_english.py novels/书名
   python scripts/translate_to_english.py novels/书名 --chapters "1,3-5"
   python scripts/translate_to_english.py novels/书名 -o en
 '''
     )
     parser.add_argument('novel_dir', help='小说项目目录路径')
-    parser.add_argument('-o', '--output', default='en', help='输出目录 (默认: en)')
+    parser.add_argument('-o', '--output', default='en', help='输出目录 (默认：en)')
     parser.add_argument('--chapters', help='要翻译的章节范围，如 "1,3-5,10"')
 
     args = parser.parse_args()
@@ -440,7 +440,7 @@ In main() function, around line 315, add:
 
 ```python
     parser.add_argument('--lang', default='zh-CN', choices=['zh-CN', 'en'],
-                        help='语言: zh-CN (中文) 或 en (英文)')
+                        help='语言：zh-CN (中文) 或 en (英文)')
 ```
 
 And update the generate_epub call (around line 337):
