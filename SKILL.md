@@ -44,6 +44,8 @@ description: "Use when the user wants to plan, write, continue, revise, or expor
 - **章节文件损坏/缺失**：回退到上一章状态，提醒用户检查，不自行假设内容
 - **字数不达标时**：标注具体差距（如"当前2400字，差600字"），给出扩写建议而非直接补注水内容
 - **用户长期中断后返回**：先读取进度仪表盘和最近2章摘要，简报当前状态后确认方向
+- **脚本执行失败**：跳过脚本检查，改用人工对照 quality-checklist.md 逐项自检，在交付时注明"脚本未运行"
+- **人物设定冲突**：以最新文件为准，在交付时列出冲突点提醒用户确认
 
 ## When to Use
 
@@ -119,6 +121,18 @@ description: "Use when the user wants to plan, write, continue, revise, or expor
 
 **详细参考：** [references/09-悬念生命周期管理.md](references/09-悬念生命周期管理.md)（状态定义和预警规则）
 [references/10-悬念-章节匹配矩阵.md](references/10-悬念-章节匹配矩阵.md)（章节-悬念匹配和强度检查）
+
+## 策划期流程
+
+进入策划期后，按以下顺序执行：
+
+1. **Intake** → 补齐关键信息（7项）
+2. **书名生成** → 生成3-5个候选书名供用户选择
+3. **创建文件** → 按 Required Files 创建大纲和仪表盘
+4. **规划确认** → 按 Planning Rules 锁定核心内容
+5. **用户确认** → 阶段转换检查点通过后，进入连载期
+
+---
 
 ## 素材积累
 
@@ -277,19 +291,17 @@ description: "Use when the user wants to plan, write, continue, revise, or expor
 
 **执行原则**：红灯项必须全部通过；黄灯项超标时给出修改建议；绿灯项在收尾期统一处理。
 
-## 快速模式
-
-精修模式适用于草稿完成后的质量打磨。每个步骤都必须执行。
+## 连载期写作循环
 
 每写一章都按这个循环执行：
 
 1. **读取上下文**：先读 `99-进度仪表盘.md` 获取当前状态，再读 `00-大纲.md`、最近章节摘要、`02-世界观与伏笔.md`
 2. **检查悬念**：查阅进度仪表盘中的悬念状态，如有🔴过期悬念，本章必须提及；如有🟡即将过期悬念，本章建议推进
-2. 明确 `本章目标 / 阻碍 / 转折 / 结尾钩子`
-3. 先拆 3-6 个场景，再落正文
-4. 开头前 20% 必须尽快进入冲突，参考 [chapter-guide.md](references/chapter-guide.md)
+3. **明确本章任务**：本章目标 / 阻碍 / 转折 / 结尾钩子
+4. **场景拆分**（标准模式）：拆 3-6 个场景，再落正文；快速模式跳过此步直接写
+5. **写正文**：开头前 20% 必须尽快进入冲突，参考 [chapter-guide.md](references/chapter-guide.md)
    - 如果在写首章，额外参考 [opening-design.md](references/opening-design.md)
-5. 对话、扩写、连贯性、结尾钩子分别参考：
+6. 对话、扩写、连贯性、结尾钩子分别参考：
    - [dialogue-writing.md](references/dialogue-writing.md)
    - [content-expansion.md](references/content-expansion.md)
    - [consistency.md](references/consistency.md)
@@ -297,10 +309,8 @@ description: "Use when the user wants to plan, write, continue, revise, or expor
    - [scene-design-v2.md](references/scene-design-v2.md)（默认推荐，含场景任务检查卡和价值测试）或 [scene-design.md](references/scene-design.md)（v1基础版）
    - [style-polishing.md](references/style-polishing.md)
    - AI味改写：[ai-style-examples.md](references/ai-style-examples.md) 和 [ai-style-by-genre.md](references/ai-style-by-genre.md)（按题材专项防治）
-6. 长章节交付前，运行：
-   - `python3 scripts/check_chapter_wordcount.py <章节文件路径>`
-7. 交付前用 [quality-checklist.md](references/quality-checklist.md) 自查
-8. 回写章节摘要、人物状态、伏笔状态与章节进度
+7. **质量检查**：运行 `python3 scripts/check_chapter_wordcount.py <章节文件路径>` 检查字数；用 [quality-checklist.md](references/quality-checklist.md) 自查
+8. **回写状态**：更新章节摘要、人物状态、伏笔状态与章节进度到 `99-进度仪表盘.md`
 
 ## 修改工作流
 
@@ -678,102 +688,18 @@ python3 scripts/check_rhythm.py <小说目录路径>
 
 ### 术语表格式
 
-```
-## 统一术语表（必须严格遵守）
+生成包含以下分类的统一术语表，翻译时严格遵守：
+- 人物名称：`[中文名] → [Pinyin]`（如 张三 → Zhang San）
+- 修炼体系/境界：`[中文] → [English]`（如 筑基 → Foundation Building）
+- 门派与武器：`[中文] → [Pinyin or English]`
+- 中文特有表达：`盏茶 → the time it takes to drink a cup of tea`
 
-### 人物名称
-- [角色名] → [Pinyin]
-- 张三 → Zhang San
-- 李四 → Li Si
+### 并行翻译
 
-### 修炼体系
-- 筑基 → Foundation Building
-- 金丹 → Golden Core
-- 元婴 → Nascent Soul
-- 灵气 → Spiritual Energy
-- 真气 → True Qi
-
-### 门派与武器
-- [门派名] → [Pinyin or English]
-- 青云门 → Qingyun Sect
-- 太极剑 → Taiji Sword
-
-### 中文特有表达
-- 盏茶 → the time it takes to drink a cup of tea
-- 片刻 → a moment
-- 一盏茶时间 → the time needed to finish a cup of tea
-```
-
-### Subagent 翻译提示词
-
-```
-# 翻译任务
-
-你是专业的小说翻译专家。请将以下中文小说章节翻译为流畅的英文。
-
-## 小说信息
-- 书名：[书名]
-- 作者：[作者]
-- 类型：[类型]
-- 简介：[简介]
-
-## 人物（必须使用以下统一译名）
-[人物档案要点]
-
-## 世界观
-[世界观与伏笔要点]
-
-## 统一术语表（必须严格遵守）
-[术语表内容]
-
-## 翻译规则
-1. 保持故事的叙事节奏和情感张力
-2. 角色名字必须使用上面的统一译名
-3. 术语必须使用统一术语表中的翻译
-4. 使用现代英语，避免生硬的直译
-5. 对话自然流畅，符合人物性格
-6. 翻译后的章节保存为 Markdown 格式
-
-## 待翻译章节（同一批次，情节连贯）
-[章节1: 标题]
-[章节1内容]
-
-[章节2: 标题]
-[章节2内容]
-
-## 输出要求
-为每个章节创建 Markdown 文件，文件名格式：Chapter-XXX.md
-文件内容格式：
-## 章节标题
-
-## Body
-
-翻译正文...
-```
-
-### 校对 subagent 提示词
-
-```
-# 翻译校对任务
-
-请检查以下所有翻译章节，确保一致性：
-
-## 统一术语表
-[术语表内容]
-
-## 翻译规则
-1. 所有角色名字是否统一
-2. 所有术语翻译是否一致
-3. 连续章节的剧情是否衔接顺畅
-4. 语气和风格是否统一
-
-## 待检查章节
-[所有已翻译的章节内容]
-
-## 输出
-列出发现的问题及修正建议。如果没有问题，回复"校对通过"。
-```
-```
+1. 将章节分批（每批 2-3 章，相邻章节在同一批次）
+2. 为每批创建 subagent 并行翻译，携带：小说信息 + 术语表 + 翻译规则（保持叙事节奏、统一译名、对话自然流畅）
+3. 全部完成后派 subagent 做全局校对（术语一致性 + 人名一致性 + 剧情衔接 + 风格统一）
+4. 结果写入 `en/Chapter-XXX.md`
 
 ### 英文版导出
 
