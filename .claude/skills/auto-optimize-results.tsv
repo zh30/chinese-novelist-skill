@@ -3,3 +3,6 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-04-14	eb4ab3e	chinese-novelist-skill	73.3	79.3	keep	全部	darwin-skill优化round1：frontmatter触发词、阶段转换检查点、v2资源整合、悬念管理、异常处理	dry_run
 2026-04-14	594ffe8	chinese-novelist-skill	79.3	79.65	keep	工作流清晰度+架构	fix step numbering, 策划期流程导航, 压缩translation section, 脚本失败处理	dry_run
 2026-04-14	eeca14e	chinese-novelist-skill	79.65	90.0	keep	边界条件+架构	项目不存在fallback, 素材积累整合到策划期, 移除独立section	dry_run
+2026-04-14autopilot	baseline	chinese-novelist-skill	90.0	90.5	keep	效果	新增autopilot模式+5种题材模板	dry_run
+2026-04-14	d1298fa	chinese-novelist-skill	90.5	88.2	revert_candidate	安全网+题材扩展+清单整合	introduced intake conflict, scattered footnotes	dry_run
+2026-04-14	7581f55	chinese-novelist-skill	88.2	89.0	keep	架构+冲突修复	异常处理移到末尾compact table, 合并autopilot脚注, 修复markdown标题泄漏, 提取悬念管理为独立section, intake优先级规则	dry_run
