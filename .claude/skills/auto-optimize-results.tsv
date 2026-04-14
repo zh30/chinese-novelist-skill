@@ -1,0 +1,5 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-04-14	baseline	chinese-novelist-skill	-	73.3	baseline	-	初始评估	dry_run
+2026-04-14	eb4ab3e	chinese-novelist-skill	73.3	79.3	keep	全部	darwin-skill优化round1：frontmatter触发词、阶段转换检查点、v2资源整合、悬念管理、异常处理	dry_run
+2026-04-14	594ffe8	chinese-novelist-skill	79.3	79.65	keep	工作流清晰度+架构	fix step numbering, 策划期流程导航, 压缩translation section, 脚本失败处理	dry_run
+2026-04-14	eeca14e	chinese-novelist-skill	79.65	90.0	keep	边界条件+架构	项目不存在fallback, 素材积累整合到策划期, 移除独立section	dry_run
