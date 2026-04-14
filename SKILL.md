@@ -308,7 +308,7 @@ while 大纲还有未写章节:
    - [scene-design-v2.md](references/scene-design-v2.md)（默认推荐，含场景任务检查卡和价值测试）或 [scene-design.md](references/scene-design.md)（v1基础版）
    - [style-polishing.md](references/style-polishing.md)
    - AI味改写：[ai-style-examples.md](references/ai-style-examples.md) 和 [ai-style-by-genre.md](references/ai-style-by-genre.md)（按题材专项防治）
-7. **质量检查**：运行 `python3 scripts/check_chapter_wordcount.py <章节文件路径>` 检查字数；按「质量检查红绿灯」执行三级检查（见下方）
+7. **质量检查**：运行 `python3 scripts/check_chapter_wordcount.py <章节文件路径>` 检查字数；按「质量检查红绿灯」执行三级检查（见上方）
 8. **回写状态**：更新章节摘要、人物状态、伏笔状态与章节进度到 `99-进度仪表盘.md`
 9. **自动驾驶模式专用**：回写完成后立即开始下一章，不停顿等待反馈
 
