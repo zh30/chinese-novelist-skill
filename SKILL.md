@@ -1,6 +1,6 @@
 ---
 name: chinese-novelist-skill
-description: "Use when the user wants to plan, write, continue, revise, or export a Chinese novel, web novel, serialized story, chapter outline, character bible, or chapter draft in Chinese. Triggers: 帮我写小说, 写一本, 从头开始, 续写, 继续写, 下一章, 修改第X章, 重写, 导出epub, 字数检查, AI味检查, 质量检查, 检查节奏, 自动写完整本, 全部写完, 写完整本书, 自动完成, autopilot. Also use when user wants to export novel as EPUB or check chapter word count."
+description: "Chinese novel/web novel writing skill. Plan, write, revise, export EPUB, check quality. Triggers: 写小说, 写一本, 继续写, 下一章, 修改第X章, 重写, 导出epub, 字数检查, AI味检查, 质量检查, 检查节奏, 自动写完整本, autopilot. Also: EPUB export, word count check."
 ---
 
 # Chinese Novelist
@@ -156,37 +156,16 @@ while 大纲还有未写章节:
 2. 输出完稿报告
 3. 如用户要求，自动运行 EPUB 导出
 
-## 悬念管理
-
-连载期间（人工和自动驾驶均适用），每章写作前必须检查悬念状态，防止悬念过期或遗忘。
-
-**每章悬念操作流程：**
-
-1. 查看 `99-进度仪表盘.md` 中的悬念状态
-2. 标记本章要操作的悬念：
-   - 推进（给出新线索/新进展）
-   - 提及（保温，防止过期）
-   - 解决（回收悬念）
-   - 新增（本章引入新悬念，需检查活跃悬念≤6条）
-3. 写入章节钩子中
-
-**悬念过期预警规则：**
-- 🟡 即将过期：5章未提及 → 本章必须提及
-- 🔴 已过期：10章未提及 → 必须在本章推进或解决
-
-**详细参考：** [references/09-悬念生命周期管理.md](references/09-悬念生命周期管理.md)（状态定义和预警规则）
-[references/10-悬念-章节匹配矩阵.md](references/10-悬念-章节匹配矩阵.md)（章节-悬念匹配和强度检查）
+## 策划期流程
 
 进入策划期后，按以下顺序执行：
 
-1. **Intake** → 补齐关键信息（7项）
+1. **Intake** → 补齐关键信息（7项）（详见下方 [Intake](#intake) 章节）
 2. **素材积累**（如需）→ 题材涉及专业领域时，参考 [04-素材积累.md](references/04-素材积累.md) 收集资料，标记"必须准确"vs"可以虚构"
-3. **书名生成** → 生成3-5个候选书名供用户选择
-4. **创建文件** → 按 Required Files 创建大纲和仪表盘
-5. **规划确认** → 按 Planning Rules 锁定核心内容
+3. **书名生成** → 生成3-5个候选书名供用户选择（详见下方 [书名生成](#书名生成) 章节）
+4. **创建文件** → 按 [Required Files](#required-files) 创建大纲和仪表盘
+5. **规划确认** → 按 [Planning Rules](#planning-rules) 锁定核心内容
 6. **用户确认** → 阶段转换检查点通过后，进入连载期
-
----
 
 ## Intake
 
@@ -329,9 +308,30 @@ while 大纲还有未写章节:
    - [scene-design-v2.md](references/scene-design-v2.md)（默认推荐，含场景任务检查卡和价值测试）或 [scene-design.md](references/scene-design.md)（v1基础版）
    - [style-polishing.md](references/style-polishing.md)
    - AI味改写：[ai-style-examples.md](references/ai-style-examples.md) 和 [ai-style-by-genre.md](references/ai-style-by-genre.md)（按题材专项防治）
-7. **质量检查**：运行 `python3 scripts/check_chapter_wordcount.py <章节文件路径>` 检查字数；用 [quality-checklist.md](references/quality-checklist.md) 自查
+7. **质量检查**：运行 `python3 scripts/check_chapter_wordcount.py <章节文件路径>` 检查字数；按「质量检查红绿灯」执行三级检查（见下方）
 8. **回写状态**：更新章节摘要、人物状态、伏笔状态与章节进度到 `99-进度仪表盘.md`
 9. **自动驾驶模式专用**：回写完成后立即开始下一章，不停顿等待反馈
+
+## 悬念管理
+
+连载期间（人工和自动驾驶均适用），每章写作前必须检查悬念状态，防止悬念过期或遗忘。
+
+**每章悬念操作流程：**
+
+1. 查看 `99-进度仪表盘.md` 中的悬念状态
+2. 标记本章要操作的悬念：
+   - 推进（给出新线索/新进展）
+   - 提及（保温，防止过期）
+   - 解决（回收悬念）
+   - 新增（本章引入新悬念，需检查活跃悬念≤6条）
+3. 写入章节钩子中
+
+**悬念过期预警规则：**
+- 🟡 即将过期：5章未提及 → 本章必须提及
+- 🔴 已过期：10章未提及 → 必须在本章推进或解决
+
+**详细参考：** [references/09-悬念生命周期管理.md](references/09-悬念生命周期管理.md)（状态定义和预警规则）
+[references/10-悬念-章节匹配矩阵.md](references/10-悬念-章节匹配矩阵.md)（章节-悬念匹配和强度检查）
 
 ## 修改工作流
 
@@ -439,18 +439,16 @@ python3 scripts/check_rhythm.py <小说目录路径>
 
 ## 质量检查清单（详细版）
 
-> 红绿灯是日常快速检查。需要深入诊断时，展开以下6项量化指标。
+> 红绿灯是日常快速检查（4项）。需要深入诊断时，展开以下6项量化指标。完整检查项列表见 [quality-checklist.md](references/quality-checklist.md)。
 
-**1. 变化原则** — 至少1个主角"选择"事件 + 至少1个"状态变化"
-**2. 悬念原则** — 章节内悬念提及≥1 + 新增悬念≥1
-**3. 钩子原则** — 结尾含悬念触发词 + 结尾句不完整
-**4. 展示原则** — 对话标签<30%对话段落 + 含动作描写对话≥50%
-**5. 文风原则** — 连续相同句式≤3句 + 单段"很X"形容词≤2个 + 句长标准差>5
-**6. 场景原则** — 有明确任务的场景≥3 + 场景间有信息差或状态变化
-
-**量化指标是辅助验证，不是强制要求。字数达标但指标不合格，说明内容可能有水分。**
-
-**完整检查单（含每项检查项列表）：** [references/quality-checklist.md](references/quality-checklist.md)
+| 原则 | 量化指标 |
+|------|---------|
+| 变化原则 | ≥1个主角"选择"事件 + ≥1个"状态变化" |
+| 悬念原则 | 章节内悬念提及≥1 + 新增悬念≥1 |
+| 钩子原则 | 结尾含悬念触发词 + 结尾句不完整 |
+| 展示原则 | 对话标签<30%对话段落 + 含动作描写对话≥50% |
+| 文风原则 | 连续相同句式≤3句 + 单段"很X"形容词≤2个 + 句长标准差>5 |
+| 场景原则 | 有明确任务的场景≥3 + 场景间有信息差或状态变化 |
 
 ## Completion
 
