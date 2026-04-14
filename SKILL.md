@@ -1,6 +1,6 @@
 ---
 name: chinese-novelist-skill
-description: Use when the user wants to plan, write, continue, revise, or export a Chinese novel, web novel, serialized story, chapter outline, character bible, or chapter draft in Chinese. Also use when user wants to export novel as EPUB or check chapter word count.
+description: "Use when the user wants to plan, write, continue, revise, or export a Chinese novel, web novel, serialized story, chapter outline, character bible, or chapter draft in Chinese. Triggers: 帮我写小说, 写一本, 从头开始, 续写, 继续写, 下一章, 修改第X章, 重写, 导出epub, 字数检查, AI味检查, 质量检查, 检查节奏. Also use when user wants to export novel as EPUB or check chapter word count."
 ---
 
 # Chinese Novelist
@@ -37,6 +37,14 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 为中文长篇小说和网文创作提供一套可持续执行的工作流：先稳住设定与大纲，再按章节推进，持续维护人物状态、悬念台账和文风质量，避免写到后面失控、注水或前后打架。
 
+## 异常处理
+
+- **用户指令矛盾**（如"写轻松点"又说"要高潮"）：优先执行具体指令，暂停确认模糊意图
+- **进度仪表盘缺失**：自动重建，从已有章节文件中提取状态信息补全
+- **章节文件损坏/缺失**：回退到上一章状态，提醒用户检查，不自行假设内容
+- **字数不达标时**：标注具体差距（如"当前2400字，差600字"），给出扩写建议而非直接补注水内容
+- **用户长期中断后返回**：先读取进度仪表盘和最近2章摘要，简报当前状态后确认方向
+
 ## When to Use
 
 - 用户要从零开始写中文小说、网文、长篇故事、连载故事
@@ -63,6 +71,23 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - "继续写" / "下一章" → **连载期**（自动读取进度）
 - "写完了" / "准备发布" → **收尾期**（完稿检查）
 
+### ⚠️ 阶段转换检查点
+
+**策划期 → 连载期（必须确认）：**
+- [ ] 极简大纲已完成，logline清晰
+- [ ] 主角身份和核心冲突明确
+- [ ] 用户已确认书名
+- [ ] 首章任务卡已设计
+
+**→ 向用户确认："大纲和首章任务已就绪，是否开始写第1章？"**
+
+**连载期 → 收尾期（必须确认）：**
+- [ ] 大纲规定的所有章节已写完
+- [ ] 所有活跃悬念有明确的回收或延后说明
+- [ ] 用户明确表示"写完了"或"准备收尾"
+
+**→ 向用户确认："全部章节已完成，是否进入完稿检查？"**
+
 ### 写作速度开关
 
 在连载期内，支持两种速度：
@@ -73,6 +98,27 @@ description: Use when the user wants to plan, write, continue, revise, or export
 | **标准模式** | 默认 / 不明确时 | 完整流程 | 红绿灯检查 |
 
 快速模式原则：**写出来比写对更重要**。写完再改，不打断创作流。
+
+## 悬念管理
+
+连载期间，每章写作前必须检查悬念状态，防止悬念过期或遗忘。
+
+**每章悬念操作流程：**
+
+1. 查看 `99-进度仪表盘.md` 中的悬念状态
+2. 标记本章要操作的悬念：
+   - 推进（给出新线索/新进展）
+   - 提及（保温，防止过期）
+   - 解决（回收悬念）
+   - 新增（本章引入新悬念，需检查活跃悬念≤6条）
+3. 写入章节钩子中
+
+**悬念过期预警规则：**
+- 🟡 即将过期：5章未提及 → 本章必须提及
+- 🔴 已过期：10章未提及 → 必须在本章推进或解决
+
+**详细参考：** [references/09-悬念生命周期管理.md](references/09-悬念生命周期管理.md)（状态定义和预警规则）
+[references/10-悬念-章节匹配矩阵.md](references/10-悬念-章节匹配矩阵.md)（章节-悬念匹配和强度检查）
 
 ## 素材积累
 
@@ -180,7 +226,7 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - `99-进度仪表盘.md` → 使用 [progress-dashboard-template.md](references/progress-dashboard-template.md)（自动生成，AI维护）
 
 **可选深化文件（按需选用）：**
-- `01-人物档案.md` → 使用 [character-template.md](references/character-template.md)（角色复杂时补充）
+- `01-人物档案.md` → 使用 [character-template-v2.md](references/character-template-v2.md)（默认推荐，欲望-恐惧双引擎驱动写作）或 [character-template.md](references/character-template.md)（v1简单静态版）
 - `02-世界观与伏笔.md` → 使用 [story-bible-template.md](references/story-bible-template.md)（世界观复杂时补充）
 
 **章节文件：**
@@ -188,6 +234,8 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 **专用文件（按需）：**
 - `03-多线管理.md` → 使用 [references/03-多线管理.md](references/03-多线管理.md)（仅多线叙事小说）
+- `03-悬念追踪表.md` → 使用 [references/09-悬念生命周期管理.md](references/09-悬念生命周期管理.md)（悬念超过3条时必须启用）
+- `03-悬念-章节匹配.md` → 使用 [references/10-悬念-章节匹配矩阵.md](references/10-悬念-章节匹配矩阵.md)（长篇连载时启用）
 
 ## Planning Rules
 
@@ -200,6 +248,8 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - 采用的结构模板（参见 [plot-structures.md](references/plot-structures.md)）
 - 逐章功能分配
 - 未回收悬念、伏笔、时间线、关系状态
+
+**人物档案（推荐v2）：** 使用 [character-template-v2.md](references/character-template-v2.md)，核心包括欲望-恐惧双引擎（驱动写作决策）、声音指纹（保持对白一致性）、缺陷-失败映射（让人物真实可信）
 
 除非用户明确要求跳过规划，否则不要直接写完全书。即使用户要求”直接开写”，也先产出一页精简总纲再动笔。
 
@@ -214,9 +264,11 @@ description: Use when the user wants to plan, write, continue, revise, or export
 - [ ] **人物一致**：主要人物行为符合设定
 
 ### 黄灯项（建议优化）
-- [ ] AI味程度（运行 `check_ai_style.py` 自动检测）
+- [ ] AI味程度（运行 `python3 scripts/check_ai_style.py <章节文件路径>` 自动检测）
 - [ ] 对白自然度
 - [ ] 展示vs讲述比例
+
+**AI味检测详情：** 检测9种症状（空泛形容词、四字成语、情绪标签句、解释连接词、过度书面化对白、视角混乱、信息倾倒、时间转折词、句式均匀），详见 [references/ai-style-examples.md](references/ai-style-examples.md)（改写范例）和 [references/ai-style-by-genre.md](references/ai-style-by-genre.md)（按题材专项防治）
 
 ### 绿灯项（完稿时统一检查）
 - [ ] 伏笔回收状态
@@ -231,7 +283,8 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 每写一章都按这个循环执行：
 
-1. 读取 `00-大纲.md`、最近章节摘要、`02-世界观与伏笔.md`
+1. **读取上下文**：先读 `99-进度仪表盘.md` 获取当前状态，再读 `00-大纲.md`、最近章节摘要、`02-世界观与伏笔.md`
+2. **检查悬念**：查阅进度仪表盘中的悬念状态，如有🔴过期悬念，本章必须提及；如有🟡即将过期悬念，本章建议推进
 2. 明确 `本章目标 / 阻碍 / 转折 / 结尾钩子`
 3. 先拆 3-6 个场景，再落正文
 4. 开头前 20% 必须尽快进入冲突，参考 [chapter-guide.md](references/chapter-guide.md)
@@ -240,9 +293,10 @@ description: Use when the user wants to plan, write, continue, revise, or export
    - [dialogue-writing.md](references/dialogue-writing.md)
    - [content-expansion.md](references/content-expansion.md)
    - [consistency.md](references/consistency.md)
-   - [hook-techniques.md](references/hook-techniques.md)
-   - [scene-design.md](references/scene-design.md)
+   - [hook-techniques.md](references/hook-techniques.md) 或按章节位置选用 [13-钩子映射表.md](references/13-钩子映射表.md)
+   - [scene-design-v2.md](references/scene-design-v2.md)（默认推荐，含场景任务检查卡和价值测试）或 [scene-design.md](references/scene-design.md)（v1基础版）
    - [style-polishing.md](references/style-polishing.md)
+   - AI味改写：[ai-style-examples.md](references/ai-style-examples.md) 和 [ai-style-by-genre.md](references/ai-style-by-genre.md)（按题材专项防治）
 6. 长章节交付前，运行：
    - `python3 scripts/check_chapter_wordcount.py <章节文件路径>`
 7. 交付前用 [quality-checklist.md](references/quality-checklist.md) 自查
@@ -295,17 +349,21 @@ description: Use when the user wants to plan, write, continue, revise, or export
 
 根据诊断结果，按问题类型选择参考文档：
 
-- 钩子太弱 → 参考 [hook-techniques.md](references/hook-techniques.md)
-- 节奏太慢 → 参考 [chapter-guide.md](references/chapter-guide.md) 的节奏部分
-- 对白太水 → 参考 [dialogue-writing.md](references/dialogue-writing.md)
-- 场景空洞 → 参考 [scene-design.md](references/scene-design.md) 和 [content-expansion.md](references/content-expansion.md)
+- 钩子太弱 → 参考 [hook-techniques.md](references/hook-techniques.md) 或按章节位置选用 [13-钩子映射表.md](references/13-钩子映射表.md)
+- 节奏太慢 → 参考 [chapter-guide.md](references/chapter-guide.md) 的节奏部分，长篇参考 [11-叙事节奏框架.md](references/11-叙事节奏框架.md)
+- 对白太水 → 参考 [dialogue-writing.md](references/dialogue-writing.md)，对人物声音一致性参考 [character-template-v2.md](references/character-template-v2.md) 的声音指纹部分
+- 场景空洞 → 参考 [scene-design-v2.md](references/scene-design-v2.md)（含场景任务检查卡和价值测试）和 [content-expansion.md](references/content-expansion.md)
+- AI味重 → 参考 [ai-style-examples.md](references/ai-style-examples.md) 和 [ai-style-by-genre.md](references/ai-style-by-genre.md)
 - 整体重写 → 从 [chapter-template.md](references/chapter-template.md) 的场景拆分开始
 
 ### 第四步：验证
 
 - 重读修改后的段落，确认问题已解决
 - 运行字数检查：`python3 scripts/check_chapter_wordcount.py <章节文件路径>`
+- 运行 AI味检测：`python3 scripts/check_ai_style.py <章节文件路径>`
 - 确认字数没有严重缩水（轻度修改不应影响总字数）
+- **红灯项复核**：修改后仍须通过所有红灯项（变化原则、字数、钩子、人物一致）
+- **向用户确认**："修改完成，主要改动：[列出改动]。确认满意？"
 
 ## 节奏检查
 
@@ -348,9 +406,9 @@ python3 scripts/check_rhythm.py <小说目录路径>
   - 写作版：`第01章-标题.md`（含任务卡、场景拆分、复盘）
   - 清洁版：`第01章-标题-正文.md`（仅正文）
 
-## 质量检查清单
+## 质量检查清单（详细版）
 
-每章交付前，按以下清单自检。每项都有具体检查项和量化指标。
+> 以下清单是「质量检查红绿灯」的详细展开版本，含量化指标。每章交付前用红绿灯快速检查，需要深入诊断时用本清单。
 
 ### 1. 变化原则
 **原规则：** 本章发生了不能删除的变化
@@ -526,7 +584,9 @@ python3 scripts/check_rhythm.py <小说目录路径>
 - 紧张度低于设计 → 需要加强
 - 紧张度高于设计 → 可能太快，需要喘息
 
-**详细模板：** [references/07-叙事节奏曲线.md](references/07-叙事节奏曲线.md)
+**详细模板：** [references/07-叙事节奏曲线.md](references/07-叙事节奏曲线.md)（基础版）或 [references/11-叙事节奏框架.md](references/11-叙事节奏框架.md)（推荐，含三层体系和5种题材模板）
+
+**喘息章设计：** 如果连续3章以上高强度，参考 [references/12-喘息机制.md](references/12-喘息机制.md) 设计喘息章（20%余波+60%收获/关系+20%新威胁）
 
 ## 人机协作
 
@@ -575,7 +635,9 @@ python3 scripts/check_rhythm.py <小说目录路径>
 "..."（引用上段结尾，让 AI 接上）
 ```
 
-**详细模板：** [references/08-人机协作.md](references/08-人机协作.md)
+**快速续写模式（默认）：** 用户只需说"继续写"，AI 自动从 `99-进度仪表盘.md` 提取上下文，无需手动填写交接格式。
+
+**详细模板：** [references/08-人机协作-v2.md](references/08-人机协作-v2.md)（推荐，含快速续写和信息提取协议）或 [references/08-人机协作.md](references/08-人机协作.md)（v1基础版）
 
 ## Translation
 
