@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-小说体检脚本
-检查小说的健康状态，生成体检报告
+小说健康检查脚本（整合版）
+整合原有 check_novel_health.py 和 check_rhythm.py 的功能。
+检查字数健康、节奏健康、场景多样性和连续性，生成体检报告。
 """
 
 import re
@@ -10,75 +11,48 @@ import sys
 from pathlib import Path
 from collections import defaultdict
 
-# 修复 Windows 控制台编码问题
-if sys.platform == 'win32':
-    import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+# Ensure scripts/ directory is in path for utils import
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from utils import extract_text_from_chapter, count_chinese_words, find_chapter_files, setup_windows_encoding
+
+setup_windows_encoding()
 
 
-def extract_chapter_content(file_path: Path) -> str:
-    """从章节文件中提取正文内容"""
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+# 场景类型检测关键词（统一版本，移除重复定义）
+SCENE_KEYWORDS = {
+    '室内对话': ['房间', '室内', '屋里', '屋内', '客厅', '卧室', '办公室', '教室'],
+    '户外场景': ['外面', '户外', '街道', '路上', '天空', '花园', '广场', '野外', '山上', '河边'],
+    '动作场景': ['跑', '跳', '战斗', '打架', '追逐', '冲', '飞', '砍', '射'],
+    '回忆闪回': ['想起', '记得', '回忆', '那时候', '从前', '曾经', '往事'],
+    '情感沉淀': ['沉默', '久久', '凝视', '望着', '独自', '一个人'],
+}
 
-    lines = content.split('\n')
-    body_start = None
-    body_end = None
-
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if stripped == '## 正文':
-            body_start = i + 1
-            continue
-        if body_start is not None and stripped.startswith('## '):
-            body_end = i
-            break
-
-    if body_start is not None:
-        return '\n'.join(lines[body_start:body_end]).strip()
-
-    content_start = 0
-    for i, line in enumerate(lines):
-        if line.startswith('#') and '章' in line:
-            content_start = i + 1
-            break
-
-    return '\n'.join(lines[content_start:]).strip()
-
-
-def count_chinese_words(text: str) -> int:
-    """统计中文字数"""
-    text = re.sub(r'#{1,6}\s*', '', text)
-    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
-    text = re.sub(r'\*(.*?)\*', r'\1', text)
-    chinese_chars = re.findall(r'[\u4e00-\u9fff]', text)
-    return len(chinese_chars)
+# 对白密度阈值
+DIALOGUE_MARKER = re.compile(r'["「『]')
 
 
 def detect_scene_type(text: str) -> str:
-    """简单检测场景类型"""
-    indoor_keywords = ['房间', '室内', '屋里', '客厅', '卧室', '办公室']
-    outdoor_keywords = ['外面', '户外', '街道', '天空', '花园', '野外']
-    action_keywords = ['跑', '跳', '战斗', '打架', '追逐']
+    """检测场景类型（升级版：6 种类型）"""
+    scores = {}
+    for scene_type, keywords in SCENE_KEYWORDS.items():
+        scores[scene_type] = sum(1 for kw in keywords if kw in text)
 
-    indoor_count = sum(1 for kw in indoor_keywords if kw in text)
-    outdoor_count = sum(1 for kw in outdoor_keywords if kw in text)
-    action_count = sum(1 for kw in action_keywords if kw in text)
+    # 对白密度判定：对白占比高的归为对话场景
+    dialogue_count = len(DIALOGUE_MARKER.findall(text))
+    chinese_count = count_chinese_words(text)
+    if chinese_count > 0 and dialogue_count / (chinese_count / 100) > 2:
+        scores['室内对话'] = scores.get('室内对话', 0) + 3
 
-    if indoor_count > outdoor_count and indoor_count >= 2:
-        return '室内'
-    elif outdoor_count > indoor_count and outdoor_count >= 2:
-        return '户外'
-    elif action_count >= 2:
-        return '动作'
-    elif indoor_count >= 1:
-        return '室内'
-    return '其他'
+    best_type = max(scores, key=scores.get) if any(scores.values()) else '其他'
+    if scores[best_type] < 1:
+        return '其他'
+    return best_type
 
 
 def check_novel(novel_dir: Path) -> dict:
     """检查小说健康状态"""
-    chapter_files = sorted(novel_dir.glob('第*.md'))
+    chapter_files = find_chapter_files(novel_dir)
 
     if not chapter_files:
         return {'error': '未找到章节文件'}
@@ -88,19 +62,23 @@ def check_novel(novel_dir: Path) -> dict:
     scene_types = []
 
     for chapter_file in chapter_files:
-        content = extract_chapter_content(chapter_file)
+        content = extract_text_from_chapter(chapter_file)
         word_count = count_chinese_words(content)
         scene_type = detect_scene_type(content)
 
         match = re.match(r'第(\d+)章', chapter_file.name)
         chapter_num = int(match.group(1)) if match else 0
 
-        chapters.append({'number': chapter_num, 'word_count': word_count, 'scene_type': scene_type})
+        chapters.append({'number': chapter_num, 'word_count': word_count, 'scene_type': scene_type, 'file': chapter_file})
         word_counts.append(word_count)
         scene_types.append(scene_type)
 
-    # 计算字数统计
+    # 字数统计
     avg_words = sum(word_counts) / len(word_counts) if word_counts else 0
+    max_words = max(word_counts) if word_counts else 0
+    min_words = min(word_counts) if word_counts else 0
+    max_chapter = chapters[word_counts.index(max_words)]['number'] if word_counts else 0
+    min_chapter = chapters[word_counts.index(min_words)]['number'] if word_counts else 0
     variance = sum((w - avg_words) ** 2 for w in word_counts) / len(word_counts) if word_counts else 0
     std_dev = variance ** 0.5
 
@@ -109,7 +87,7 @@ def check_novel(novel_dir: Path) -> dict:
     for st in scene_types:
         scene_counts[st] += 1
 
-    # 检测场景重复
+    # 场景重复警告
     scene_warnings = []
     consecutive_count = 1
     consecutive_type = scene_types[0] if scene_types else None
@@ -124,7 +102,7 @@ def check_novel(novel_dir: Path) -> dict:
     if consecutive_count >= 3:
         scene_warnings.append(f"'{consecutive_type}'连续{consecutive_count}章")
 
-    # 字数健康评分 (5分制)
+    # 字数健康评分 (5 分制)
     if std_dev < 500:
         word_score = 5
     elif std_dev < 800:
@@ -138,14 +116,16 @@ def check_novel(novel_dir: Path) -> dict:
 
     # 节奏健康评分（场景多样性）
     unique_scenes = len(set(scene_types))
-    if unique_scenes >= 4:
+    if unique_scenes >= 5:
         rhythm_score = 5
-    elif unique_scenes >= 3:
+    elif unique_scenes >= 4:
         rhythm_score = 4
-    elif unique_scenes >= 2:
+    elif unique_scenes >= 3:
         rhythm_score = 3
-    else:
+    elif unique_scenes >= 2:
         rhythm_score = 2
+    else:
+        rhythm_score = 1
     if scene_warnings:
         rhythm_score = max(1, rhythm_score - 1)
 
@@ -155,6 +135,10 @@ def check_novel(novel_dir: Path) -> dict:
         'total_words': sum(word_counts),
         'avg_words': avg_words,
         'std_dev': std_dev,
+        'max_words': max_words,
+        'max_chapter': max_chapter,
+        'min_words': min_words,
+        'min_chapter': min_chapter,
         'word_score': word_score,
         'scene_counts': dict(scene_counts),
         'scene_warnings': scene_warnings,
@@ -180,21 +164,27 @@ def print_report(novel_dir: Path, results: dict):
     print('【字数统计】')
     print(f'  平均：{results["avg_words"]:.0f}字/章')
     print(f'  标准差：{results["std_dev"]:.0f}')
+    print(f'  最高：第{results["max_chapter"]}章（{results["max_words"]:,}字）')
+    print(f'  最低：第{results["min_chapter"]}章（{results["min_words"]:,}字）')
     print()
 
     print('【场景分布】')
-    for scene, count in results['scene_counts'].items():
+    for scene, count in sorted(results['scene_counts'].items(), key=lambda x: -x[1]):
         pct = count / results['total_chapters'] * 100
         print(f'  {scene}：{count}章（{pct:.0f}%）')
     print()
 
     if results.get('scene_warnings'):
-        print('【警告】')
+        print('【警告】场景重复')
         for warning in results['scene_warnings']:
             print(f'  ⚠️ {warning}')
         print()
 
-    # 计算综合评分（简化版）
+    print('【章节概览】')
+    for ch in results['chapters']:
+        print(f"  第{ch['number']:2d}章：{ch['word_count']:5,}字 | {ch['scene_type']}")
+    print()
+
     overall = (results['word_score'] * 0.5 + results['rhythm_score'] * 0.5)
     print(f'【综合评分】{overall:.1f}/5 {"✅" if overall >= 3.5 else "⚠️"}')
     print('=' * 60)
@@ -203,18 +193,18 @@ def print_report(novel_dir: Path, results: dict):
 def main():
     """主函数"""
     if len(sys.argv) < 2:
-        print('用法: python scripts/check_novel_health.py <小说目录路径>')
-        print('示例: python scripts/check_novel_health.py novels/书名')
+        print('用法：python scripts/check_novel_health.py <小说目录路径>')
+        print('示例：python scripts/check_novel_health.py novels/书名')
         return
 
     novel_dir = Path(sys.argv[1])
     if not novel_dir.exists():
-        print(f'错误: 目录不存在 - {novel_dir}')
+        print(f'错误：目录不存在 - {novel_dir}')
         return
 
     results = check_novel(novel_dir)
     if 'error' in results:
-        print(f'错误: {results["error"]}')
+        print(f'错误：{results["error"]}')
         return
 
     print_report(novel_dir, results)

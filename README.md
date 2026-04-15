@@ -10,24 +10,24 @@
 
 它不是"AI 帮我写小说"的魔法咒语，而是：
 - 📋 **防崩盘的结构**：让长篇不乱、不水、前后一致
-- 🔍 **AI味检测器**：自动识别"空洞情绪句""解释腔""四字堆砌"
+- 🔍 **AI 味检测器**：自动识别"空洞情绪句""解释腔""四字堆砌"
 - 🎯 **悬念导航系统**：追踪每一条悬念的"新鲜度"，防止写到后面忘了前面
 - ⚡ **傻瓜化工作流**：从"一句话创意"到"出版级小说"的可执行路径
 
 ---
 
-## 🚀 快速开始（5分钟上手）
+## 🚀 快速开始（5 分钟上手）
 
 ### 第一步：创建小说
 
 ```text
-使用 chinese-novelist-skill，帮我写一本悬疑小说，20章。
+使用 chinese-novelist-skill，帮我写一本悬疑小说，20 章。
 ```
 
 AI 会自动：
-1. 引导你填写「极简大纲」（10个问题，5分钟完成）
+1. 引导你填写「极简大纲」（10 个问题，5 分钟完成）
 2. 生成「进度仪表盘」（自动追踪进度）
-3. 开始写「第1章」
+3. 开始写「第 1 章」
 
 ### 第二步：继续写作
 
@@ -72,11 +72,11 @@ novels/
 
 | 文件 | 用途 | 谁维护 |
 |------|------|--------|
-| `00-大纲.md` | 极简大纲：10个核心问题 | 用户填写 |
-| `99-进度仪表盘.md` | 当前位置、悬念状态、质量概况 | **AI自动** |
-| `01-人物档案-v2.md` | 欲望-恐惧引擎、声音指纹、缺陷-失败映射 | 用户填写 |
-| `03-悬念追踪表.md` | 悬念ID、状态、过期预警 | AI自动 |
-| `第XX章-标题.md` | 章节正文+任务卡+复盘 | 用户+AI |
+| `00-大纲.md` | 极简大纲：10 个核心问题 | 用户填写 |
+| `99-进度仪表盘.md` | 当前位置、悬念状态、质量概况 | **AI 自动** |
+| `01-人物档案-v2.md` | 欲望 - 恐惧引擎、声音指纹、缺陷 - 失败映射 | 用户填写 |
+| `03-悬念追踪表.md` | 悬念 ID、状态、过期预警 | AI 自动 |
+| `第XX章-标题.md` | 章节正文 + 任务卡 + 复盘 | 用户+AI |
 
 ---
 
@@ -106,25 +106,25 @@ novels/
 
 | 模式 | 触发词 | 特点 | 质量检查 |
 |------|--------|------|---------|
-| **快速模式** | "快写""初稿" | 跳过场景拆分，直接输出 | 仅字数+基础钩子 |
-| **标准模式** | 默认 | 完整流程 | 红绿灯检查（3-5项） |
+| **快速模式** | "快写""初稿" | 跳过场景拆分，直接输出 | 仅字数 + 基础钩子 |
+| **标准模式** | 默认 | 完整流程 | 红绿灯检查（3-5 项） |
 
 ---
 
 ### 2. 红绿灯质量检查
 
-每章只需检查3-5项核心指标，不再被50+清单压垮：
+每章只需检查 3-5 项核心指标，不再被 50+ 清单压垮：
 
 **🟥 红灯项（必须过关）**
 - [ ] **变化原则**：本章发生了不能删除的变化
-- [ ] **字数达标**：≥3000字（快速模式≥2500）
+- [ ] **字数达标**：≥3000 字（快速模式≥2500）
 - [ ] **钩子存在**：结尾有明确的悬念/问题/张力
 - [ ] **人物一致**：主要人物行为符合设定
 
 **🟨 黄灯项（建议优化，自动检测）**
-- [ ] AI味程度（运行脚本自动检测）
+- [ ] AI 味程度（运行脚本自动检测）
 - [ ] 对白自然度
-- [ ] 展示vs讲述比例
+- [ ] 展示 vs 讲述比例
 
 **🟩 绿灯项（完稿时统一检查）**
 - [ ] 伏笔回收状态
@@ -133,9 +133,9 @@ novels/
 
 ---
 
-### 3. AI味检测脚本
+### 3. AI 味检测脚本
 
-自动识别9种常见AI写作痕迹：
+自动识别 9 种常见 AI 写作痕迹：
 
 ```bash
 python scripts/check_ai_style.py novels/我的小说/第01章.md
@@ -180,8 +180,8 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 **悬念状态**：
 - 🟢 **活跃**：最近提及，读者记得
-- 🟡 **即将过期**：5章未提及，需保温
-- 🔴 **已过期**：10章未提及，必须处理
+- 🟡 **即将过期**：5 章未提及，需保温
+- 🔴 **已过期**：10 章未提及，必须处理
 - ✅ **已回收**：悬念已解答
 
 **自动预警**：
@@ -196,7 +196,7 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 ```
 
 **每章必须规划**：
-| 悬念ID | 操作 | 说明 |
+| 悬念 ID | 操作 | 说明 |
 |--------|------|------|
 | 001 | 推进 | 给出新线索 |
 | 002 | 提及 | 简单提到，防止过期 |
@@ -208,7 +208,7 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 从"只能事后检查"到"事前可规划"：
 
-**宏观层（全本）**：四幕结构 + 15个关键节点
+**宏观层（全本）**：四幕结构 + 15 个关键节点
 ```
 第一幕(25%): 建立冲突 → 第二幕(50%): 升级对抗 → 
 第三幕(20%): 最终对决 → 第四幕(5%): 收尾
@@ -219,12 +219,12 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 每3章一个节奏单元: [铺垫] → [升级] → [小高潮+钩子]
 ```
 
-**微观层（单章）**：3次情绪起伏
+**微观层（单章）**：3 次情绪起伏
 ```
 20%位置: 进入冲突 → 50%位置: 矛盾激化 → 80%位置: 钩子落下
 ```
 
-**5种题材特定模板**：
+**5 种题材特定模板**：
 - 悬疑：疑问→调查→线索→反转
 - 玄幻升级：挑战→修炼→突破→震惊
 - 言情：误会→甜蜜→阻碍→和解
@@ -233,36 +233,36 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ---
 
-### 6. 人物档案v2（驱动式引擎）
+### 6. 人物档案 v2（驱动式引擎）
 
 人物档案不再是"填空表格"，而是**驱动写作决策的引擎**：
 
 **核心引擎**：
 ```markdown
-## 欲望-恐惧双引擎
-- 自觉欲望（主角认为Ta想要的）：___
+## 欲望 - 恐惧双引擎
+- 自觉欲望（主角认为 Ta 想要的）：___
 - 不自觉欲望（主角真正需要的）：___
 - 核心恐惧（如果欲望不能实现）：___
 - 道德前提（将被挑战的信念）：___
 
 ## 声音指纹
-- 标志性对白（3-5句锚点）：
+- 标志性对白（3-5 句锚点）：
   1. "..."
   2. "..."
   3. "..."
 - 禁止用语（绝对不会说的话）：___
 - 情绪状态下的声音变化：___
 
-## 缺陷-失败映射
+## 缺陷 - 失败映射
 - 固有缺陷：___
 - 可能造成的失败场景：
-  1. 第X章：因___导致___
-  2. 第Y章：因___导致___
+  1. 第 X 章：因___导致___
+  2. 第 Y 章：因___导致___
 ```
 
 **写作时自动约束**：
 - 每句对白生成后，对照「声音锚点」检查
-- 每个决策后，验证是否符合「核心价值观+恐惧」
+- 每个决策后，验证是否符合「核心价值观 + 恐惧」
 - 场景结束时，确保至少一条关系线变化
 
 ---
@@ -274,30 +274,34 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 - [OPTIMIZATION_PLAN.md](OPTIMIZATION_PLAN.md) - 优化计划（三轮迭代记录）
 
 ### 模板文件
-- [outline-template-v1-minimal.md](references/outline-template-v1-minimal.md) - 极简大纲（10字段）
+- [outline-template-v1-minimal.md](references/outline-template-v1-minimal.md) - 极简大纲（10 字段）
 - [progress-dashboard-template.md](references/progress-dashboard-template.md) - 进度仪表盘
-- [character-template-v2.md](references/character-template-v2.md) - 人物档案v2（驱动式）
+- [character-template-v2.md](references/character-template-v2.md) - 人物档案 v2（驱动式）
 - [chapter-template.md](references/chapter-template.md) - 章节任务卡
 
 ### 工具脚本
 - [check_chapter_wordcount.py](scripts/check_chapter_wordcount.py) - 字数检查
-- [check_ai_style.py](scripts/check_ai_style.py) - **AI味检测（新增）**
-- [generate_epub.py](scripts/generate_epub.py) - EPUB导出
+- [check_ai_style.py](scripts/check_ai_style.py) - **AI 味检测（9 种症状，支持--all 批量）**
+- [check_novel_health.py](scripts/check_novel_health.py) - **小说健康体检（字数 + 节奏 + 场景）**
+- [check_timeline.py](scripts/check_timeline.py) - **时间线一致性检查**
+- [character_tracker.py](scripts/character_tracker.py) - **人物一致性检查**
+- [generate_epub.py](scripts/generate_epub.py) - EPUB 导出
+- [translate_to_english.py](scripts/translate_to_english.py) - 英文翻译
 
 ### 改进文档（第二轮）
-- [09-悬念生命周期管理.md](references/09-悬念生命周期管理.md) - 悬念追踪+预警
-- [10-悬念-章节匹配矩阵.md](references/10-悬念-章节匹配矩阵.md) - 悬念-章节规划
-- [11-叙事节奏框架.md](references/11-叙事节奏框架.md) - 三层节奏+题材模板
+- [09-悬念生命周期管理.md](references/09-悬念生命周期管理.md) - 悬念追踪 + 预警
+- [10-悬念 - 章节匹配矩阵.md](references/10-悬念-章节匹配矩阵.md) - 悬念 - 章节规划
+- [11-叙事节奏框架.md](references/11-叙事节奏框架.md) - 三层节奏 + 题材模板
 - [scene-design-v2.md](references/scene-design-v2.md) - 场景设计工具升级
 
 ### 改进文档（第三轮）
-- [ai-style-examples.md](references/ai-style-examples.md) - **AI味改写范例库**
-- [ai-style-by-genre.md](references/ai-style-by-genre.md) - **按题材AI味清单**
+- [ai-style-examples.md](references/ai-style-examples.md) - **AI 味改写范例库**
+- [ai-style-by-genre.md](references/ai-style-by-genre.md) - **按题材 AI 味清单**
 - [08-人机协作-v2.md](references/08-人机协作-v2.md) - **快速协作协议**
 - [12-喘息机制.md](references/12-喘息机制.md) - **喘息章设计**
 - [13-钩子映射表.md](references/13-钩子映射表.md) - **钩子类型映射**
 
-### 参考文档（原v1）
+### 参考文档（原 v1）
 - [chapter-guide.md](references/chapter-guide.md) - 章节写作指南
 - [opening-design.md](references/opening-design.md) - 首章设计
 - [hook-techniques.md](references/hook-techniques.md) - 钩子技巧
@@ -312,22 +316,22 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ### 新手入门（推荐顺序）
 
-1. **5分钟快速开始**
+1. **5 分钟快速开始**
    ```text
    使用 chinese-novelist-skill，帮我写一本悬疑小说。
    ```
-   → 跟随AI引导填写极简大纲
+   → 跟随 AI 引导填写极简大纲
 
-2. **10分钟理解工作流**
+2. **10 分钟理解工作流**
    - 阅读 [SKILL.md](SKILL.md) 的「三阶段工作流」部分
    - 了解「红绿灯质量检查」
 
-3. **20分钟掌握质量**
+3. **20 分钟掌握质量**
    - 阅读 [ai-style-examples.md](references/ai-style-examples.md)
-   - 学会识别9种AI味症状
+   - 学会识别 9 种 AI 味症状
 
 4. **开始写作**
-   - 对AI说"继续写"
+   - 对 AI 说"继续写"
    - 每章完成后运行 `check_ai_style.py`
 
 ### 进阶使用
@@ -342,38 +346,38 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 3. **人物深化**
    - 使用 [character-template-v2.md](references/character-template-v2.md)
-   - 建立「缺陷-失败映射」
+   - 建立「缺陷 - 失败映射」
 
 ---
 
 ## 💡 常见问题
 
-### Q: 优化后的skill和v1版本有什么区别？
+### Q: 优化后的 skill 和 v1 版本有什么区别？
 
-**v1版本**：
-- 6种工作模式，容易迷路
-- 模板100+字段，填写负担重
-- 质量检查50+项，形式主义
+**v1 版本**：
+- 6 种工作模式，容易迷路
+- 模板 100+ 字段，填写负担重
+- 质量检查 50+ 项，形式主义
 - 悬念静态记录，容易遗忘
-- AI味只有负面清单，不知道怎么改
+- AI 味只有负面清单，不知道怎么改
 
 **优化后**：
-- 3阶段工作流，傻瓜化
-- 极简模板10字段，5分钟开始
-- 红绿灯检查，3-5项核心
+- 3 阶段工作流，傻瓜化
+- 极简模板 10 字段，5 分钟开始
+- 红绿灯检查，3-5 项核心
 - 悬念动态追踪，自动预警
-- AI味改写范例，9种症状都有前后对比
+- AI 味改写范例，9 种症状都有前后对比
 
 ### Q: 我可以只用部分功能吗？
 
-可以。skill采用「渐进式约束」：
-- 新手：只用极简大纲+「继续写」+AI味检测
-- 进阶：启用悬念管理+节奏设计
-- 专家：完整使用人物v2+场景工具
+可以。skill 采用「渐进式约束」：
+- 新手：只用极简大纲 +「继续写」+AI 味检测
+- 进阶：启用悬念管理 + 节奏设计
+- 专家：完整使用人物 v2+ 场景工具
 
 ### Q: 适合哪些题材？
 
-内置5种题材模板：
+内置 5 种题材模板：
 - **悬疑/推理**：[09-悬念生命周期管理.md](references/09-悬念生命周期管理.md) 有专门章节
 - **玄幻升级流**：[11-叙事节奏框架.md](references/11-叙事节奏框架.md) 有递进型节奏
 - **言情/情感**：[ai-style-by-genre.md](references/ai-style-by-genre.md) 有专门章节
@@ -384,16 +388,16 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ### Q: 需要学习成本吗？
 
-**最小学习成本**（5分钟）：
-1. 对AI说"帮我写本小说"
+**最小学习成本**（5 分钟）：
+1. 对 AI 说"帮我写本小说"
 2. 跟随引导填写极简大纲
 3. 说"继续写"
 
-**推荐学习成本**（1小时）：
+**推荐学习成本**（1 小时）：
 - 阅读 [ai-style-examples.md](references/ai-style-examples.md)
-- 学会识别和改写AI味
+- 学会识别和改写 AI 味
 
-**完整掌握**（1天）：
+**完整掌握**（1 天）：
 - 通读 [SKILL.md](SKILL.md)
 - 理解三层工作流
 - 掌握悬念管理和节奏设计
@@ -405,7 +409,7 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 ### 方法一：完整克隆（推荐）
 
 ```bash
-git clone https://github.com/your-repo/chinese-novelist-skill.git
+git clone https://github.com/henry/chinese-novelist-skill.git
 cd chinese-novelist-skill
 ```
 
@@ -415,7 +419,7 @@ cd chinese-novelist-skill
 2. 解压到 skill 目录
 3. 让工具重新加载 skill
 
-### 支持的AI工具
+### 支持的 AI 工具
 
 | 工具 | 安装路径 | 说明 |
 |------|---------|------|
@@ -428,13 +432,13 @@ cd chinese-novelist-skill
 ## 📊 版本记录
 
 - **v1.0.0** → **v2.0.0**（三轮优化后）
-  - 工作流简化：6模式→3阶段
-  - 新增AI味检测脚本
+  - 工作流简化：6 模式→3 阶段
+  - 新增 AI 味检测脚本
   - 新增悬念生命周期管理
   - 新增三层节奏体系
-  - 新增人物档案v2（驱动式）
-  - 新增场景设计v2（可执行工具）
-  - 新增按题材AI味清单
+  - 新增人物档案 v2（驱动式）
+  - 新增场景设计 v2（可执行工具）
+  - 新增按题材 AI 味清单
   - 新增钩子映射表
 
 详见 [OPTIMIZATION_PLAN.md](OPTIMIZATION_PLAN.md)
@@ -443,7 +447,7 @@ cd chinese-novelist-skill
 
 ## 🙏 致谢
 
-本skill的设计理念参考了：
+本 skill 的设计理念参考了：
 - 《故事》（罗伯特·麦基）- 故事结构
 - 《写作这回事》（斯蒂芬·金）- 写作实践
 - 《千面英雄》（约瑟夫·坎贝尔）- 英雄之旅
@@ -457,6 +461,6 @@ MIT License - 自由使用，欢迎改进
 
 ---
 
-> **最后提醒**：好作品是改出来的。第一遍写出来，第二遍用 `check_ai_style.py` 检测，第三遍对照 `ai-style-examples.md` 改写。三遍之后，AI味去除90%。
+> **最后提醒**：好作品是改出来的。第一遍写出来，第二遍用 `check_ai_style.py` 检测，第三遍对照 `ai-style-examples.md` 改写。三遍之后，AI 味去除 90%。
 
 *Happy Writing! ✍️*

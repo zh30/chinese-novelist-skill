@@ -2,66 +2,21 @@
 # -*- coding: utf-8 -*-
 """
 章节字数检查脚本
-检查指定章节文件的字数，低于3000字时提示需要扩充
+检查指定章节文件的字数，低于 3000 字时提示需要扩充
 """
 
-import re
 import sys
 from pathlib import Path
 
-# 修复 Windows 控制台编码问题
-if sys.platform == 'win32':
-    import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+# Ensure scripts/ directory is in path for utils import
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from utils import extract_text_from_chapter, count_chinese_words, find_chapter_files, setup_windows_encoding
 
-def count_chinese_words(text: str) -> int:
-    """统计中文字数（排除标点符号和Markdown标记）"""
-    # 移除Markdown标记
-    text = re.sub(r'#{1,6}\s*', '', text)  # 标题
-    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # 粗体
-    text = re.sub(r'\*(.*?)\*', r'\1', text)  # 斜体
-    text = re.sub(r'~~(.*?)~~', r'\1', text)  # 删除线
-    text = re.sub(r'`(.*?)`', r'\1', text)  # 行内代码
-    text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)  # 链接
+setup_windows_encoding()
 
-    # 统计中文字符（汉字）
-    chinese_chars = re.findall(r'[\u4e00-\u9fff]', text)
-    return len(chinese_chars)
-
-
-def extract_content_from_chapter(file_path: Path) -> str:
-    """从章节文件中提取正文内容，优先只统计 `## 正文` 区块"""
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    lines = content.split('\n')
-
-    body_start = None
-    body_end = None
-
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if stripped == '## 正文':
-            body_start = i + 1
-            continue
-        if body_start is not None and stripped.startswith('## '):
-            body_end = i
-            break
-
-    if body_start is not None:
-        return '\n'.join(lines[body_start:body_end]).strip()
-
-    # 兼容旧模板：如果没有 `## 正文`，则退回到章节标题之后的所有内容
-    content_start = 0
-    for i, line in enumerate(lines):
-        if line.startswith('#') and '章' in line:
-            content_start = i + 1
-            break
-
-    main_content = '\n'.join(lines[content_start:])
-    return main_content
+# Backward compatibility alias for existing tests
+extract_content_from_chapter = extract_text_from_chapter
 
 
 def check_chapter(file_path: str, min_words: int = 3000) -> dict:
@@ -74,14 +29,14 @@ def check_chapter(file_path: str, min_words: int = 3000) -> dict:
             'exists': False,
             'word_count': 0,
             'status': 'error',
-            'message': f'文件不存在: {file_path}'
+            'message': f'文件不存在：{file_path}'
         }
 
-    main_content = extract_content_from_chapter(path)
+    main_content = extract_text_from_chapter(path)
     word_count = count_chinese_words(main_content)
 
     status = 'pass' if word_count >= min_words else 'fail'
-    message = f'字数: {word_count}' + (
+    message = f'字数：{word_count}' + (
         f' (✓ 达标)' if word_count >= min_words else f' (✗ 不足，需要至少 {min_words} 字)'
     )
 
@@ -94,14 +49,14 @@ def check_chapter(file_path: str, min_words: int = 3000) -> dict:
     }
 
 
-def check_all_chapters(directory: str, pattern: str = '第*.md', min_words: int = 3000) -> list:
+def check_all_chapters(directory: str, min_words: int = 3000) -> list:
     """检查目录下所有符合模式的章节文件"""
     dir_path = Path(directory)
     if not dir_path.exists():
-        print(f'错误: 目录不存在 - {directory}')
+        print(f'错误：目录不存在 - {directory}')
         return []
 
-    chapter_files = sorted(dir_path.glob(pattern))
+    chapter_files = find_chapter_files(dir_path)
     results = []
 
     for chapter_file in chapter_files:
@@ -143,16 +98,16 @@ def print_results(results: list, min_words: int = 3000):
         print(f'   {result["message"]}')
 
     print('\n' + '-' * 60)
-    print(f'总计: {len(results)} 章 | {passed} 章达标 | {failed} 章不足 | 总字数: {total_words:,}')
+    print(f'总计：{len(results)} 章 | {passed} 章达标 | {failed} 章不足 | 总字数：{total_words:,}')
     print('-' * 60)
 
     if failed > 0:
-        print(f'\n⚠️  有 {failed} 章内容不足 {min_words} 字，建议使用扩充技巧:')
+        print(f'\n⚠️  有 {failed} 章内容不足 {min_words} 字，建议使用扩充技巧：')
         print('   - 添加细节描写（环境、心理、动作）')
         print('   - 增加对话场景')
         print('   - 扩展人物内心活动')
         print('   - 补充背景故事')
-        print(f'\n   参考: references/content-expansion.md')
+        print(f'\n   参考：references/content-expansion.md')
 
 
 def main():
@@ -160,11 +115,11 @@ def main():
     min_words = 3000
 
     if len(sys.argv) < 2:
-        print('用法:')
-        print('  检查单个章节: python scripts/check_chapter_wordcount.py <章节文件路径> [最小字数]')
-        print('  检查所有章节: python scripts/check_chapter_wordcount.py --all <目录路径> [最小字数]')
+        print('用法：')
+        print('  检查单个章节：python scripts/check_chapter_wordcount.py <章节文件路径> [最小字数]')
+        print('  检查所有章节：python scripts/check_chapter_wordcount.py --all <目录路径> [最小字数]')
         print('')
-        print('示例:')
+        print('示例：')
         print('  python scripts/check_chapter_wordcount.py novels/故事/第01章.md')
         print('  python scripts/check_chapter_wordcount.py novels/故事/第01章.md 3500')
         print('  python scripts/check_chapter_wordcount.py --all novels/故事')
@@ -173,7 +128,7 @@ def main():
 
     if sys.argv[1] == '--all':
         if len(sys.argv) < 3:
-            print('错误: 使用 --all 时需要指定目录路径')
+            print('错误：使用 --all 时需要指定目录路径')
             return
         directory = sys.argv[2]
         min_words = int(sys.argv[3]) if len(sys.argv) > 3 else 3000
