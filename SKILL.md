@@ -7,9 +7,9 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 
 ## Version
 
-- **Version**: `2.2.0`
-- **Version Date**: `2026-04-15`
-- **Changes**: 新增收尾期三步流程、多线叙事写作循环、中断恢复协议、断路器恢复 3 选项；修复 check_rhythm→check_novel_health 引用、完稿模式→收尾期术语、CLAUDE.md/WORKFLOW_GUIDE/QUICK_START 更新；新增脚本测试覆盖
+- **Version**: `2.2.1`
+- **Version Date**: `2026-04-27`
+- **Changes**: Darwin 优化轮：新增执行入口速查与首轮输出契约，明确新建、续写、快写、修改、自动驾驶、收尾导出、质量检查的首轮交付；保留 v2.2.0 的收尾期、多线叙事、中断恢复、断路器恢复与脚本测试覆盖
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
 
 ## Overview
