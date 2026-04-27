@@ -1,0 +1,2 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-04-27T16:17	1240d41	chinese-novelist-skill	-	81.3	baseline	-	结构完整，实测优于baseline；主要短板是整体架构偏重、自动驾驶承诺与实际首轮输出不完全一致	full_test
