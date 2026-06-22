@@ -2,3 +2,4 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-04-27T16:17	1240d41	chinese-novelist-skill	-	81.3	baseline	-	结构完整，实测优于baseline；主要短板是整体架构偏重、自动驾驶承诺与实际首轮输出不完全一致	full_test
 2026-04-27T16:20	2b85f6e	chinese-novelist-skill	81.3	87.1	keep	整体架构	新增执行入口速查和首轮输出契约，提升首轮路由确定性	dry_run
 2026-05-12T00:04	f5925e5	chinese-novelist-skill	-	89.0	baseline	-	当前版本结构完整且测试全绿；短板集中在整体架构偏长、自动驾驶承诺边界和续写缺项目时的首轮fallback	dry_run
+2026-06-22T17:05	78ae21d	chinese-novelist-skill	89.0	91.0	keep	整体架构	新增首轮决策树，明确续写缺项目fallback、修改定位和自动驾驶落盘边界；测试prompt2/4干跑更稳定	dry_run
