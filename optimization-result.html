@@ -82,7 +82,7 @@
     stroke-width: 18;
     stroke-linecap: round;
     stroke-dasharray: 534;
-    stroke-dashoffset: 42.7;
+    stroke-dashoffset: 37.4;
     transform: rotate(-90deg);
     transform-origin: center;
     filter: drop-shadow(0 2px 8px rgba(232,89,12,0.3));
@@ -327,7 +327,7 @@
   <!-- 1. 顶部品牌条 -->
   <div class="brand-bar">
     <div class="brand-name">Darwin<span class="dot">.</span>Skill</div>
-    <div class="brand-date">2026-06-22</div>
+    <div class="brand-date">2026-06-23</div>
   </div>
 
   <!-- 2. 核心成就区 -->
@@ -345,7 +345,7 @@
       </svg>
       <div class="ring-center">
         <div>
-          <span class="ring-score">92</span><span class="ring-max">/100</span>
+          <span class="ring-score">93</span><span class="ring-max">/100</span>
         </div>
         <div class="ring-label">FINAL SCORE</div>
       </div>
@@ -354,13 +354,13 @@
     <div class="hero-text">
       <div class="hero-title">
         <span class="hero-skill-name">chinese-novelist-skill</span><br>
-        首轮与自动驾驶收敛
+        三个高频入口收敛
       </div>
       <div class="hero-journey">
-        从 <strong>89.0</strong> 提升至 <strong>92.0</strong>，把首轮交付和自动驾驶事务边界写得更硬
+        从 <strong>89.0</strong> 提升至 <strong>93.0</strong>，把续写、自动驾驶和章节修改的交付边界写得更硬
       </div>
       <div class="delta-badge">
-        <span>+3.0</span>
+        <span>+4.0</span>
         <span class="delta-badge-label">总分提升</span>
       </div>
     </div>
@@ -370,6 +370,20 @@
   <div class="breakthrough-section">
     <div class="breakthrough-card primary">
       <div class="breakthrough-label">最大突破</div>
+      <div class="breakthrough-dim">指令具体性</div>
+      <div class="breakthrough-score-row">
+        <span class="breakthrough-from">13.0</span>
+        <span class="breakthrough-arrow">→</span>
+        <span class="breakthrough-to">14.0</span>
+        <span class="breakthrough-pct">(+8%)</span>
+      </div>
+      <div class="breakthrough-desc">
+        新增修改交付格式和最小改动原则，让“修改第 X 章”先定位、诊断、局部修订、再验证
+      </div>
+    </div>
+
+    <div class="breakthrough-card secondary">
+      <div class="breakthrough-label">次要突破</div>
       <div class="breakthrough-dim">边界条件覆盖</div>
       <div class="breakthrough-score-row">
         <span class="breakthrough-from">8.0</span>
@@ -379,20 +393,6 @@
       </div>
       <div class="breakthrough-desc">
         自动驾驶改为按章节事务推进，补充上下文、时间、写入失败和熔断时的暂停恢复规则
-      </div>
-    </div>
-
-    <div class="breakthrough-card secondary">
-      <div class="breakthrough-label">次要突破</div>
-      <div class="breakthrough-dim">整体架构</div>
-      <div class="breakthrough-score-row">
-        <span class="breakthrough-from">13.0</span>
-        <span class="breakthrough-arrow">→</span>
-        <span class="breakthrough-to">13.5</span>
-        <span class="breakthrough-pct">(+4%)</span>
-      </div>
-      <div class="breakthrough-desc">
-        新增首轮决策树，将新建、续写、快写、修改、自动驾驶和检查导出统一到可执行的第一步
       </div>
     </div>
   </div>
@@ -425,8 +425,8 @@
         <tr>
           <td class="dim-name">指令具体性</td>
           <td class="score-cell">13.0</td>
-          <td class="score-cell">13.5</td>
-          <td class="delta-cell">+0.5</td>
+          <td class="score-cell">14.0</td>
+          <td class="delta-cell">+1.0</td>
         </tr>
         <tr>
           <td class="dim-name">整体架构</td>
