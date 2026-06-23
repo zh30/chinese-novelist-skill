@@ -7,9 +7,9 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 
 ## Version
 
-- **Version**: `2.3.0`
-- **Version Date**: `2026-05-06`
-- **Changes**: Darwin 架构升级：引入角色智能体推演机制，将写作架构从"章节任务驱动"升级为"角色认知驱动"。每章写作前推演角色8维状态（目标/信息/情绪/压力/关系/资源/时间/选择空间），让剧情从角色认知自然生长。新增角色状态快照持久化到进度仪表盘，解决长篇连载角色失真问题。评分：76.7 → 90.0 (+13.3)
+- **Version**: `2.3.1`
+- **Version Date**: `2026-06-23`
+- **Changes**: Darwin 执行边界优化：新增首轮决策树，收敛续写、自动驾驶和章节修改三个高频入口。自动驾驶改为按章节事务推进，明确暂停条件和恢复点；修改工作流新增最小改动原则和固定交付格式，减少泛泛整章重写。评分：89.0 → 93.0 (+4.0)
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
 
 ## Overview
