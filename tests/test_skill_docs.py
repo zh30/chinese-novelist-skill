@@ -16,6 +16,21 @@ class SkillDocsTests(unittest.TestCase):
         for rel_path in required:
             self.assertIn(rel_path, combined)
 
+    def test_character_sandbox_mode_is_discoverable(self):
+        required_reference = "references/14-角色沙盘模式.md"
+        required_files = [ROOT / "SKILL.md", ROOT / "README.md", ROOT / "FILE_INDEX.md"]
+
+        for path in required_files:
+            content = path.read_text(encoding="utf-8")
+            self.assertIn(
+                required_reference,
+                content,
+                msg=f"{path.name} should link to {required_reference}",
+            )
+
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("角色沙盘模式", readme)
+
     def test_local_markdown_links_resolve(self):
         pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 
@@ -24,7 +39,7 @@ class SkillDocsTests(unittest.TestCase):
         # only exists inside novels/ directories)
         TEMPLATE_LINKS = {
             '00-大纲.md', '01-人物档案.md', '02-世界观与伏笔.md',
-            '03-悬念追踪表.md',
+            '03-悬念追踪表.md', '04-角色沙盘/00-角色索引.md',
         }
 
         for path in ROOT.rglob("*.md"):

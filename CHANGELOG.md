@@ -1,5 +1,23 @@
 # Changelog
 
+## v2.4.0 (2026-06-26)
+
+### Character Sandbox Mode
+
+#### 🎭 Core Architecture Upgrade
+- 新增 [角色沙盘模式](references/14-角色沙盘模式.md)：每章写作前先做角色意志校验，再生成任务卡和正文
+- 新增 `04-角色沙盘/` 目录约定：一个关键角色一个运行时文件，另设 `00-角色索引.md` 和 `sessions/第XXX章-沙盘记录.md`
+- 明确有限信息原则：角色只能看到自己在小说内应当知道的信息，不能读取完整大纲、未来剧情或其他角色内心
+- 允许角色反抗大纲：导演按人物一致性、主线、悬念生命周期、原大纲、单章钩子的优先级裁决
+
+#### 📖 Documentation
+- README 重排为更直观的操作台结构，突出每章沙盘、文件地图、常用命令和推荐路径
+- FILE_INDEX 新增角色沙盘导航、关键词和场景入口
+- 进度仪表盘模板新增角色沙盘状态、反抗大纲裁决和回写提醒
+
+#### 🧪 Tests
+- 新增文档发现性测试，确保 `SKILL.md`、`README.md`、`FILE_INDEX.md` 都链接角色沙盘参考文档
+
 ## v2.3.1 (2026-06-23)
 
 ### Darwin Optimization Round - Execution Boundaries

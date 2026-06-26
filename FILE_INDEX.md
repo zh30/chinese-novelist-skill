@@ -16,7 +16,7 @@
 
 ---
 
-## 📂 核心模板文件（4 个）
+## 📂 核心模板文件（5 组）
 
 ### 大纲模板
 
@@ -50,6 +50,28 @@
 | [chapter-template.md](references/chapter-template.md) | 章节任务卡、场景拆分、复盘 |
 | [progress-dashboard-template.md](references/progress-dashboard-template.md) | 进度仪表盘，AI 自动维护 |
 | [story-bible-template.md](references/story-bible-template.md) | 世界观与伏笔台账（复杂项目） |
+
+---
+
+## 🎭 角色沙盘模式（v2.4 重点）
+
+| 文件名 | 用途 | 重点内容 |
+|--------|------|---------|
+| [14-角色沙盘模式.md](references/14-角色沙盘模式.md) | 每章角色沙盘 | 一个角色一个运行时文件、有限信息发言、导演裁决、沙盘回写 |
+
+**什么时候读**：
+- 每章写作前想先校验“角色自己会不会这么做”
+- 群像、悬疑、权谋、言情拉扯、反派行动章
+- 人物越来越像工具人、行动只服务大纲
+
+**小说目录中对应文件**：
+```text
+04-角色沙盘/
+├── 00-角色索引.md
+├── C001-角色名.md
+└── sessions/
+    └── 第XXX章-沙盘记录.md
+```
 
 ---
 
@@ -113,6 +135,14 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ---
 
+### 第四轮改进（角色沙盘）
+
+| 文件名 | 用途 | 重点内容 |
+|--------|------|---------|
+| [14-角色沙盘模式.md](references/14-角色沙盘模式.md) | 角色沙盘 | 每章必跑、角色可反抗大纲、单角色运行时记忆、导演裁决 |
+
+---
+
 ## 🎓 按场景查找文档
 
 ### 场景 1：刚开始使用
@@ -135,15 +165,18 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 - 怎么继续写
 - 质量如何检查
 - 怎么管理悬念
+- 怎么让人物行为先于大纲自然发生
 
 相关文档：
 1. [SKILL.md](SKILL.md) §连载期
-2. [09-悬念生命周期管理.md](references/09-悬念生命周期管理.md) - 悬念规划
-3. [check_ai_style.py](scripts/check_ai_style.py) - 质量检测
+2. [14-角色沙盘模式.md](references/14-角色沙盘模式.md) - 每章角色沙盘
+3. [09-悬念生命周期管理.md](references/09-悬念生命周期管理.md) - 悬念规划
+4. [check_ai_style.py](scripts/check_ai_style.py) - 质量检测
 
 快速指令：
 ```text
 继续写                    # 自动读取上下文
+执行角色沙盘              # 先做角色意志校验
 运行 AI 味检查              # 检测质量
 查看进度仪表盘            # 看当前状态
 ```
@@ -195,15 +228,18 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 - 人物不够立体
 - 人物前后不一致
 - 对白没有区分度
+- 人物行动像作者安排，不像自己选择
 
 相关文档：
 1. [character-template-v2.md](references/character-template-v2.md) - 人物驱动引擎
-2. [ai-style-by-genre.md](references/ai-style-by-genre.md) §言情 - 人物描写专项
+2. [14-角色沙盘模式.md](references/14-角色沙盘模式.md) - 角色运行时记忆和每章发言
+3. [ai-style-by-genre.md](references/ai-style-by-genre.md) §言情 - 人物描写专项
 
 重点阅读：
 - 欲望 - 恐惧双引擎 §核心引擎
 - 声音指纹 §声音指纹
 - 缺陷 - 失败映射 §缺陷 - 失败映射
+- 角色沙盘模式 §单角色运行时文件模板
 
 ---
 
@@ -260,8 +296,10 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 | 质量检查 | check_ai_style.py, SKILL.md §红绿灯 |
 | AI 味 | ai-style-examples.md, ai-style-by-genre.md |
 | 悬念管理 | 09-悬念生命周期管理.md, 10-悬念 - 章节匹配矩阵.md |
+| 角色沙盘 | 14-角色沙盘模式.md, progress-dashboard-template.md |
+| 角色反抗大纲 | 14-角色沙盘模式.md |
 | 节奏设计 | 11-叙事节奏框架.md, 13-钩子映射表.md |
-| 人物塑造 | character-template-v2.md |
+| 人物塑造 | character-template-v2.md, 14-角色沙盘模式.md |
 | 场景设计 | scene-design-v2.md |
 | 喘息章 | 12-喘息机制.md |
 | 钩子技巧 | 13-钩子映射表.md, hook-techniques.md |
@@ -274,8 +312,8 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ```
 重要性
- 高 │ 极简大纲   AI味改写   悬念管理
-     │ (v1)      (v2重点)   (v2重点)
+ 高 │ 极简大纲   角色沙盘   AI味改写   悬念管理
+     │ (v1)      (v2.4重点) (v2重点)   (v2重点)
      │
  中 │ 人物v2    节奏框架   场景v2
      │ (v2)      (v2)       (v2)
@@ -288,8 +326,9 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 **建议优先掌握**：
 1. 极简大纲（每次新项目）
-2. AI 味改写（每次质量检查）
-3. 悬念管理（每章规划）
+2. 角色沙盘（每章写作前）
+3. AI 味改写（每次质量检查）
+4. 悬念管理（每章规划）
 
 ---
 
@@ -326,6 +365,9 @@ chinese-novelist-skill/
 │   │   ├── 08-人机协作-v2.md                协作协议
 │   │   ├── 12-喘息机制.md                   喘息章
 │   │   └── 13-钩子映射表.md                 钩子选择
+│   │
+│   ├── 🎭 v2.4角色沙盘
+│   │   └── 14-角色沙盘模式.md               ⭐⭐ 每章角色意志校验
 │   │
 │   └── 📖 v1原始文档
 │       ├── outline-template.md              标准大纲
@@ -369,9 +411,10 @@ chinese-novelist-skill/
 └── 实践：修改已有章节
 
 第3周：掌握进阶
+├── 14-角色沙盘模式.md（30分钟）
 ├── 09-悬念生命周期管理.md（20分钟）
 ├── 11-叙事节奏框架.md（30分钟）
-└── 实践：规划悬念+检查节奏
+└── 实践：跑每章沙盘+规划悬念+检查节奏
 
 第4周：精通
 ├── character-template-v2.md（30分钟）
@@ -385,13 +428,14 @@ chinese-novelist-skill/
 2. **AI 写的有机器感** → ai-style-examples.md
 3. **节奏感觉不对** → 11-叙事节奏框架.md
 4. **悬念写到后面忘了** → 09-悬念生命周期管理.md
-5. **人物前后不一致** → character-template-v2.md
+5. **人物前后不一致** → character-template-v2.md + 14-角色沙盘模式.md
 6. **不知道怎么继续** → 对 AI 说"继续写"（自动读取上下文）
 
 ---
 
 ## 📝 更新记录
 
+- **2026-06-26**: v2.4 新增角色沙盘模式，每章写作前进行角色意志校验
 - **2026-04-01**: 完成三轮优化，新增 13 个文件，更新 README 和文档
 - **2026-03-20**: v1.0.0 版本发布
 
