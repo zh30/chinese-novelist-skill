@@ -481,7 +481,7 @@ def main():
         print('  python scripts/check_ai_style.py --all <小说目录路径>')
         print('')
         print('示例：')
-        print('  python scripts/check_ai_style.py novels/故事/第01章.md')
+        print('  python scripts/check_ai_style.py novels/故事/manuscript/zh/第001章-标题.md')
         print('  python scripts/check_ai_style.py --all novels/故事')
         return
 

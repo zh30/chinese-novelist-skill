@@ -16,7 +16,7 @@
 
 ---
 
-## 📂 核心模板文件（5 组）
+## 📂 核心模板文件
 
 ### 大纲模板
 
@@ -47,9 +47,22 @@
 
 | 文件名 | 用途 |
 |--------|------|
-| [chapter-template.md](references/chapter-template.md) | 章节任务卡、场景拆分、复盘 |
+| [chapter-template.md](references/chapter-template.md) | 干净章节正文模板，仅用于 `manuscript/zh` |
+| [chapter-workspace-template.md](references/chapter-workspace-template.md) | 章节任务卡、场景拆分、沙盘、复盘和修改记录 |
 | [progress-dashboard-template.md](references/progress-dashboard-template.md) | 进度仪表盘，AI 自动维护 |
 | [story-bible-template.md](references/story-bible-template.md) | 世界观与伏笔台账（复杂项目） |
+
+### 短故事模板
+
+| 文件名 | 适用场景 | 硬标准 |
+|--------|---------|--------|
+| [short-story-template.md](references/short-story-template.md) | 写一篇完整短故事 / 短篇故事 | 正文不少于 6000 字，剧情必须闭合 |
+
+### 翻译流程
+
+| 文件名 | 适用场景 | 核心用途 |
+|--------|---------|----------|
+| [translation-workflow.md](references/translation-workflow.md) | 当前 AI 意译翻译 | 默认输出到 `manuscript/en`，包含翻译简报、术语表、风格表、样章校准、双语修订、单语润色和终检 |
 
 ---
 
@@ -75,21 +88,23 @@
 
 ---
 
-## 🛠️ 工具脚本（7 个）
+## 🛠️ 工具脚本（9 个）
 
 | 文件名 | 用途 | 使用频率 |
 |--------|------|---------|
-| [check_chapter_wordcount.py](scripts/check_chapter_wordcount.py) | 字数检查 | 每章必用 |
+| [check_chapter_wordcount.py](scripts/check_chapter_wordcount.py) | 章节 / 短故事字数检查 | 每章必用；短故事用 `6000` 最小字数 |
+| [check_short_story.py](scripts/check_short_story.py) | 短故事质量检查（6000 字 + 正文区 + 完稿复盘 + 剧情收束） | 每篇短故事必用 |
 | [check_ai_style.py](scripts/check_ai_style.py) | **AI 味检测**（9 种症状，支持--all 批量） | 每章必用 |
 | [check_novel_health.py](scripts/check_novel_health.py) | **小说健康体检**（字数 + 节奏 + 场景） | 每 5-10 章 |
 | [check_timeline.py](scripts/check_timeline.py) | **时间线一致性检查**（季节/天气/时段） | 每 10 章或完稿时 |
 | [character_tracker.py](scripts/character_tracker.py) | **人物一致性检查**（禁止用语 + 情绪突变） | 每 10 章或完稿时 |
 | [generate_epub.py](scripts/generate_epub.py) | 导出 EPUB 电子书 | 完稿时用 |
-| [translate_to_english.py](scripts/translate_to_english.py) | 翻译成英文 | 按需 |
+| [translate_to_english.py](scripts/translate_to_english.py) | 生成当前 AI 意译翻译任务包 | 按需 |
+| [split_chapter_workspace.py](scripts/split_chapter_workspace.py) | 拆分旧混合章节为 `manuscript/zh` 正文和 `workspace/chapters` 工作台 | 旧项目迁移时 |
 
 **AI 味检测脚本**（v2 重点）：
 ```bash
-python scripts/check_ai_style.py novels/我的小说/第01章.md
+python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标题.md
 ```
 
 检测 9 种 AI 味症状：
@@ -159,7 +174,27 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ---
 
-### 场景 2：每章写作时
+### 场景 2：写一篇短故事
+
+需要解决的问题：
+- 不想开长篇，只要一篇完整短故事
+- 需要不少于 6000 字
+- 需要可分段或换行，但剧情完整
+
+相关文档：
+1. [SKILL.md](SKILL.md) §短故事模式
+2. [short-story-template.md](references/short-story-template.md) - 短故事任务卡和完整剧情骨架
+3. [check_short_story.py](scripts/check_short_story.py) - 检查 6000 字、正文区、完稿复盘和剧情收束
+
+快速指令：
+```text
+写一篇悬疑短故事，不少于 6000 字
+写一个完整短篇故事，可以分段
+```
+
+---
+
+### 场景 3：每章写作时
 
 需要解决的问题：
 - 怎么继续写
@@ -183,7 +218,7 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ---
 
-### 场景 3：去除 AI 味
+### 场景 4：去除 AI 味
 
 需要解决的问题：
 - 文本有 AI 感
@@ -202,7 +237,7 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ---
 
-### 场景 4：设计节奏
+### 场景 5：设计节奏
 
 需要解决的问题：
 - 不知道怎么安排章节节奏
@@ -222,7 +257,7 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ---
 
-### 场景 5：设计人物
+### 场景 6：设计人物
 
 需要解决的问题：
 - 人物不够立体
@@ -243,7 +278,7 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ---
 
-### 场景 6：设计场景
+### 场景 7：设计场景
 
 需要解决的问题：
 - 场景没有任务
@@ -262,7 +297,7 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 
 ---
 
-### 场景 7：协作/交接
+### 场景 8：协作/交接
 
 需要解决的问题：
 - 多人协作
@@ -293,6 +328,8 @@ python scripts/check_ai_style.py novels/我的小说/第01章.md
 |--------|---------|
 | 快速开始 | QUICK_START.md |
 | 极简大纲 | outline-template-v1-minimal.md |
+| 短故事 / 短篇故事 | short-story-template.md, SKILL.md §短故事模式 |
+| 6000 字故事 | short-story-template.md, check_short_story.py |
 | 质量检查 | check_ai_style.py, SKILL.md §红绿灯 |
 | AI 味 | ai-style-examples.md, ai-style-by-genre.md |
 | 悬念管理 | 09-悬念生命周期管理.md, 10-悬念 - 章节匹配矩阵.md |
@@ -349,7 +386,9 @@ chinese-novelist-skill/
 │   ├── ⭐ 核心模板
 │   │   ├── outline-template-v1-minimal.md    ⭐ 极简大纲
 │   │   ├── character-template-v2.md          ⭐ 人物v2
-│   │   ├── chapter-template.md              章节模板
+│   │   ├── chapter-template.md              干净章节正文模板
+│   │   ├── chapter-workspace-template.md    章节工作台模板
+│   │   ├── short-story-template.md          短故事模板
 │   │   ├── progress-dashboard-template.md   进度仪表盘
 │   │   └── story-bible-template.md            世界观
 │   │
@@ -386,11 +425,15 @@ chinese-novelist-skill/
 │
 ├── 📁 scripts/                      🛠️ 工具脚本
 │   ├── check_chapter_wordcount.py   ⭐ 字数检查
+│   ├── check_short_story.py         ⭐ 短故事检查
 │   ├── check_ai_style.py            ⭐⭐ AI味检测
 │   └── generate_epub.py             EPUB导出
 │
-└── 📁 novels/                       📝 小说目录
+├── 📁 novels/                       📝 小说目录
     └── （你的小说项目）
+
+└── 📁 short-stories/                📝 短故事目录（可选）
+    └── （你的短故事）
 ```
 
 ---
@@ -429,12 +472,14 @@ chinese-novelist-skill/
 3. **节奏感觉不对** → 11-叙事节奏框架.md
 4. **悬念写到后面忘了** → 09-悬念生命周期管理.md
 5. **人物前后不一致** → character-template-v2.md + 14-角色沙盘模式.md
-6. **不知道怎么继续** → 对 AI 说"继续写"（自动读取上下文）
+6. **只想写短故事** → short-story-template.md
+7. **不知道怎么继续** → 对 AI 说"继续写"（自动读取上下文）
 
 ---
 
 ## 📝 更新记录
 
+- **2026-07-06**: v2.5 新增短故事模式，不少于 6000 字且剧情完整
 - **2026-06-26**: v2.4 新增角色沙盘模式，每章写作前进行角色意志校验
 - **2026-04-01**: 完成三轮优化，新增 13 个文件，更新 README 和文档
 - **2026-03-20**: v1.0.0 版本发布

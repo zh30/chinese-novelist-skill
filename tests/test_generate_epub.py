@@ -75,6 +75,21 @@ class FindChaptersTests(unittest.TestCase):
         self.assertEqual(chapters[1]["title"], "发展")
         self.assertEqual(chapters[2]["title"], "高潮")
 
+    def test_finds_chapter_files_from_manuscript_zh_first(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            manuscript = tmppath / "manuscript" / "zh"
+            manuscript.mkdir(parents=True)
+
+            (tmppath / "第01章-旧.md").write_text("第01章：旧\n\n旧正文", encoding="utf-8")
+            (manuscript / "第01章-新.md").write_text("第01章：新标题\n\n新正文", encoding="utf-8")
+
+            chapters = find_chapters(tmppath)
+
+        self.assertEqual(len(chapters), 1)
+        self.assertEqual(chapters[0]["file"].parent.name, "zh")
+        self.assertEqual(chapters[0]["title"], "第01章：新标题")
+
     def test_finds_chapter_title_excluding_task_card(self):
         """测试：章节标题应该是真正的章节标题，而不是本章任务卡"""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -256,6 +271,39 @@ class GenerateEpubTests(unittest.TestCase):
                 mimetype = epub.read('mimetype').decode('utf-8')
                 self.assertEqual(mimetype, 'application/epub+zip')
 
+    def test_generates_epub_from_clean_manuscript_zh(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            manuscript = tmppath / "manuscript" / "zh"
+            manuscript.mkdir(parents=True)
+
+            outline = """# 干净小说 大纲
+
+## 项目定位
+
+- **作者 / 笔名**：测试作者
+"""
+            chapter = """第001章：雨夜
+
+雨落在旧站台上。
+
+没有人抬头。
+"""
+            (tmppath / "00-大纲.md").write_text(outline, encoding="utf-8")
+            (manuscript / "第001章-雨夜.md").write_text(chapter, encoding="utf-8")
+
+            output_path = tmppath / "clean.epub"
+            result = generate_epub(tmppath, output_path)
+
+            self.assertTrue(result)
+            with zipfile.ZipFile(output_path, 'r') as epub:
+                nav = epub.read('OEBPS/nav.xhtml').decode('utf-8')
+                chapter_xhtml = epub.read('OEBPS/chapter1.xhtml').decode('utf-8')
+
+            self.assertIn("第001章：雨夜", nav)
+            self.assertIn("雨落在旧站台上。", chapter_xhtml)
+            self.assertNotIn("<p>第001章：雨夜</p>", chapter_xhtml)
+
     def test_overrides_author_from_command_line(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmppath = Path(tmpdir)
@@ -288,6 +336,170 @@ class GenerateEpubTests(unittest.TestCase):
                 content_opf = epub.read('OEBPS/content.opf').decode('utf-8')
                 self.assertIn("命令行作者", content_opf)
                 self.assertNotIn("大纲作者", content_opf)
+
+    def test_generates_english_epub_from_translated_chapter_files(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            en_dir = tmppath / "en"
+            en_dir.mkdir()
+
+            outline = """# 测试小说 大纲
+
+## 项目定位
+
+- **作者 / 笔名**：中文作者
+"""
+            english_info = """# Test Novel
+
+Author: English Author
+"""
+            english_chapter = """## Title
+The First Rain
+
+## Body
+The first rain fell over the old station.
+"""
+            (tmppath / "00-大纲.md").write_text(outline, encoding="utf-8")
+            (en_dir / "Book Info.md").write_text(english_info, encoding="utf-8")
+            (en_dir / "Chapter-001.md").write_text(english_chapter, encoding="utf-8")
+
+            output_path = tmppath / "english.epub"
+            result = generate_epub(tmppath, output_path, lang="en")
+
+            self.assertTrue(result)
+            self.assertTrue(output_path.exists())
+            with zipfile.ZipFile(output_path, 'r') as epub:
+                names = epub.namelist()
+                self.assertIn('OEBPS/chapter1.xhtml', names)
+                chapter = epub.read('OEBPS/chapter1.xhtml').decode('utf-8')
+                self.assertIn("The First Rain", chapter)
+
+    def test_generates_english_epub_from_plain_translated_markdown(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            en_dir = tmppath / "en"
+            en_dir.mkdir()
+
+            outline = """# 测试小说 大纲
+
+## 项目定位
+
+- **作者 / 笔名**：中文作者
+"""
+            english_chapter = """Chapter 1: The First Rain
+
+The first rain fell over the old station.
+
+No one in town looked up.
+"""
+            (tmppath / "00-大纲.md").write_text(outline, encoding="utf-8")
+            (en_dir / "Chapter-001.md").write_text(english_chapter, encoding="utf-8")
+
+            output_path = tmppath / "plain-english.epub"
+            result = generate_epub(tmppath, output_path, author_override="English Author", lang="en")
+
+            self.assertTrue(result)
+            with zipfile.ZipFile(output_path, 'r') as epub:
+                nav = epub.read('OEBPS/nav.xhtml').decode('utf-8')
+                chapter = epub.read('OEBPS/chapter1.xhtml').decode('utf-8')
+
+            self.assertIn("Chapter 1: The First Rain", nav)
+            self.assertIn("The first rain fell over the old station.", chapter)
+            self.assertIn("No one in town looked up.", chapter)
+            self.assertNotIn("<p>Chapter 1: The First Rain</p>", chapter)
+
+    def test_generates_english_epub_from_manuscript_en(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            en_dir = tmppath / "manuscript" / "en"
+            en_dir.mkdir(parents=True)
+
+            outline = """# 测试小说 大纲
+
+## 项目定位
+
+- **作者 / 笔名**：中文作者
+"""
+            english_chapter = """Chapter 1: The First Rain
+
+The first rain fell over the old station.
+"""
+            (tmppath / "00-大纲.md").write_text(outline, encoding="utf-8")
+            (en_dir / "Chapter-001.md").write_text(english_chapter, encoding="utf-8")
+
+            output_path = tmppath / "manuscript-english.epub"
+            result = generate_epub(tmppath, output_path, author_override="English Author", lang="en")
+
+            self.assertTrue(result)
+            with zipfile.ZipFile(output_path, 'r') as epub:
+                chapter = epub.read('OEBPS/chapter1.xhtml').decode('utf-8')
+
+            self.assertIn("The first rain fell over the old station.", chapter)
+
+    def test_english_epub_ignores_translation_workflow_files_for_title(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            en_dir = tmppath / "manuscript" / "en"
+            en_dir.mkdir(parents=True)
+
+            outline = """# 测试小说 大纲
+
+## 项目定位
+
+- **作者 / 笔名**：中文作者
+"""
+            english_chapter = """Chapter 1: Rain Night
+
+Rain struck the lighthouse glass.
+"""
+            (tmppath / "00-大纲.md").write_text(outline, encoding="utf-8")
+            (en_dir / "00-translation-brief.md").write_text(
+                "# Translation Brief / 翻译简报\n", encoding="utf-8"
+            )
+            (en_dir / "04-qa-checklist.md").write_text(
+                "# Translation QA Checklist / 翻译 QA 清单\n", encoding="utf-8"
+            )
+            (en_dir / "Chapter-001.md").write_text(english_chapter, encoding="utf-8")
+
+            output_path = tmppath / "english-workflow.epub"
+            result = generate_epub(tmppath, output_path, author_override="Test Author", lang="en")
+
+            self.assertTrue(result)
+            with zipfile.ZipFile(output_path, 'r') as epub:
+                content_opf = epub.read('OEBPS/content.opf').decode('utf-8')
+
+            self.assertIn("测试小说 (English)", content_opf)
+            self.assertNotIn("Translation QA Checklist", content_opf)
+            self.assertNotIn("Translation Brief", content_opf)
+
+    def test_english_epub_falls_back_to_legacy_en_when_manuscript_en_empty(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            (tmppath / "manuscript" / "en").mkdir(parents=True)
+            legacy_en = tmppath / "en"
+            legacy_en.mkdir()
+
+            outline = """# 测试小说 大纲
+
+## 项目定位
+
+- **作者 / 笔名**：中文作者
+"""
+            legacy_chapter = """Chapter 1: Legacy Rain
+
+Legacy English text.
+"""
+            (tmppath / "00-大纲.md").write_text(outline, encoding="utf-8")
+            (legacy_en / "Chapter-001.md").write_text(legacy_chapter, encoding="utf-8")
+
+            output_path = tmppath / "legacy-fallback.epub"
+            result = generate_epub(tmppath, output_path, author_override="English Author", lang="en")
+
+            self.assertTrue(result)
+            with zipfile.ZipFile(output_path, 'r') as epub:
+                chapter = epub.read('OEBPS/chapter1.xhtml').decode('utf-8')
+
+            self.assertIn("Legacy English text.", chapter)
 
     def test_fails_for_nonexistent_directory(self):
         with tempfile.TemporaryDirectory() as tmpdir:

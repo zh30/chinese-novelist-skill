@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-章节字数检查脚本
-检查指定章节文件的字数，低于 3000 字时提示需要扩充
+章节 / 短故事字数检查脚本
+检查指定正文文件的字数，低于最小字数时提示需要扩充
 """
 
 import sys
@@ -20,7 +20,7 @@ extract_content_from_chapter = extract_text_from_chapter
 
 
 def check_chapter(file_path: str, min_words: int = 3000) -> dict:
-    """检查单个章节的字数"""
+    """检查单个正文文件的字数"""
     path = Path(file_path)
 
     if not path.exists():
@@ -77,7 +77,7 @@ def print_results(results: list, min_words: int = 3000):
     failed = 0
 
     print('\n' + '=' * 60)
-    print('章节字数检查报告')
+    print('章节 / 短故事字数检查报告')
     print('=' * 60)
 
     for result in results:
@@ -98,7 +98,7 @@ def print_results(results: list, min_words: int = 3000):
         print(f'   {result["message"]}')
 
     print('\n' + '-' * 60)
-    print(f'总计：{len(results)} 章 | {passed} 章达标 | {failed} 章不足 | 总字数：{total_words:,}')
+    print(f'总计：{len(results)} 个文件 | {passed} 个达标 | {failed} 个不足 | 总字数：{total_words:,}')
     print('-' * 60)
 
     if failed > 0:
@@ -116,12 +116,13 @@ def main():
 
     if len(sys.argv) < 2:
         print('用法：')
-        print('  检查单个章节：python scripts/check_chapter_wordcount.py <章节文件路径> [最小字数]')
+        print('  检查单个章节 / 短故事：python scripts/check_chapter_wordcount.py <文件路径> [最小字数]')
         print('  检查所有章节：python scripts/check_chapter_wordcount.py --all <目录路径> [最小字数]')
         print('')
         print('示例：')
-        print('  python scripts/check_chapter_wordcount.py novels/故事/第01章.md')
-        print('  python scripts/check_chapter_wordcount.py novels/故事/第01章.md 3500')
+        print('  python scripts/check_chapter_wordcount.py novels/故事/manuscript/zh/第001章-标题.md')
+        print('  python scripts/check_chapter_wordcount.py novels/故事/manuscript/zh/第001章-标题.md 3500')
+        print('  python scripts/check_chapter_wordcount.py short-stories/故事标题.md 6000')
         print('  python scripts/check_chapter_wordcount.py --all novels/故事')
         print('  python scripts/check_chapter_wordcount.py --all novels/故事 3500')
         return

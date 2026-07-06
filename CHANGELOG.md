@@ -1,5 +1,55 @@
 # Changelog
 
+## v2.6.1 (2026-07-06)
+
+### Release Hardening
+
+#### 🐛 Bug Fixes
+- `scripts/check_novel_health.py`: 修复章节未命中任何场景关键词时的 `KeyError: '其他'`，现在稳定归类为 `其他`。
+- `scripts/generate_epub.py`: 英文 EPUB 生成时不再把 `00-translation-brief.md`、`04-qa-checklist.md` 等翻译流程文件误识别为书名或作者元数据。
+- `SKILL.md` 和 `FILE_INDEX.md`: 修正旧章节模板引用，整体重写流程现在明确从 `chapter-workspace-template.md` 的任务卡和场景拆分开始，再把最终正文写回 `manuscript/zh/`。
+
+#### 🧪 Verification
+- 全量单元测试通过：58 tests。
+- Python 编译检查通过：`python3 -m py_compile scripts/*.py tests/*.py`。
+- Markdown/补丁空白检查通过：`git diff --check`。
+- JSON 校验通过：`python3 -m json.tool test-prompts.json >/dev/null`。
+- 端到端烟测通过，覆盖中文正文、短故事 6000 字检查、翻译任务包、中文/英文 EPUB、旧章节迁移和所有主要检查脚本。
+- 发布包校验通过：使用 `skill-creator` 打包脚本在临时目录生成 `.skill` 包；同时从仓库发布内容中移除 `.claude/` 本地配置并加入忽略规则。
+
+## v2.6.0 (2026-07-06)
+
+### Clean Manuscript Architecture
+
+#### 📖 Workflow
+- 新增长篇项目双轨结构：`manuscript/zh/` 保存中文正文唯一事实来源，`workspace/chapters/` 保存任务卡、场景拆分、沙盘裁决、复盘和修改记录。
+- 章节正文模板改为干净 Markdown：第一行章数和章标题，空一行后直接正文，不再在章节文件内放 `## 正文`、任务卡或复盘。
+- 英文意译翻译任务默认输出到 `manuscript/en/`，保持译文文件内只含章数、章标题和正文。
+
+#### 🛠 Scripts
+- 新增 `scripts/split_chapter_workspace.py`，可把旧根目录混合章节拆分到 `manuscript/zh/` 和 `workspace/chapters/`；默认保留原文件，`--move-originals` 可归档到 `_archive/mixed-chapters/`。
+- `scripts/utils.py` 新增统一章节目录发现：中文优先 `manuscript/zh/`，英文优先 `manuscript/en/`，旧根目录和旧 `en/` 保持兼容。
+- 字数检查、AI 味检测、小说健康检查、时间线检查、人物一致性、EPUB 导出和翻译任务生成均复用新章节发现逻辑。
+
+#### 📚 Documentation
+- `SKILL.md`、`README.md`、`QUICK_START.md`、`FILE_INDEX.md` 更新为 clean manuscript + workspace 结构。
+- 新增 [chapter-workspace-template.md](references/chapter-workspace-template.md)，拆分章节任务卡、场景拆分、沙盘、复盘和修改记录。
+
+## v2.5.0 (2026-07-06)
+
+### Short Story Mode
+
+#### 📖 Workflow
+- 新增短故事模式：默认仍为长篇小说 / 网文三阶段工作流；用户明确触发“短故事 / 短篇故事 / 写一篇完整故事”时进入短故事旁路。
+- 明确短故事硬标准：正文不少于 6000 个中文字符，可分段或换行，但必须完成开端、诱发事件、升级、反转或代价、高潮选择、结局收束。
+- 新增 [短故事模板](references/short-story-template.md)：包含短故事任务卡、完整剧情骨架、正文区和完稿复盘。
+- 新增 `scripts/check_short_story.py`：检查短故事正文区、6000 字红灯线、完稿复盘、高潮 / 收束信号和“未完待续”风险，支持 `--all short-stories` 批量检查。
+
+#### 📚 Documentation
+- `SKILL.md` 新增短故事入口路由、首轮决策、质量红灯项和推荐文件路径。
+- `README.md`、`QUICK_START.md`、`FILE_INDEX.md` 新增短故事使用说明、模板导航和检查命令。
+- `AGENTS.md`、`CLAUDE.md` 补充短故事维护说明。
+
 ## v2.4.0 (2026-06-26)
 
 ### Character Sandbox Mode

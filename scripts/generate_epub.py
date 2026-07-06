@@ -14,6 +14,10 @@ from datetime import datetime
 from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from utils import extract_text_from_chapter, find_chapter_files
+
 # 修复 Windows 控制台编码问题
 if sys.platform == 'win32':
     import io
@@ -32,53 +36,8 @@ NON_CONTENT_SECTIONS = {
 
 
 def extract_content_from_chapter(file_path: Path) -> str:
-    """从章节文件中提取正文内容，优先只统计 `## 正文` 区块"""
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    lines = content.split('\n')
-
-    body_start = None
-    body_end = None
-
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        # 匹配 ## 正文，允许前后有空格
-        if stripped == '## 正文' or stripped == '##正文':
-            body_start = i + 1
-            continue
-        if body_start is not None and stripped.startswith('## '):
-            # 遇到下一个 ## 标题时停止，包括 ## 章节复盘 等
-            body_end = i
-            break
-
-    if body_start is not None:
-        body_content = '\n'.join(lines[body_start:body_end]).strip()
-        # 移除 --- 分隔符
-        body_content = re.sub(r'^---+\s*$', '', body_content, flags=re.MULTILINE).strip()
-        return body_content
-
-    # 兼容旧模板：如果没有 `## 正文`，则退回到章节标题之后、下一个 ## 之前的内容
-    content_start = 0
-    content_end = None
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        # 找到章节标题（# 第X章）
-        if stripped.startswith('#') and '章' in stripped and not stripped.startswith('##'):
-            content_start = i + 1
-            continue
-        # 找到下一个 ## 标题时停止
-        if content_start > 0 and stripped.startswith('## '):
-            content_end = i
-            break
-
-    if content_end is None:
-        content_end = len(lines)
-
-    main_content = '\n'.join(lines[content_start:content_end]).strip()
-    # 移除 --- 分隔符
-    main_content = re.sub(r'^---+\s*$', '', main_content, flags=re.MULTILINE).strip()
-    return main_content
+    """从章节文件中提取正文内容。"""
+    return extract_text_from_chapter(file_path)
 
 
 def parse_outline(outline_path: Path) -> dict:
@@ -104,9 +63,10 @@ def parse_outline(outline_path: Path) -> dict:
     return {'title': title, 'author': author}
 
 
-def find_chapters(novel_dir: Path) -> list:
+def find_chapters(novel_dir: Path, lang: str = 'zh-CN') -> list:
     """查找目录下所有章节文件"""
-    chapter_files = sorted(novel_dir.glob('第*.md'))
+    chapter_lang = 'en' if lang == 'en' else 'zh'
+    chapter_files = find_chapter_files(novel_dir, chapter_lang)
     chapters = []
 
     for chapter_file in chapter_files:
@@ -116,8 +76,11 @@ def find_chapters(novel_dir: Path) -> list:
 
         # 从文件名提取标题作为后备
         title_match = re.search(r'第\d+章[-(]*(.+?)\.md$', chapter_file.name)
+        en_title_match = re.search(r'Chapter[-_ ]?(\d+)[-( ]*(.*?)\.md$', chapter_file.name, re.IGNORECASE)
         if title_match:
             chapter_title = title_match.group(1)
+        elif en_title_match and en_title_match.group(2).strip():
+            chapter_title = en_title_match.group(2).strip()
         else:
             chapter_title = chapter_file.stem
 
@@ -128,15 +91,23 @@ def find_chapters(novel_dir: Path) -> list:
 
         # 查找所有 ## 标题
         content_title_matches = re.findall(r'^##\s+(.+?)$', content, re.MULTILINE)
+        explicit_title = _extract_english_title_section(content)
+        plain_title = _extract_plain_translated_title(content)
+        if explicit_title:
+            chapter_title = explicit_title
+        elif plain_title:
+            chapter_title = plain_title
+            explicit_title = plain_title
 
         # 找到第一个不是非内容章节的标题（前缀匹配，支持 "本章任务卡：xxx" 格式）
-        for match in content_title_matches:
-            section_title = match.strip()
-            # 检查是否以非内容章节标题开头
-            is_non_content = any(section_title.startswith(prefix) for prefix in NON_CONTENT_SECTIONS)
-            if not is_non_content:
-                chapter_title = section_title
-                break
+        if not explicit_title:
+            for match in content_title_matches:
+                section_title = match.strip()
+                # 检查是否以非内容章节标题开头
+                is_non_content = any(section_title.startswith(prefix) for prefix in NON_CONTENT_SECTIONS)
+                if not is_non_content:
+                    chapter_title = section_title
+                    break
 
         chapters.append({
             'file': chapter_file,
@@ -145,6 +116,64 @@ def find_chapters(novel_dir: Path) -> list:
         })
 
     return chapters
+
+
+def _chapter_sort_key(path: Path) -> tuple:
+    """按中文或英文章节号排序。"""
+    zh_match = re.match(r'第(\d+)章', path.name)
+    if zh_match:
+        return (int(zh_match.group(1)), path.name)
+
+    en_match = re.match(r'Chapter[-_ ]?(\d+)', path.name, re.IGNORECASE)
+    if en_match:
+        return (int(en_match.group(1)), path.name)
+
+    return (10**9, path.name)
+
+
+def _extract_english_title_section(content: str) -> str:
+    """提取 `## Title` 标题区块中的第一行标题。"""
+    lines = content.split('\n')
+    for i, line in enumerate(lines):
+        if line.strip().lower() == '## title':
+            for candidate in lines[i + 1:]:
+                stripped = candidate.strip()
+                if not stripped:
+                    continue
+                if stripped.startswith('## '):
+                    return ''
+                return stripped
+    return ''
+
+
+def _find_plain_translated_title_line(lines: list) -> int:
+    """查找纯译文格式的首行章数和标题。"""
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if _looks_like_plain_translated_title(stripped):
+            return i
+        return None
+    return None
+
+
+def _extract_plain_translated_title(content: str) -> str:
+    """提取纯译文格式首行标题。"""
+    lines = content.split('\n')
+    title_index = _find_plain_translated_title_line(lines)
+    if title_index is None:
+        return ''
+    return lines[title_index].strip()
+
+
+def _looks_like_plain_translated_title(line: str) -> bool:
+    """判断一行是否是 `Chapter 1: Title` 或 `第1章 标题` 格式。"""
+    if line.startswith('#'):
+        return False
+    return bool(
+        re.match(r'^(?:Chapter\s*\d+|Chapter[-_ ]?\d+|第\s*\d+\s*章)\b', line, re.IGNORECASE)
+    )
 
 
 def convert_markdown_to_xhtml(content: str) -> str:
@@ -207,7 +236,7 @@ def generate_epub(
     # 处理英文版
     output_lang = lang
     if lang == 'en':
-        en_dir = novel_dir / 'en'
+        en_dir = _resolve_language_dir(novel_dir, 'en')
         if en_dir.exists():
             novel_dir = en_dir
             print(f'使用英文目录: {en_dir}')
@@ -220,8 +249,8 @@ def generate_epub(
             en_title = None
             en_outline_files = list(novel_dir.glob('*.md'))
             for en_file in en_outline_files:
-                # 跳过章节文件，查找可能有书名的文件
-                if en_file.name.startswith('第') or en_file.name.startswith('Chapter'):
+                # 跳过章节和翻译工作流文件，查找可能有书名的文件
+                if not _is_english_metadata_file(en_file):
                     continue
                 try:
                     with open(en_file, 'r', encoding='utf-8') as f:
@@ -243,7 +272,7 @@ def generate_epub(
                 # 尝试从英文大纲获取作者
                 author = 'Unknown Author'
                 for en_file in en_outline_files:
-                    if en_file.name.startswith('第') or en_file.name.startswith('Chapter'):
+                    if not _is_english_metadata_file(en_file):
                         continue
                     try:
                         with open(en_file, 'r', encoding='utf-8') as f:
@@ -274,7 +303,7 @@ def generate_epub(
             print(f'已设置作者: {author}')
 
     # 查找章节
-    chapters = find_chapters(novel_dir)
+    chapters = find_chapters(novel_dir, lang)
 
     if not chapters:
         print(f'错误: 未找到章节文件 - {novel_dir}')
@@ -454,12 +483,12 @@ def main():
         # 从大纲获取书名作为默认文件名
         if args.lang == 'en':
             # 尝试获取英文书名
-            en_dir = novel_dir / 'en'
+            en_dir = _resolve_language_dir(novel_dir, 'en')
             if en_dir.exists():
                 en_outline_files = list(en_dir.glob('*.md'))
                 title = None
                 for en_file in en_outline_files:
-                    if en_file.name.startswith('第') or en_file.name.startswith('Chapter'):
+                    if not _is_english_metadata_file(en_file):
                         continue
                     try:
                         with open(en_file, 'r', encoding='utf-8') as f:
@@ -495,6 +524,47 @@ def main():
     # 生成 EPUB
     success = generate_epub(novel_dir, output_path, args.author, args.lang)
     sys.exit(0 if success else 1)
+
+
+def _resolve_language_dir(novel_dir: Path, lang: str) -> Path:
+    """解析语言正文目录。英文优先使用 manuscript/en，再兼容旧 en/。"""
+    if lang == 'en':
+        candidates = [novel_dir / 'manuscript' / 'en', novel_dir / 'en']
+        for candidate in candidates:
+            if candidate.exists() and find_chapter_files(candidate, 'en'):
+                return candidate
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate
+        return candidates[0]
+    manuscript_zh = novel_dir / 'manuscript' / 'zh'
+    if manuscript_zh.exists():
+        return manuscript_zh
+    return novel_dir
+
+
+def _is_english_metadata_file(path: Path) -> bool:
+    """判断英文目录中的 Markdown 是否可作为书籍元数据来源。"""
+    name = path.name
+    lower_name = name.lower()
+    if name.startswith('第') or lower_name.startswith('chapter'):
+        return False
+
+    workflow_files = {
+        '00-translation-brief.md',
+        '01-termbase.md',
+        '02-style-sheet.md',
+        '03-query-log.md',
+        '04-qa-checklist.md',
+        'readme.md',
+    }
+    if lower_name in workflow_files:
+        return False
+
+    if re.match(r'^\d{2}-', name):
+        return False
+
+    return True
 
 
 if __name__ == '__main__':

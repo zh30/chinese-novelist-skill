@@ -7,17 +7,23 @@
 
 ## 一眼看懂
 
-**chinese-novelist-skill** 是一套给中文小说 / 网文创作使用的 Codex skill。它把长篇创作拆成可执行的工作流：先建骨架，再按章推进，每章写作前让角色先在“沙盘”里活一次，最后用脚本和红绿灯规则守住质量。
+**chinese-novelist-skill** 是一套给中文小说 / 网文创作使用的 Codex skill。默认面向长篇创作：先建骨架，再按章推进，每章写作前让角色先在“沙盘”里活一次，最后用脚本和红绿灯规则守住质量。用户明确要求“短故事 / 短篇故事 / 写一篇完整故事”时，也可以切换到短故事模式，一次性交付不少于 6000 字且剧情完整的单篇故事。
 
 ```text
 一句话创意
   -> 极简大纲
   -> 人物档案
   -> 角色沙盘
-  -> 章节正文
+  -> 干净章节正文
   -> 质量检查
   -> 回写进度
   -> 完稿导出
+
+短故事请求
+  -> 短故事任务卡
+  -> 完整剧情骨架
+  -> ≥6000字正文
+  -> 完稿复盘
 ```
 
 ### 适合你，如果你正在遇到
@@ -28,7 +34,8 @@
 | 人物行为像服务大纲，不像真人 | [角色沙盘模式](references/14-角色沙盘模式.md) |
 | AI 写出来有解释腔、空洞情绪、四字堆砌 | AI 味检测脚本 + 改写范例 |
 | 每章不知道该推进什么 | 章节任务卡 + 红绿灯检查 |
-| 长篇文件越来越乱 | 固定目录 + 进度仪表盘 |
+| 长篇文件越来越乱 | `manuscript/` 干净正文 + `workspace/` 创作工作台 |
+| 只想写一篇完整短故事 | 短故事模式 + 6000 字红灯线 + 剧情闭合检查 |
 
 ---
 
@@ -49,7 +56,24 @@ AI 会交付：
 | 人物初稿 | 建立欲望、恐惧、缺陷和声音 |
 | 第 1 章任务卡 | 让首章可以立刻开写 |
 
-### 2. 继续写下一章
+### 2. 写一篇短故事
+
+```text
+使用 chinese-novelist-skill，写一篇悬疑短故事，不少于 6000 字。
+```
+
+短故事模式不会进入长篇连载流程。AI 会交付：
+
+| 产物 | 用途 |
+|------|------|
+| 短故事任务卡 | 锁定 premise、主角欲望、冲突和结局类型 |
+| 完整剧情骨架 | 保证开端、升级、反转、高潮、收束都存在 |
+| ≥6000 字正文 | 可分段或换行，但必须是完整故事 |
+| 完稿复盘 | 检查字数、主角变化、伏笔 / 意象回收和结尾闭合 |
+
+模板见 [short-story-template.md](references/short-story-template.md)。
+
+### 3. 继续写下一章
 
 ```text
 继续写
@@ -65,7 +89,7 @@ AI 会交付：
 6. 运行质量检查
 7. 回写仪表盘、悬念和角色文件
 
-### 3. 快速出初稿
+### 4. 快速出初稿
 
 ```text
 快写下一章，先出初稿。
@@ -82,6 +106,21 @@ AI 会交付：
 ```text
 novels/
 └── 我的小说/
+    ├── manuscript/
+    │   ├── zh/
+    │   │   ├── 第001章-标题.md
+    │   │   └── 第002章-标题.md
+    │   └── en/
+    │       ├── Chapter-001.md
+    │       └── Chapter-002.md
+    ├── workspace/
+    │   └── chapters/
+    │       └── 第001章-标题/
+    │           ├── task-card.md
+    │           ├── scene-plan.md
+    │           ├── sandbox.md
+    │           ├── review.md
+    │           └── revision-notes.md
     ├── 00-大纲.md
     ├── 01-人物档案.md
     ├── 02-世界观与伏笔.md
@@ -92,9 +131,14 @@ novels/
     │   ├── C002-反派名.md
     │   └── sessions/
     │       └── 第001章-沙盘记录.md
-    ├── 99-进度仪表盘.md
-    ├── 第01章-标题.md
-    └── 第02章-标题.md
+    └── 99-进度仪表盘.md
+```
+
+短故事可以使用轻量目录：
+
+```text
+short-stories/
+└── 我的短故事.md
 ```
 
 ### 核心文件分工
@@ -109,11 +153,36 @@ novels/
 | `04-角色沙盘/C001-角色名.md` | AI 为主 | 每章角色状态回写 |
 | `04-角色沙盘/sessions/第XXX章-沙盘记录.md` | AI 为主 | 留存每章角色会议和导演裁决 |
 | `99-进度仪表盘.md` | AI 自动维护 | 续写恢复、整体追踪 |
-| `第XX章-标题.md` | 用户 + AI | 正文和章节复盘 |
+| `manuscript/zh/第XXX章-标题.md` | 用户 + AI | 干净中文正文，唯一事实来源 |
+| `workspace/chapters/第XXX章-标题/` | AI 为主 | 本章任务卡、场景拆分、沙盘、复盘、修改记录 |
+
+章节正文文件保持极简：
+
+```markdown
+第001章：标题
+
+正文第一段。
+
+正文第二段。
+```
+
+旧项目如果已经有根目录混合章节，可以运行：
+
+```bash
+python3 scripts/split_chapter_workspace.py novels/我的小说
+```
+
+确认拆分正确后，可用 `--move-originals` 把旧章节归档到 `_archive/mixed-chapters/`。
 
 ---
 
 ## 核心能力
+
+### 短故事模式（可选）
+
+当用户明确说“短故事”“短篇故事”“写一篇完整故事”时，skill 进入短故事模式。默认要求正文不少于 6000 个中文字符，可以自然分段或换行，但必须完成完整剧情闭环：开端、诱发事件、升级、反转或代价、高潮选择、结局收束。
+
+短故事不默认创建长篇项目目录，也不运行每章连载循环。需要落盘时推荐使用 `short-stories/<标题>.md`，并套用 [short-story-template.md](references/short-story-template.md)。
 
 ### 1. 三阶段工作流
 
@@ -177,7 +246,7 @@ novels/
 ### 5. AI 味检测
 
 ```bash
-python3 scripts/check_ai_style.py novels/我的小说/第01章.md
+python3 scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标题.md
 ```
 
 支持识别 9 类常见问题：
@@ -213,17 +282,37 @@ python3 scripts/check_ai_style.py novels/我的小说/第01章.md
 PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 ```
 
+### 发版前验证
+
+v2.6.1 发布前已通过以下检查：
+
+```bash
+PYTHONPATH=scripts python3 -m unittest discover tests/ -v
+python3 -m py_compile scripts/*.py tests/*.py
+python3 -m json.tool test-prompts.json >/dev/null
+git diff --check
+```
+
+发布包应排除 `.git/`、`.claude/`、`__pycache__/`、`*.pyc`、`.DS_Store`、`dist/` 和已有 `.skill` 产物。
+
 ### 检查章节字数
 
 ```bash
-python3 scripts/check_chapter_wordcount.py novels/我的小说/第01章.md
+python3 scripts/check_chapter_wordcount.py novels/我的小说/manuscript/zh/第001章-标题.md
 python3 scripts/check_chapter_wordcount.py --all novels/我的小说
+```
+
+### 检查短故事
+
+```bash
+python3 scripts/check_short_story.py short-stories/我的短故事.md
+python3 scripts/check_short_story.py --all short-stories
 ```
 
 ### 检查 AI 味
 
 ```bash
-python3 scripts/check_ai_style.py novels/我的小说/第01章.md
+python3 scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标题.md
 python3 scripts/check_ai_style.py --all novels/我的小说
 ```
 
@@ -246,6 +335,13 @@ python3 scripts/character_tracker.py novels/我的小说
 python3 scripts/generate_epub.py novels/我的小说 --author "作者名"
 ```
 
+### 拆分旧混合章节
+
+```bash
+python3 scripts/split_chapter_workspace.py novels/我的小说
+python3 scripts/split_chapter_workspace.py novels/我的小说 --move-originals
+```
+
 ---
 
 ## 文档导航
@@ -264,7 +360,9 @@ python3 scripts/generate_epub.py novels/我的小说 --author "作者名"
 |------|------|
 | [outline-template-v1-minimal.md](references/outline-template-v1-minimal.md) | 极简大纲 |
 | [character-template-v2.md](references/character-template-v2.md) | 人物驱动引擎 |
-| [chapter-template.md](references/chapter-template.md) | 章节任务卡 |
+| [chapter-template.md](references/chapter-template.md) | 干净章节正文模板 |
+| [chapter-workspace-template.md](references/chapter-workspace-template.md) | 章节任务卡、场景拆分、沙盘和复盘 |
+| [short-story-template.md](references/short-story-template.md) | 短故事任务卡和完整剧情骨架 |
 | [progress-dashboard-template.md](references/progress-dashboard-template.md) | 进度仪表盘 |
 | [story-bible-template.md](references/story-bible-template.md) | 世界观与伏笔 |
 
@@ -306,6 +404,14 @@ python3 scripts/generate_epub.py novels/我的小说 --author "作者名"
 3. 用 [11-叙事节奏框架.md](references/11-叙事节奏框架.md) 调整全本结构
 4. 用 [ai-style-examples.md](references/ai-style-examples.md) 做章节精修
 
+### 短故事路径
+
+1. 明确说“写一篇短故事 / 短篇故事”
+2. 使用 [short-story-template.md](references/short-story-template.md) 锁定完整剧情骨架
+3. 正文写到不少于 6000 字
+4. 运行 `python3 scripts/check_short_story.py short-stories/标题.md`
+5. 检查结尾是否收束主线，而不是停在“未完待续”
+
 ---
 
 ## 常见问题
@@ -346,6 +452,9 @@ PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 
 ## 版本
 
+- **v2.6.1**：发布加固版本。完成全量 Skill 检测、端到端烟测和临时 `.skill` 打包校验；修复小说健康检查 `其他` 场景回退、英文 EPUB 元数据误读翻译流程文件、章节工作台文档引用等问题；移除 `.claude/` 本地配置发布风险。
+- **v2.6.0**：新增 `manuscript/zh` 干净正文和 `workspace/chapters` 章节工作台结构，提供 `scripts/split_chapter_workspace.py` 迁移旧混合章节；英文译文默认写入 `manuscript/en`。
+- **v2.5.0**：新增短故事模式，支持不少于 6000 字的完整单篇故事，提供短故事模板、剧情闭合红灯项和 `scripts/check_short_story.py` 检查脚本。
 - **v2.4.0**：新增角色沙盘模式，每章写作前进行角色意志校验；支持每个角色独立运行时文件和沙盘记录。
 - **v2.3.1**：强化执行入口、自动驾驶边界和修改工作流。
 - **v2.3.0**：引入角色状态推演机制。

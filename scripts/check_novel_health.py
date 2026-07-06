@@ -44,7 +44,10 @@ def detect_scene_type(text: str) -> str:
     if chinese_count > 0 and dialogue_count / (chinese_count / 100) > 2:
         scores['室内对话'] = scores.get('室内对话', 0) + 3
 
-    best_type = max(scores, key=scores.get) if any(scores.values()) else '其他'
+    if not any(scores.values()):
+        return '其他'
+
+    best_type = max(scores, key=scores.get)
     if scores[best_type] < 1:
         return '其他'
     return best_type

@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-English Translation Script
-将中文小说深度翻译为英文版本
+Current AI Translation Task Generator
+为当前 AI 准备中文小说意译翻译任务包
 """
 
 import argparse
-import os
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from utils import extract_text_from_chapter, find_chapter_files
 
 # 修复编码问题
 if sys.platform == 'win32':
@@ -72,38 +75,12 @@ def extract_novel_info(novel_dir: Path) -> dict:
 
 def extract_chapter_content(file_path: Path) -> str:
     """提取章节正文内容"""
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    lines = content.split('\n')
-    body_start = None
-    body_end = None
-
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if stripped == '## 正文':
-            body_start = i + 1
-            continue
-        if body_start is not None and stripped.startswith('## '):
-            body_end = i
-            break
-
-    if body_start is not None:
-        return '\n'.join(lines[body_start:body_end]).strip()
-
-    # 兼容旧模板
-    content_start = 0
-    for i, line in enumerate(lines):
-        if line.startswith('#') and '章' in line:
-            content_start = i + 1
-            break
-
-    return '\n'.join(lines[content_start:]).strip()
+    return extract_text_from_chapter(file_path)
 
 
 def find_chapters(novel_dir: Path) -> list:
     """查找所有章节文件"""
-    chapter_files = sorted(novel_dir.glob('第*.md'))
+    chapter_files = find_chapter_files(novel_dir, 'zh')
     chapters = []
 
     for chapter_file in chapter_files:
@@ -116,6 +93,10 @@ def find_chapters(novel_dir: Path) -> list:
             chapter_num = len(chapters) + 1
             chapter_title = chapter_file.stem
 
+        content_title = _extract_plain_chapter_title(chapter_file)
+        if content_title:
+            chapter_title = content_title
+
         chapters.append({
             'file': chapter_file,
             'number': chapter_num,
@@ -125,11 +106,44 @@ def find_chapters(novel_dir: Path) -> list:
     return chapters
 
 
-def build_translation_prompt(novel_info: dict, chapter_content: str, chapter_title: str) -> str:
-    """构建翻译提示词"""
-    prompt = f"""# Translation Task
+def _extract_plain_chapter_title(chapter_file: Path) -> str:
+    """从干净章节首行提取标题。"""
+    try:
+        with open(chapter_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                if stripped.startswith('#'):
+                    return ''
+                if re.match(r'^第\s*\d+\s*章\b', stripped):
+                    return stripped
+                return ''
+    except OSError:
+        return ''
+    return ''
 
-You are a professional novel translator. Translate the following Chinese novel chapter into fluent English.
+
+def build_translation_prompt(
+    novel_info: dict,
+    chapter_content: str,
+    chapter_title: str,
+    chapter_number: int = None
+) -> str:
+    """构建翻译提示词"""
+    chapter_label = f"Chapter {chapter_number}: " if chapter_number else "Chapter [number]: "
+    prompt = f"""# 当前 AI 意译翻译任务 / Current AI Adaptive Translation Task
+
+You are the current AI in this conversation. Translate the following Chinese novel chapter into fluent English using 意译翻译 / adaptive translation.
+
+Do not translate word-for-word. Preserve the scene's intent, rhythm, emotional pressure, subtext, and character voice so the English reads like an original novel chapter, not a literal conversion.
+
+Follow the project workflow files before drafting:
+- 翻译简报: `../00-translation-brief.md`
+- 术语表: `../01-termbase.md`
+- 风格表: `../02-style-sheet.md`
+- 查询日志: `../03-query-log.md`
+- QA checklist: `../04-qa-checklist.md`
 
 ## Novel Information
 - Title: {novel_info['title']}
@@ -144,13 +158,21 @@ You are a professional novel translator. Translate the following Chinese novel c
 {novel_info['worldbuilding'][:2000] if novel_info['worldbuilding'] else 'N/A'}
 
 ## Translation Requirements
-1. Maintain the narrative rhythm and emotional tension
-2. Use pinyin for character names (e.g., Zhang Wei)
-3. Keep Chinese-specific terms (gongfu, qigong) with pinyin or explanatory translation
-4. Preserve chapter structure with "## Title" and "## Body" headings
+1. Use 意译翻译 / adaptive translation as the default mode
+2. Maintain the narrative rhythm and emotional tension
+3. Use pinyin for character names (e.g., Zhang Wei)
+4. Keep Chinese-specific terms (gongfu, qigong) with pinyin or explanatory translation
 5. Use modern English, avoid stiff literal translations
 6. Keep dialogue natural and fluent
 7. Translate the chapter title as well
+8. Finish with 译者自检: compare source and target for omissions, meaning drift, terminology, and formatting before saving
+
+## Professional Stages For This Chapter
+1. Pre-drafting: read the source for plot function, POV, register, imagery, and culture-specific problems.
+2. Drafting: produce the adaptive English version according to the brief, termbase, and style sheet.
+3. 译者自检: compare the source and draft line-by-line for omissions and changed facts.
+4. 双语修订: run the separate revision task against the saved draft.
+5. 单语润色: run the separate monolingual edit task on the revised English.
 
 ## Chapter Title
 {chapter_title}
@@ -159,155 +181,299 @@ You are a professional novel translator. Translate the following Chinese novel c
 {chapter_content}
 
 ## Output Format
-Provide only the translated chapter in Markdown format, with "## Title" for the chapter title and "## Body" for the content. Do not include any additional explanation.
+Provide only the plain translated Markdown chapter. Use exactly this structure:
+
+{chapter_label}[translated chapter title]
+
+[body text]
+
+Rules:
+- The first line contains only the chapter number and translated chapter title.
+- Leave one blank line after the first line.
+- Put the translated body text immediately after that blank line.
+- Use no Markdown headings, section labels, translator notes, QA notes, or explanations.
 """
     return prompt
 
 
-def translate_with_openai(prompt: str) -> str:
-    """使用 OpenAI API 翻译"""
-    try:
-        from openai import OpenAI
-    except ImportError:
-        print("错误: 请安装 openai 库 (pip install openai)")
-        raise
+def extract_candidate_terms(novel_info: dict) -> list:
+    """从人物档案和世界观中提取术语候选"""
+    terms = []
+    seen = set()
+    sources = [
+        ("人物", novel_info.get('characters', '')),
+        ("世界观", novel_info.get('worldbuilding', '')),
+    ]
 
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        print("错误: 请设置 OPENAI_API_KEY 环境变量")
-        raise ValueError("Missing OPENAI_API_KEY")
+    for category, content in sources:
+        for line in content.splitlines():
+            stripped = line.strip().lstrip("-*0123456789. ")
+            if not stripped:
+                continue
 
-    client = OpenAI(api_key=api_key)
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}]
+            if "：" in stripped:
+                candidate = stripped.split("：", 1)[0].strip()
+            elif ":" in stripped:
+                candidate = stripped.split(":", 1)[0].strip()
+            else:
+                match = re.match(r'([\u4e00-\u9fff]{2,8})', stripped)
+                candidate = match.group(1) if match else ""
+
+            if not candidate or candidate in seen:
+                continue
+            if len(candidate) > 12:
+                continue
+
+            seen.add(candidate)
+            terms.append((candidate, category))
+
+    return terms
+
+
+def build_translation_brief(novel_info: dict, task_count: int) -> str:
+    """生成翻译项目简报"""
+    return f"""# Translation Brief / 翻译简报
+
+## 项目概况
+- 书名: {novel_info['title']}
+- 作者: {novel_info['author']}
+- 类型: {novel_info['genre'] or '未注明'}
+- 待处理章节数: {task_count}
+
+## 翻译目的
+将中文小说意译为自然、可读、具备英文小说叙事质感的英文版本。译文服务于阅读体验，不服务于逐字对照。
+
+## 目标读者
+- 主要读者: 英文小说读者，默认不熟悉中文网文术语。
+- 阅读预期: 情节清楚、人物声音稳定、悬念和情绪压力能被直接感知。
+- 文化处理: 核心文化设定保留质感，非核心表达转换为英文自然说法。
+
+## 交付规格
+- 每章文件: `manuscript/en/Chapter-XXX.md`
+- 章节结构: 第一行写章数和章标题，空一行后直接写正文。
+- 任务文件: `manuscript/en/_translation_tasks/Chapter-XXX.*.prompt.md`
+- 查询日志: `manuscript/en/03-query-log.md`
+
+## 第一性原则
+1. 目的优先: 译文必须满足目标读者和出版交付目的。
+2. 意义优先: 不牺牲事实、因果、伏笔、人物关系。
+3. 效果优先: 悬念、张力、幽默、讽刺、压迫感要在英文中重新成立。
+4. 一致性优先: 人名、术语、称谓、境界、地名和口吻必须全书统一。
+5. 可验证优先: 每章经过译者自检、双语修订、单语润色和终检。
+
+## 源文本摘要
+{novel_info['synopsis'] or '未提供。翻译前应先通读大纲和相关章节补足。'}
+"""
+
+
+def build_termbase(novel_info: dict) -> str:
+    """生成术语表模板"""
+    rows = [
+        "| 中文术语 | 英文处理 | 类型 | 说明 | 状态 |",
+        "|----------|----------|------|------|------|",
+    ]
+
+    for term, category in extract_candidate_terms(novel_info):
+        rows.append(f"| {term} | TBD | {category} | 从项目资料自动提取，当前 AI 翻译前确认 | 待定 |")
+
+    if len(rows) == 2:
+        rows.append("| TBD | TBD | 待定 | 翻译前由当前 AI 从章节中补充 | 待定 |")
+
+    return """# Termbase / 术语表
+
+使用规则：
+- 人名默认拼音，除非用户或风格表另有规定。
+- 地名、门派、法宝、境界等先入表再翻译，避免前后漂移。
+- 修改术语时，同步检查已译章节。
+
+""" + "\n".join(rows) + "\n"
+
+
+def build_style_sheet(novel_info: dict) -> str:
+    """生成英文风格表"""
+    return f"""# Style Sheet / 风格表
+
+## Voice And Tone
+- 类型基调: {novel_info['genre'] or '按原文判断'}
+- 英文口吻: 自然、清晰、有小说感；避免机器翻译腔。
+- 叙述节奏: 保留原文的悬念推进和段落张力，可重组句子以贴合英文阅读。
+
+## 意译边界
+- 可以调整: 语序、分句/合句、语气词、俗语、隐喻表达、称谓的英文承载方式。
+- 不可调整: 事件事实、人物动机、伏笔线索、关系状态、时间线、世界观规则。
+- 需要查询: 双关、诗词、专名、制度称谓、文化负载词、可能影响后文伏笔的句子。
+
+## Names And Terms
+- 人名: 使用拼音，首字母大写。
+- 称谓: 能自然转写时转写；承载关系张力时保留称谓感并解释。
+- 文化词: 核心设定可保留拼音，普通表达转成自然英文。
+
+## Dialogue
+- 目标: 像英文人物真实说话，而不是中文句式套壳。
+- 允许: 拆句、停顿、补足主语、调整语气。
+- 禁止: 把人物声音统一成中性解释腔。
+"""
+
+
+def build_query_log() -> str:
+    """生成查询日志模板"""
+    return """# Query Log / 查询日志
+
+| 编号 | 章节 | 原文问题 | 暂定处理 | 需要用户确认 | 状态 |
+|------|------|----------|----------|--------------|------|
+| Q001 | TBD | TBD | TBD | 否 | 待处理 |
+
+使用规则：
+- 不确定的双关、伏笔、专名、文化词先记录，不擅自定死。
+- 能通过上下文解决的，记录处理依据。
+- 会影响后文一致性的，标记为需要用户确认。
+"""
+
+
+def build_qa_checklist() -> str:
+    """生成专业翻译 QA 清单"""
+    return """# Translation QA Checklist / 翻译 QA 清单
+
+## 译者自检
+- [ ] 无漏译、错译、反译。
+- [ ] 人物关系、动机、时间线没有漂移。
+- [ ] 术语表中的术语使用一致。
+- [ ] plain translated Markdown 格式正确：第一行是章数和章标题，空一行后直接正文。
+
+## 双语修订
+- [ ] 对照 source against target 检查意义、事实、语气、伏笔。
+- [ ] 检查文化负载词处理是否符合翻译简报。
+- [ ] 检查人名、称谓、境界、地名和专有名词。
+
+## 单语润色
+- [ ] read the English only，确认英文像自然小说。
+- [ ] 删除翻译腔、解释腔和生硬中文句式。
+- [ ] 对白符合人物身份和场景压力。
+
+## 终检
+- [ ] 文件命名为 `Chapter-XXX.md`。
+- [ ] 章节顺序完整。
+- [ ] 没有任务说明、译者笔记或未处理 TBD 混入正文。
+- [ ] 译文文件内没有 Markdown 标题、章节标签、QA 说明或译者说明。
+- [ ] 可继续运行 `python3 scripts/generate_epub.py <小说目录路径> --lang en`。
+"""
+
+
+def build_revision_prompt(chapter_num: int, chapter_title: str, chapter_content: str) -> str:
+    """生成双语修订任务"""
+    return f"""# 双语修订任务 / Bilingual Revision Task
+
+Role: revise the translated chapter by comparing source against target. This is not rewriting from scratch unless the draft fails.
+
+Inputs:
+- Source chapter title: {chapter_title}
+- Source chapter body:
+{chapter_content}
+
+Required files to read:
+- `../Chapter-{chapter_num:03d}.md`
+- `../00-translation-brief.md`
+- `../01-termbase.md`
+- `../02-style-sheet.md`
+- `../04-qa-checklist.md`
+
+Check:
+1. Meaning transfer: no omissions, additions, changed facts, or weakened causality.
+2. Terminology: names, places, titles, ranks, objects, and culture-specific terms match the termbase.
+3. Style/register: English follows the style sheet and preserves narrative pressure.
+4. Format: preserve plain translated Markdown: first line is the chapter number and title, then one blank line, then body text.
+
+Output: overwrite `../Chapter-{chapter_num:03d}.md` only after corrections are applied.
+"""
+
+
+def build_edit_prompt(chapter_num: int) -> str:
+    """生成单语润色任务"""
+    return f"""# 单语润色任务 / Monolingual Edit Task
+
+Role: read the English only as an English fiction editor. Do not consult the source unless a sentence is incoherent or seems factually broken.
+
+Required file:
+- `../Chapter-{chapter_num:03d}.md`
+
+Edit for:
+1. Natural English fiction prose.
+2. Dialogue rhythm and character voice.
+3. Paragraph flow, tension, and clarity.
+4. Removal of translationese while preserving facts already verified in bilingual revision.
+5. Preserve the plain translated Markdown format: first line title, blank line, body only.
+
+Output: overwrite `../Chapter-{chapter_num:03d}.md` with the polished version.
+"""
+
+
+def save_project_workflow_files(output_path: Path, novel_info: dict, task_count: int):
+    """保存项目级专业翻译流程文件"""
+    output_path.mkdir(parents=True, exist_ok=True)
+    files = {
+        "00-translation-brief.md": build_translation_brief(novel_info, task_count),
+        "01-termbase.md": build_termbase(novel_info),
+        "02-style-sheet.md": build_style_sheet(novel_info),
+        "03-query-log.md": build_query_log(),
+        "04-qa-checklist.md": build_qa_checklist(),
+    }
+    for name, content in files.items():
+        (output_path / name).write_text(content, encoding='utf-8')
+
+
+def save_translation_task(task_path: Path, prompt: str):
+    """保存当前 AI 可直接执行的意译任务"""
+    task_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(task_path, 'w', encoding='utf-8') as f:
+        f.write(prompt)
+
+
+def save_translation_readme(output_path: Path, task_count: int):
+    """保存当前 AI 翻译任务说明"""
+    output_path.mkdir(parents=True, exist_ok=True)
+    readme_path = output_path / "_translation_tasks" / "README.md"
+    readme_path.parent.mkdir(parents=True, exist_ok=True)
+    readme_path.write_text(
+        f"""# 当前 AI 意译翻译任务包
+
+本目录由 `scripts/translate_to_english.py` 生成，不调用独立翻译接口。
+
+使用方式：
+1. 先读 `../00-translation-brief.md`、`../01-termbase.md`、`../02-style-sheet.md`、`../04-qa-checklist.md`。
+2. 逐章执行 `Chapter-XXX.translate.prompt.md`，把译文保存为 `../Chapter-XXX.md`。
+3. 执行 `Chapter-XXX.revise.prompt.md` 做双语修订。
+4. 执行 `Chapter-XXX.edit.prompt.md` 做单语润色。
+5. 用 `../04-qa-checklist.md` 做终检。
+
+已生成任务数：{task_count}
+""",
+        encoding='utf-8',
     )
-    return response.choices[0].message.content
-
-
-def translate_with_anthropic(prompt: str) -> str:
-    """使用 Anthropic API 翻译"""
-    try:
-        from anthropic import Anthropic
-    except ImportError:
-        print("错误: 请安装 anthropic 库 (pip install anthropic)")
-        raise
-
-    api_key = os.getenv('ANTHROPIC_API_KEY')
-    if not api_key:
-        print("错误: 请设置 ANTHROPIC_API_KEY 环境变量")
-        raise ValueError("Missing ANTHROPIC_API_KEY")
-
-    client = Anthropic(api_key=api_key)
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=8000,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return message.content[0].text
-
-
-def translate_with_gemini(prompt: str) -> str:
-    """使用 Google Gemini API 翻译"""
-    try:
-        import google.genai as genai
-    except ImportError:
-        print("错误: 请安装 google-generativeai 库 (pip install google-generativeai)")
-        raise
-
-    api_key = os.getenv('GEMINI_API_KEY')
-    if not api_key:
-        print("错误: 请设置 GEMINI_API_KEY 环境变量")
-        raise ValueError("Missing GEMINI_API_KEY")
-
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.0-flash')
-    response = model.generate_content(prompt)
-    return response.text
-
-
-def translate_with_ai(prompt: str, provider: str = None) -> str:
-    """调用 AI 进行翻译
-
-    Args:
-        prompt: 翻译提示词
-        provider: AI 提供商 (openai/anthropic/gemini)，如果为 None 则自动检测
-
-    Returns:
-        翻译后的内容
-    """
-    if provider:
-        providers = [provider]
-    else:
-        # 自动检测可用的 API
-        providers = []
-        if os.getenv('OPENAI_API_KEY'):
-            providers.append('openai')
-        if os.getenv('ANTHROPIC_API_KEY'):
-            providers.append('anthropic')
-        if os.getenv('GEMINI_API_KEY'):
-            providers.append('gemini')
-
-        if not providers:
-            print("\n请配置以下任一 AI API 环境变量:")
-            print("  - OPENAI_API_KEY")
-            print("  - ANTHROPIC_API_KEY")
-            print("  - GEMINI_API_KEY")
-            print("\n或者通过 --provider 参数指定提供商")
-            raise ValueError("No AI API configured")
-
-    # 尝试第一个可用的提供商
-    for p in providers:
-        try:
-            if p == 'openai':
-                return translate_with_openai(prompt)
-            elif p == 'anthropic':
-                return translate_with_anthropic(prompt)
-            elif p == 'gemini':
-                return translate_with_gemini(prompt)
-        except Exception as e:
-            print(f"警告: {p} API 调用失败: {e}")
-            continue
-
-    raise RuntimeError("所有配置的 AI API 都不可用")
-
-
-def save_translated_chapter(output_path: Path, title: str, content: str):
-    """保存翻译后的章节"""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(f"## {title}\n\n")
-        f.write(f"## Body\n\n")
-        f.write(content)
 
 
 def translate_novel(
     novel_dir: Path,
-    output_dir: str = 'en',
-    chapters: str = None,
-    provider: str = None
+    output_dir: str = 'manuscript/en',
+    chapters: str = None
 ):
-    """翻译小说"""
+    """为当前 AI 准备意译翻译任务包"""
     novel_dir = Path(novel_dir)
 
     if not novel_dir.exists():
         print(f"错误: 目录不存在 - {novel_dir}")
         return False
 
-    print(f"开始翻译: {novel_dir.name}")
+    print(f"准备当前 AI 意译翻译任务: {novel_dir.name}")
 
     # 提取小说信息
     novel_info = extract_novel_info(novel_dir)
     print(f"书名: {novel_info['title']}")
     print(f"作者: {novel_info['author']}")
-    if provider:
-        print(f"使用 AI: {provider}")
-    else:
-        print("自动检测 AI 提供商...")
+    print("翻译模式: 意译翻译（使用当前 AI，不调用独立接口）")
 
     # 确定输出目录
     output_path = novel_dir / output_dir
+    task_path = output_path / "_translation_tasks"
 
     # 查找章节
     chapter_files = find_chapters(novel_dir)
@@ -323,37 +489,44 @@ def translate_novel(
     if chapters:
         chapters_to_translate = parse_chapter_range(chapters, len(chapter_files))
 
-    # 翻译每个章节
-    for i, chapter in enumerate(chapter_files):
-        if chapters_to_translate and chapter['number'] not in chapters_to_translate:
-            continue
+    selected_chapters = [
+        chapter
+        for chapter in chapter_files
+        if not chapters_to_translate or chapter['number'] in chapters_to_translate
+    ]
 
-        print(f"\n翻译第 {chapter['number']} 章: {chapter['title']}")
+    if not selected_chapters:
+        print("\n错误: 没有匹配到需要翻译的章节")
+        return False
+
+    save_project_workflow_files(output_path, novel_info, len(selected_chapters))
+
+    for chapter in selected_chapters:
+        print(f"\n生成第 {chapter['number']} 章意译任务: {chapter['title']}")
 
         # 提取章节内容
         content = extract_chapter_content(chapter['file'])
 
         # 构建提示词
-        prompt = build_translation_prompt(novel_info, content, chapter['title'])
+        prompt = build_translation_prompt(novel_info, content, chapter['title'], chapter['number'])
+        revision_prompt = build_revision_prompt(chapter['number'], chapter['title'], content)
+        edit_prompt = build_edit_prompt(chapter['number'])
 
-        try:
-            # 调用 AI 翻译
-            translated_content = translate_with_ai(prompt, provider)
+        translate_file = task_path / f"Chapter-{chapter['number']:03d}.translate.prompt.md"
+        legacy_file = task_path / f"Chapter-{chapter['number']:03d}.prompt.md"
+        revise_file = task_path / f"Chapter-{chapter['number']:03d}.revise.prompt.md"
+        edit_file = task_path / f"Chapter-{chapter['number']:03d}.edit.prompt.md"
+        save_translation_task(translate_file, prompt)
+        save_translation_task(legacy_file, prompt)
+        save_translation_task(revise_file, revision_prompt)
+        save_translation_task(edit_file, edit_prompt)
+        print(f"已保存任务: {translate_file}")
+        print(f"已保存修订任务: {revise_file}")
+        print(f"已保存润色任务: {edit_file}")
 
-            # 保存翻译结果
-            output_file = output_path / f"Chapter-{chapter['number']:03d}.md"
-            save_translated_chapter(output_file, chapter['title'], translated_content)
-
-            print(f"已保存: {output_file}")
-
-        except NotImplementedError as e:
-            print(f"错误: {e}")
-            return False
-        except Exception as e:
-            print(f"翻译第 {chapter['number']} 章失败: {e}")
-            continue
-
-    print(f"\n翻译完成！英文版保存在: {output_path}")
+    save_translation_readme(output_path, len(selected_chapters))
+    print(f"\n任务包已生成: {task_path}")
+    print("下一步: 让当前 AI 按翻译简报、术语表、风格表和 QA 清单执行翻译、双语修订、单语润色。")
     return True
 
 
@@ -375,34 +548,29 @@ def parse_chapter_range(chapters_str: str, max_chapters: int) -> set:
 
 def main():
     parser = argparse.ArgumentParser(
-        description='将中文小说翻译为英文版本',
+        description='为当前 AI 生成中文小说意译翻译任务包',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 示例:
   python scripts/translate_to_english.py novels/书名
   python scripts/translate_to_english.py novels/书名 --chapters "1,3-5"
-  python scripts/translate_to_english.py novels/书名 -o en
-  python scripts/translate_to_english.py novels/书名 --provider openai
+  python scripts/translate_to_english.py novels/书名 -o manuscript/en
 
-环境变量:
-  OPENAI_API_KEY      OpenAI API 密钥
-  ANTHROPIC_API_KEY  Anthropic API 密钥
-  GEMINI_API_KEY     Google Gemini API 密钥
+说明:
+  本脚本不调用独立翻译接口，只生成当前 AI 可直接执行的意译任务包。
+  真正译文由当前 AI 生成，并保存到 manuscript/en/Chapter-XXX.md。
 '''
     )
     parser.add_argument('novel_dir', help='小说项目目录路径')
-    parser.add_argument('-o', '--output', default='en', help='输出目录 (默认: en)')
+    parser.add_argument('-o', '--output', default='manuscript/en', help='输出目录 (默认: manuscript/en)')
     parser.add_argument('--chapters', help='要翻译的章节范围，如 "1,3-5,10"')
-    parser.add_argument('--provider', choices=['openai', 'anthropic', 'gemini'],
-                        help='指定 AI 提供商')
 
     args = parser.parse_args()
 
     success = translate_novel(
         Path(args.novel_dir),
         output_dir=args.output,
-        chapters=args.chapters,
-        provider=args.provider
+        chapters=args.chapters
     )
     sys.exit(0 if success else 1)
 

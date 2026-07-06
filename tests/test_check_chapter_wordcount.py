@@ -52,6 +52,45 @@ class CheckChapterWordcountTests(unittest.TestCase):
         self.assertEqual(result["status"], "pass")
         self.assertEqual(result["word_count"], 11)
 
+    def test_check_chapter_clean_markdown_excludes_title(self):
+        content = """第001章：标题不计入
+
+这是正文。
+这里还有第二句。
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "第001章-标题不计入.md"
+            path.write_text(content, encoding="utf-8")
+
+            result = check_chapter(str(path), min_words=5)
+
+        self.assertEqual(result["status"], "pass")
+        self.assertEqual(result["word_count"], 11)
+
+    def test_check_short_story_uses_body_and_custom_minimum(self):
+        content = """# 短故事：测试
+
+## 短故事任务卡
+- **字数目标**：不少于 6000 字
+
+## 正文
+这是短故事正文。
+它已经开始形成完整情节。
+
+## 完稿复盘
+- **正文字数**：不应该计入正文
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "测试短故事.md"
+            path.write_text(content, encoding="utf-8")
+
+            result = check_chapter(str(path), min_words=10)
+
+        self.assertEqual(result["status"], "pass")
+        self.assertEqual(result["word_count"], 18)
+
 
 if __name__ == "__main__":
     unittest.main()

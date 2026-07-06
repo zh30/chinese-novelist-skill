@@ -1,20 +1,22 @@
 ---
 name: chinese-novelist-skill
-description: "Chinese novel/web novel writing skill. Plan, write, revise, export EPUB, check quality, run character sandbox. Triggers: 写小说，写一本，继续写，下一章，角色沙盘，修改第 X 章，重写，导出 epub, 字数检查，AI 味检查，质量检查，检查节奏，自动写完整本，autopilot. Also: EPUB export, word count check."
+description: "Chinese novel/web novel writing skill. Plan, write, revise, export EPUB, check quality, run character sandbox, or write complete short stories. Triggers: 写小说，写一本，短故事，短篇故事，写一篇完整故事，继续写，下一章，角色沙盘，修改第 X 章，重写，导出 epub, 字数检查，AI 味检查，质量检查，检查节奏，自动写完整本，autopilot. Also: EPUB export, word count check."
 ---
 
 # Chinese Novelist
 
 ## Version
 
-- **Version**: `2.4.0`
-- **Version Date**: `2026-06-26`
-- **Changes**: 新增角色沙盘模式：每章写作前必须执行人物意志校验，使用 `04-角色沙盘/` 为每个关键角色维护独立运行时记忆；角色可弹性反抗大纲，导演按人物一致性、主线、悬念、原大纲、钩子优先级裁决。详见 [references/14-角色沙盘模式.md](references/14-角色沙盘模式.md)。
+- **Version**: `2.6.1`
+- **Version Date**: `2026-07-06`
+- **Changes**: 发布加固版本：完成全量 Skill 检测和端到端烟测；修复小说健康检查在无场景关键词时的 `其他` 场景回退；修复英文 EPUB 元数据误读翻译流程文件的问题；同步修正章节工作台文档引用。v2.6 干净正文架构、短故事模式和专业意译翻译流程继续可用。
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
 
 ## Overview
 
 为中文长篇小说和网文创作提供一套可持续执行的工作流：先稳住设定与大纲，再按章节推进，持续维护人物状态、悬念台账和文风质量，避免写到后面失控、注水或前后打架。
+
+默认入口是长篇小说 / 网文。只有当用户明确说“短故事”“短篇故事”“写一篇完整故事”“6000 字故事”等触发词时，才进入短故事模式；短故事要求正文不少于 6000 字，可以分段或换行，但必须有完整剧情闭环。
 
 ## 执行入口速查
 
@@ -23,6 +25,7 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 | 用户意图 | 触发词示例 | 进入流程 | 首轮必须交付 |
 |----------|------------|----------|--------------|
 | 新建小说 | "写一本"、"帮我写小说"、"从头开始" | 策划期 | 3-5 个书名候选 + 极简总纲 + 首章任务卡 |
+| 写短故事 | "短故事"、"短篇故事"、"写一篇完整故事"、"6000 字故事" | 短故事模式 | 标题 + 完整剧情骨架 + 不少于 6000 字的完整正文（可分段 / 换行） |
 | 继续连载 | "继续写"、"下一章" | 连载期 | 读取/索要小说目录，定位仪表盘、大纲和最近章节，再给下一章任务或正文 |
 | 快速出稿 | "快写"、"先写"、"初稿" | 连载期快速模式 | 跳过场景拆分，直接写正文，并只做字数和基础钩子检查 |
 | 修改章节 | "修改第 X 章"、"重写"、"打磨" | 修改工作流 | 定位章节，诊断问题，判定修改级别，再针对性改写 |
@@ -34,26 +37,28 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 
 每次响应先完成当前入口的最小闭环：
 
-1. **先定位阶段**：明确是策划期、连载期、收尾期、修改、导出还是检查。
+1. **先定位阶段**：明确是策划期、连载期、收尾期、短故事模式、修改、导出还是检查。
 2. **再收集缺口**：只追问会阻塞下一步的缺失项；自动驾驶模式不追问，按题材模板推断。
-3. **立刻给可用产物**：新书给书名和总纲，续写给下一章任务或正文，修改给诊断和修改方案，检查给脚本结果。
+3. **立刻给可用产物**：新书给书名和总纲，短故事给完整骨架和正文，续写给下一章任务或正文，修改给诊断和修改方案，检查给脚本结果。
 4. **少解释流程**：除非用户问方法，不要长篇介绍本 skill；把流程体现在产物里。
-5. **维护文件状态**：凡是创建、续写、修改章节，都同步更新 `99-进度仪表盘.md` 中的进度、人物状态和悬念状态。
+5. **维护文件状态**：凡是创建、续写、修改章节，都把最终正文写入 `manuscript/zh/`，把任务卡 / 场景 / 复盘写入 `workspace/chapters/`，并同步更新 `99-进度仪表盘.md` 中的进度、人物状态和悬念状态。
 
 ## 首轮决策树
 
 当入口判断完成后，按以下硬规则决定第一步输出，防止只追问、不交付：
 
 1. **用户要新建小说** → 直接给 3-5 个书名候选、极简总纲和第 1 章任务卡；信息不足时用题材模板补齐，并标注“可后续调整”的假设。
-2. **用户说继续写 / 下一章** → 先在当前工作区查找 `novels/` 和最近的 `99-进度仪表盘.md`。找到项目时，读取仪表盘和最近章节后交付下一章任务卡；找不到项目时，交付“续写恢复清单”（需要的目录 / 大纲 / 最近章节）并提供新建项目 fallback。
-3. **用户要快写 / 初稿** → 不展开完整方法论；只读取必要上下文，给本章正文草稿、基础钩子和字数状态。
-4. **用户要修改章节** → 先定位章节并输出一句诊断 + 修改级别 + 目标段落；只有找不到文件时才索要路径。
-5. **用户要自动写完整本** → 自动创建或补齐项目文件，从第 1 章或下一章开始落盘写作。单次响应以“完成当前可验证章节并回写状态”为最小单位，不能把未落盘章节口头算作已完成。
-6. **用户要检查 / 导出** → 优先运行对应脚本；脚本失败时说明失败原因，并用手工检查或文件路径修正继续推进。
+2. **用户要短故事 / 短篇故事** → 不进入长篇策划期；按 [短故事模式](#短故事模式可选) 生成标题、短故事任务卡、完整剧情骨架，并写出不少于 6000 字的完整正文。正文可分段或换行，但必须完成主线收束。
+3. **用户说继续写 / 下一章** → 先在当前工作区查找 `novels/` 和最近的 `99-进度仪表盘.md`。找到项目时，读取仪表盘和最近章节后交付下一章任务卡；找不到项目时，交付“续写恢复清单”（需要的目录 / 大纲 / 最近章节）并提供新建项目 fallback。
+4. **用户要快写 / 初稿** → 不展开完整方法论；只读取必要上下文，给本章正文草稿、基础钩子和字数状态。
+5. **用户要修改章节** → 先定位章节并输出一句诊断 + 修改级别 + 目标段落；只有找不到文件时才索要路径。
+6. **用户要自动写完整本** → 自动创建或补齐项目文件，从第 1 章或下一章开始落盘写作。单次响应以“完成当前可验证章节并回写状态”为最小单位，不能把未落盘章节口头算作已完成。
+7. **用户要检查 / 导出** → 优先运行对应脚本；脚本失败时说明失败原因，并用手工检查或文件路径修正继续推进。
 
 ## When to Use
 
 - 用户要从零开始写中文小说、网文、长篇故事、连载故事
+- 用户明确要求写短故事、短篇故事或一篇完整故事（短故事模式，不进入长篇连载）
 - 用户已有设定，想补大纲、人物档案、世界观、章节规划
 - 用户要续写已有章节，要求前后连贯
 - 用户要重写某章，增强钩子、节奏、对白、人物张力或减少 AI 味
@@ -62,7 +67,7 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 
 ## 三阶段工作流
 
-本 skill 采用简化后的三阶段工作流：
+本 skill 默认采用简化后的三阶段工作流，服务长篇小说 / 网文项目。短故事模式是可选旁路，不走连载期循环。
 
 | 阶段 | 目标 | 出口条件 | 适用场景 |
 |------|------|---------|---------|
@@ -74,6 +79,7 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 
 **用户说... → 进入...**
 - "帮我写个小说" / "从头开始" → **策划期**（从极简大纲开始）
+- "写个短故事" / "短篇故事" / "写一篇完整故事" → **短故事模式**（一次性完整剧情）
 - "继续写" / "下一章" → **连载期**（自动读取进度）
 - "写完了" / "准备发布" → **收尾期**（完稿检查）
 
@@ -106,6 +112,61 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 | **标准模式** | 默认 / 不明确时 | 完整流程 | 红绿灯检查 |
 
 快速模式原则：**写出来比写对更重要**。写完再改，不打断创作流。
+
+## 短故事模式（可选）
+
+短故事模式用于一次性交付完整中文短故事。默认仍是长篇小说 / 网文；只有用户明确说“短故事”“短篇故事”“写一篇完整故事”“6000 字故事”等需求时才进入本模式。
+
+### 触发与边界
+
+| 项目 | 规则 |
+|------|------|
+| 默认入口 | 长篇小说 / 网文三阶段工作流 |
+| 短故事触发 | 用户明确要求短故事、短篇故事、一篇完整故事，或指定 6000 字左右的单篇故事 |
+| 最低字数 | 正文不少于 6000 个中文字符；标题、任务卡、复盘不计入正文 |
+| 结构形式 | 可以自然分段、换行，或用 `---` 分隔场景；除非用户要求，不使用“第 X 章”章节结构 |
+| 完整性要求 | 必须有开端、诱发事件、升级、反转或代价、高潮选择、结局收束 |
+| 结尾要求 | 可以留余味，但不能只用悬念中断；主线问题必须解决或给出明确情感落点 |
+
+### 首轮交付
+
+用户信息不足时，不要把短故事请求升级成长篇策划；按题材推断缺口，直接交付：
+
+1. **标题**：可给 1 个确定标题；如果用户要求选择，再给 3-5 个候选。
+2. **短故事任务卡**：一句话 premise、主角欲望、对抗力量、主题、结局类型。
+3. **完整剧情骨架**：至少包含开场钩子、诱发事件、第一次失败、升级、反转、高潮、收束。
+4. **完整正文**：不少于 6000 字；可以分段或换行，但每段都要推进剧情。
+5. **完稿复盘**：字数状态、主角变化、主线是否闭合、伏笔 / 意象是否回收。
+
+如果单次输出空间不足，必须把正文落盘为连续分段并继续写到达标；不能只交付大纲，也不能把“后续略”算作完成。
+
+### 推荐文件
+
+短故事可不创建长篇项目目录。需要落盘时优先使用：
+
+- `short-stories/<标题>.md` → 使用 [short-story-template.md](references/short-story-template.md)
+- 如果用户希望并入某本书的项目目录：`novels/<书名>/短故事-标题.md`
+
+### 短故事写作循环
+
+短故事不使用连载期的每章沙盘和仪表盘回写，除非用户明确要求纳入长篇世界观。执行顺序：
+
+1. **确定核心**：题材、主角、欲望、对抗力量、主题和结局类型。
+2. **压缩结构**：将完整故事压进 6-8 个段落 / 场景，避免铺成长篇第一章。
+3. **埋设意象**：选择 1 个能在开头、中段、结尾回环的物件或场景。
+4. **写正文**：前 10% 进入异常或冲突；中段至少一次失败或认知翻转；结尾兑现开头承诺。
+5. **检查完整性**：运行 `python3 scripts/check_short_story.py <短故事文件路径>`；批量检查使用 `python3 scripts/check_short_story.py --all short-stories`。
+
+### 短故事红灯项
+
+- [ ] **字数达标**：正文不少于 6000 个中文字符。
+- [ ] **剧情完整**：开端、发展、转折、高潮、结局都已出现。
+- [ ] **主角变化**：主角至少经历一次不可逆选择或认知变化。
+- [ ] **核心冲突解决**：外部问题有结果，内部问题有明确落点。
+- [ ] **非片段化**：不是设定集、片段合集、第一章试读或只有氛围的散文。
+- [ ] **结尾闭合**：可有余味，但不能靠“未完待续”替代收束。
+
+详细模板见 [references/short-story-template.md](references/short-story-template.md)。
 
 ## 🤖 自动驾驶模式（Autopilot）
 
@@ -166,7 +227,7 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 
 ### 自动写作循环
 
-进入自动驾驶后，连载期按以下循环执行。每章都是一个可验证事务：只有章节文件和 `99-进度仪表盘.md` 已更新，才算该章完成。
+进入自动驾驶后，连载期按以下循环执行。每章都是一个可验证事务：只有 `manuscript/zh/` 正文、对应 `workspace/chapters/` 工作台文件和 `99-进度仪表盘.md` 已更新，才算该章完成。
 
 ```
 while 大纲还有未写章节，且未触发暂停条件:
@@ -175,7 +236,7 @@ while 大纲还有未写章节，且未触发暂停条件:
     3. 角色沙盘 → 关键角色有限信息发言，导演裁决反抗大纲点
     4. 明确本章任务 → 目标/阻碍/转折/钩子
     5. 场景拆分 → 3-6个场景
-    6. 写正文 → 完整章节（不超过8000字）
+    6. 写正文 → 写入 `manuscript/zh/第XXX章-标题.md`（不超过8000字）
     7. 质量检查 → 红灯项必须通过
     8. 回写状态 → 更新进度仪表盘和角色沙盘文件
     9. 当前轮仍可继续 → 自动开始下一章；否则输出进度简报
@@ -276,13 +337,20 @@ while 大纲还有未写章节，且未触发暂停条件:
 - `00-大纲.md` → 使用 [outline-template-v1-minimal.md](references/outline-template-v1-minimal.md)（默认，10 个字段，5 分钟完成）
 - `99-进度仪表盘.md` → 使用 [progress-dashboard-template.md](references/progress-dashboard-template.md)（自动生成，AI 维护）
 - `04-角色沙盘/` → 使用 [references/14-角色沙盘模式.md](references/14-角色沙盘模式.md)（每章必跑，维护角色运行时记忆）
+- `manuscript/zh/` → 中文正文唯一事实来源；章节文件只包含“章数 + 章标题”和正文
+- `workspace/chapters/` → 每章工作台，保存任务卡、场景拆分、沙盘裁决、复盘和修改记录
 
 **可选深化文件（按需选用）：**
 - `01-人物档案.md` → 使用 [character-template-v2.md](references/character-template-v2.md)（默认推荐，欲望 - 恐惧双引擎驱动写作）或 [character-template.md](references/character-template.md)（v1 简单静态版）
 - `02-世界观与伏笔.md` → 使用 [story-bible-template.md](references/story-bible-template.md)（世界观复杂时补充）
 
 **章节文件：**
-- `第XX章-标题.md` → 使用 [chapter-template.md](references/chapter-template.md)
+- `manuscript/zh/第XXX章-标题.md` → 使用 [chapter-template.md](references/chapter-template.md)，文件内只保留章数、章标题和正文
+- `workspace/chapters/第XXX章-标题/` → 使用 [chapter-workspace-template.md](references/chapter-workspace-template.md)，保存 `task-card.md`、`scene-plan.md`、`sandbox.md`、`review.md`、`revision-notes.md`
+
+**短故事文件（仅短故事模式）：**
+- `short-stories/<标题>.md` → 使用 [short-story-template.md](references/short-story-template.md)（不少于 6000 字，完整剧情闭环）
+- `novels/<书名>/短故事-标题.md` → 当短故事属于某个长篇世界观或外传时使用
 
 **专用文件（按需）：**
 - `03-多线管理.md` → 使用 [references/03-多线管理.md](references/03-多线管理.md)（仅多线叙事小说）
@@ -293,6 +361,41 @@ while 大纲还有未写章节，且未触发暂停条件:
 - `04-角色沙盘/00-角色索引.md` → 角色调度表（核心 / 活跃 / 潜伏 / 冻结）
 - `04-角色沙盘/C001-角色名.md` → 单角色运行时记忆（已知事实、误判、压力、关系判断、下一步倾向）
 - `04-角色沙盘/sessions/第XXX章-沙盘记录.md` → 每章沙盘输出和导演裁决
+
+### 干净正文与工作台结构
+
+长篇项目必须区分“成品稿”和“工作台”：
+
+```text
+novels/<书名>/
+├── manuscript/
+│   ├── zh/
+│   │   ├── 第001章-标题.md
+│   │   └── 第002章-标题.md
+│   └── en/
+│       ├── Chapter-001.md
+│       └── Chapter-002.md
+├── workspace/
+│   └── chapters/
+│       └── 第001章-标题/
+│           ├── task-card.md
+│           ├── scene-plan.md
+│           ├── sandbox.md
+│           ├── review.md
+│           └── revision-notes.md
+├── 00-大纲.md
+├── 01-人物档案.md
+├── 02-世界观与伏笔.md
+├── 04-角色沙盘/
+└── 99-进度仪表盘.md
+```
+
+硬规则：
+- `manuscript/zh/` 是中文正文唯一事实来源；不要再维护“写作版正文”和“清洁版正文”两份。
+- 章节 Markdown 内只写第一行章数和章标题、空一行、正文。不得写任务卡、提示词、复盘、检查报告或说明。
+- 所有写作过程材料进入 `workspace/chapters/第XXX章-标题/`。
+- 工具脚本优先读取 `manuscript/zh/`；找不到时才回退旧根目录章节，保证旧项目可继续使用。
+- 旧混合章节可运行 `python3 scripts/split_chapter_workspace.py novels/书名` 拆分；默认不移动原文件，确认后可加 `--move-originals` 归档到 `_archive/mixed-chapters/`。
 
 ## Planning Rules
 
@@ -312,13 +415,19 @@ while 大纲还有未写章节，且未触发暂停条件:
 
 ## 质量检查红绿灯
 
-每章交付前，执行三级检查：
+每章或每篇短故事交付前，执行三级检查。长篇章节和短故事使用不同字数线，不能混用。
 
-### 红灯项（必须过关）
+### 章节红灯项（必须过关）
 - [ ] **变化原则**：本章发生了不能删除的变化（情节推进/关系变化/状态改变）
 - [ ] **字数达标**：≥3000 字（快速模式≥2500 字）
 - [ ] **钩子存在**：结尾有明确的悬念/问题/张力
 - [ ] **人物一致**：主要人物行为符合设定
+
+### 短故事红灯项（必须过关）
+- [ ] **字数达标**：正文不少于 6000 个中文字符
+- [ ] **剧情完整**：开端、诱发事件、升级、反转或代价、高潮选择、结局收束全部存在
+- [ ] **主角变化**：主角有不可逆选择、认知变化或关系变化
+- [ ] **结尾闭合**：主线问题有结果，不能只停在“未完待续”
 
 ### 黄灯项（建议优化）
 - [ ] AI 味程度（运行 `python3 scripts/check_ai_style.py <章节文件路径>` 自动检测）
@@ -341,9 +450,9 @@ while 大纲还有未写章节，且未触发暂停条件:
 1. **读取上下文**：先读 `99-进度仪表盘.md` 获取当前状态，再读 `00-大纲.md`、最近章节摘要、`02-世界观与伏笔.md`
 2. **检查悬念**：查阅进度仪表盘中的悬念状态，如有🔴过期悬念，本章必须提及；如有🟡即将过期悬念，本章建议推进
 3. **角色沙盘模式**（每章必跑）：读取 `04-角色沙盘/`，让本章关键角色在有限信息内输出行动倾向、反抗大纲点、场景建议和一句对白；快速模式可压缩，但不能完全跳过。详见 [references/14-角色沙盘模式.md](references/14-角色沙盘模式.md)
-4. **导演裁决与任务卡**：导演按人物一致性 → 主线不可断 → 悬念生命周期 → 原大纲章节安排 → 单章爽点/钩子的优先级，裁决吸收 / 驳回 / 延后 / 分叉记录，再确定本章目标 / 阻碍 / 转折 / 结尾钩子
-5. **场景拆分**（标准模式）：拆 3-6 个场景，再落正文；快速模式跳过此步直接写
-6. **写正文**：开头前 20% 必须尽快进入冲突，参考 [chapter-guide.md](references/chapter-guide.md)
+4. **导演裁决与任务卡**：导演按人物一致性 → 主线不可断 → 悬念生命周期 → 原大纲章节安排 → 单章爽点/钩子的优先级，裁决吸收 / 驳回 / 延后 / 分叉记录，再把本章目标 / 阻碍 / 转折 / 结尾钩子写入 `workspace/chapters/第XXX章-标题/task-card.md`
+5. **场景拆分**（标准模式）：拆 3-6 个场景，写入 `workspace/chapters/第XXX章-标题/scene-plan.md`；快速模式可跳过详细拆分，但仍保留最低限度任务卡
+6. **写正文**：把最终正文写入 `manuscript/zh/第XXX章-标题.md`。文件第一行写 `第XXX章：标题`，空一行后直接正文；不得写任务卡、复盘或说明。开头前 20% 必须尽快进入冲突，参考 [chapter-guide.md](references/chapter-guide.md)
    - 如果在写首章，额外参考 [opening-design.md](references/opening-design.md)
 7. 对话、扩写、连贯性、结尾钩子分别参考：
    - [dialogue-writing.md](references/dialogue-writing.md)
@@ -353,8 +462,8 @@ while 大纲还有未写章节，且未触发暂停条件:
    - [scene-design-v2.md](references/scene-design-v2.md)（默认推荐，含场景任务检查卡和价值测试）或 [scene-design.md](references/scene-design.md)（v1 基础版）
    - [style-polishing.md](references/style-polishing.md)
    - AI 味改写：[ai-style-examples.md](references/ai-style-examples.md) 和 [ai-style-by-genre.md](references/ai-style-by-genre.md)（按题材专项防治）
-8. **质量检查**：运行 `python3 scripts/check_chapter_wordcount.py <章节文件路径>` 检查字数；按「质量检查红绿灯」执行三级检查（见上方）
-9. **回写状态**：更新章节摘要、人物状态、伏笔状态与章节进度到 `99-进度仪表盘.md`；同时回写 `04-角色沙盘/00-角色索引.md`、相关单角色文件和本章 `sessions/第XXX章-沙盘记录.md`
+8. **质量检查**：运行 `python3 scripts/check_chapter_wordcount.py manuscript/zh/第XXX章-标题.md` 检查字数；按「质量检查红绿灯」执行三级检查（见上方）
+9. **回写状态**：把章节复盘写入 `workspace/chapters/第XXX章-标题/review.md`，更新章节摘要、人物状态、伏笔状态与章节进度到 `99-进度仪表盘.md`；同时回写 `04-角色沙盘/00-角色索引.md`、相关单角色文件和本章 `sessions/第XXX章-沙盘记录.md`
 10. **自动驾驶模式专用**：回写完成后，当前轮仍可继续则开始下一章；触发暂停条件时输出进度简报和恢复点
 
 ## 悬念管理
@@ -493,7 +602,7 @@ while 大纲还有未写章节，且未触发暂停条件:
 - 对白太水 → 参考 [dialogue-writing.md](references/dialogue-writing.md)，对人物声音一致性参考 [character-template-v2.md](references/character-template-v2.md) 的声音指纹部分
 - 场景空洞 → 参考 [scene-design-v2.md](references/scene-design-v2.md)（含场景任务检查卡和价值测试）和 [content-expansion.md](references/content-expansion.md)
 - AI 味重 → 参考 [ai-style-examples.md](references/ai-style-examples.md) 和 [ai-style-by-genre.md](references/ai-style-by-genre.md)
-- 整体重写 → 从 [chapter-template.md](references/chapter-template.md) 的场景拆分开始
+- 整体重写 → 从 [chapter-workspace-template.md](references/chapter-workspace-template.md) 的任务卡和场景拆分开始，再把最终正文写回 `manuscript/zh/`
 
 **改动范围原则**：先修最小可解决问题的段落或场景；只有当章节结构本身失效（开头、转折、结尾同时不成立）时，才进入全章重写。
 
@@ -544,18 +653,19 @@ python3 scripts/check_novel_health.py <小说目录路径>
 3. 可选参数：
    - `--author <作者名>` 覆盖大纲中的作者
    - `-o <输出路径>` 指定输出文件位置
-   - `--lang en` 导出英文版（需要先通过翻译功能生成 `en/` 目录）
+   - `--lang en` 导出英文版（需要先通过翻译功能生成 `manuscript/en/` 目录；旧 `en/` 目录仍兼容）
 4. 告诉用户生成的 EPUB 文件路径
 
 **清洁导出说明：**
-- 导出脚本只提取章节文件中的 `## 正文` 部分
-- 如果需要完全干净的章节文件（无任务卡、无复盘等），创建平行文件：
-  - 写作版：`第01章-标题.md`（含任务卡、场景拆分、复盘）
-  - 清洁版：`第01章-标题-正文.md`（仅正文）
+- 新项目直接从 `manuscript/zh/` 读取干净正文，不需要创建平行“清洁版”。
+- 旧混合章节仍兼容：导出脚本会提取 `## 正文` 区块。
+- 推荐先运行 `scripts/split_chapter_workspace.py` 把旧混合章节迁移成干净正文 + 工作台。
 
 ## 质量检查清单（详细版）
 
 > 红绿灯是日常快速检查（4 项）。需要深入诊断时，展开以下 6 项量化指标。完整检查项列表见 [quality-checklist.md](references/quality-checklist.md)。
+
+以下表格主要用于长篇章节；短故事优先使用“6000 字 + 完整剧情闭环”的红灯项，并对照 [short-story-template.md](references/short-story-template.md) 的完稿复盘。
 
 | 原则 | 量化指标 |
 |------|---------|
@@ -855,6 +965,7 @@ python3 scripts/check_novel_health.py <小说目录路径>
 | 仪表盘缺失 | 自动从章节重建 | 同左 |
 | 章节损坏 | 回退上一章，提醒检查 | 跳过并标注 |
 | 字数不达标 | 标注差距 + 扩写建议 | 自动扩写 1 次 |
+| 短故事剧情不完整 | 按短故事红灯项补齐高潮和收束，不改成长篇第一章 | 自动补写缺失段落直到主线闭合 |
 | 长期中断后返回 | 生成续写简报 + 校验仪表盘 + 确认（见中断恢复协议） | 自动生成简报 + 重建仪表盘 + 直接继续（见中断恢复协议） |
 | 脚本失败 | 用 quality-checklist.md 自检 | 同左 |
 | 人物设定冲突 | 以最新文件为准，提醒确认 | 以大纲为权威 |
@@ -865,50 +976,93 @@ python3 scripts/check_novel_health.py <小说目录路径>
 
 | 脚本 | 用途 | 使用方式 |
 |------|------|---------|
-| `check_chapter_wordcount.py` | 章节字数检查 | `python3 scripts/check_chapter_wordcount.py <文件或--all 目录>` |
+| `check_chapter_wordcount.py` | 章节 / 短故事字数检查 | `python3 scripts/check_chapter_wordcount.py <文件或--all 目录>`；短故事使用 `6000` 作为最小字数 |
+| `check_short_story.py` | 短故事质量检查（6000 字 + 正文区 + 完稿复盘 + 剧情收束） | `python3 scripts/check_short_story.py <文件>` 或 `python3 scripts/check_short_story.py --all short-stories` |
 | `check_ai_style.py` | AI 味检测（9 种症状） | `python3 scripts/check_ai_style.py <文件或--all 目录>` |
 | `check_novel_health.py` | 小说健康体检（字数 + 节奏） | `python3 scripts/check_novel_health.py <目录>` |
 | `check_timeline.py` | 时间线一致性检查 | `python3 scripts/check_timeline.py <目录>` |
 | `character_tracker.py` | 人物一致性检查 | `python3 scripts/character_tracker.py <目录>` |
-| `generate_epub.py` | EPUB 导出 | `python3 scripts/generate_epub.py <目录>` |
-| `translate_to_english.py` | 翻译成英文 | `python3 scripts/translate_to_english.py <目录>` |
+| `generate_epub.py` | EPUB 导出，优先读取 `manuscript/zh` / `manuscript/en` | `python3 scripts/generate_epub.py <目录>` |
+| `translate_to_english.py` | 生成当前 AI 专业意译翻译任务包，默认输出 `manuscript/en` | `python3 scripts/translate_to_english.py <目录>` |
+| `split_chapter_workspace.py` | 把旧混合章节拆分为干净正文和工作台 | `python3 scripts/split_chapter_workspace.py <目录>` |
 
 ## Translation
 
-当用户要求翻译成英文时执行：
+当用户要求翻译成英文时执行。翻译默认采用**意译翻译**：不逐字硬译，而是保留剧情功能、人物声音、情绪压力、节奏和潜台词，让英文读起来像自然的英文小说。
+
+此流程参照现实翻译项目的规范分工：接案简报 → 源文分析 → 术语表 / 风格表 → 样章校准 → 初译 → 译者自检 → 双语修订 → 单语润色 → 终检交付。完整说明见 [references/translation-workflow.md](references/translation-workflow.md)。
+
+硬规则：
+- 使用当前 AI 直接翻译，不调用独立翻译接口。
+- 不要求用户配置额外翻译服务或密钥。
+- `scripts/translate_to_english.py` 只用于生成当前 AI 可执行的专业意译任务包；真正译文由当前 AI 生成。
+- 最终译文写入 `manuscript/en/Chapter-XXX.md`，文件内只保留译文：章数和章标题同在第一行，空一行后直接写正文，不写任何其他说明内容。
+- 不跳过译者自检、双语修订、单语润色和终检；同一个当前 AI 也必须切换角色执行这些步骤。
 
 ### 执行流程
 
-**第一步：准备阶段**
-1. 确认小说目录和翻译范围（全本 / 部分章节）
-2. 读取上下文文件：
+**第一步：接案与翻译简报**
+1. 确认小说目录、翻译范围（全本 / 部分章节）、目标读者、英文变体、交付用途和是否需要用户确认样章。
+2. 运行任务包脚本，生成项目级文件：
+   ```bash
+   python3 scripts/translate_to_english.py <小说目录路径>
+   ```
+   可用 `--chapters "1,3-5"` 限定范围。脚本会生成：
+   - `manuscript/en/00-translation-brief.md`（翻译简报）
+   - `manuscript/en/01-termbase.md`（术语表）
+   - `manuscript/en/02-style-sheet.md`（风格表）
+   - `manuscript/en/03-query-log.md`（查询日志）
+   - `manuscript/en/04-qa-checklist.md`（终检清单）
+   - `manuscript/en/_translation_tasks/Chapter-XXX.*.prompt.md`（每章任务）
+
+**第二步：源文分析**
+3. 当前 AI 读取上下文文件：
    - `00-大纲.md` → 书名、作者、类型、简介
    - `01-人物档案.md` → 人物信息
    - `02-世界观与伏笔.md` → 世界观要点
+   - 最近章节和待译章节 → 语气、伏笔、节奏、叙事视角
+4. 标记翻译风险：双关、诗词、称谓、文化负载词、伏笔句、境界 / 门派 / 法宝、时间线和人物声音。
 
-**第二步：生成术语表**
-3. 分析小说内容，提取需要统一的术语：
+**第三步：术语表与风格表**
+5. 更新 `manuscript/en/01-termbase.md`，提取需要统一的术语：
    - 角色人名及拼音
    - 修炼体系/境界名称
    - 武器、法宝、门派名称
    - 中文特有词汇（功夫、气功、灵气等）
    - 量词和时间表达
+6. 更新 `manuscript/en/02-style-sheet.md`，明确英文口吻、句长、对白、称谓、文化词和意译边界。
 
-**第三步：并行翻译**
-4. 将章节分成多个批次（每批 2-3 章，相邻章节在同一批次）
-5. 为每个批次创建一个 subagent，并行翻译
-6. 每个 subagent 携带：小说信息 + 术语表 + 翻译规则
+**第四步：样章校准**
+7. 默认取第 1 章开头 800-1500 个中文字符做样章。
+8. 当前 AI 给出样章译文和 3-5 条风格决策；人工模式等待确认，自动模式把决策写回风格表后继续。
 
-**第四步：最终校对**
-7. 所有翻译完成后，派一个 subagent 做全局校对：
-   - 检查术语一致性
-   - 检查人名一致性
-   - 检查剧情衔接
-   - 修正发现的问题
+**第五步：初译**
+9. 当前 AI 按 `Chapter-XXX.translate.prompt.md` 逐章执行意译翻译，并保存到 `manuscript/en/Chapter-XXX.md`。
+10. 翻译时遵守：
+   - 人名优先拼音，必要时保留中文文化质感。
+   - 境界、门派、法宝等术语必须前后一致。
+   - 对白按英文读者习惯重写语序和停顿，但不改变人物意图。
+   - 叙述句可以重组，优先保留场景效果和阅读节奏。
+   - 不把中文成语逐字翻成僵硬英文；改成目标语自然表达。
 
-**第五步：保存结果**
-8. 汇总所有翻译结果，写入 `en/` 目录：
-   - `Chapter-001.md`, `Chapter-002.md` 等
+**第六步：译者自检**
+11. 初译后当前 AI 以译者角色自检：无漏译、错译、反译；无事实漂移；术语和格式符合项目文件。
+
+**第七步：双语修订**
+12. 当前 AI 切换为修订者角色，执行 `Chapter-XXX.revise.prompt.md`，拿源文对照译文检查意义、事实、伏笔、术语、风格和格式。
+
+**第八步：单语润色**
+13. 当前 AI 切换为英文小说编辑角色，执行 `Chapter-XXX.edit.prompt.md`，只读英文稿，消除翻译腔，优化段落流动、对白节奏和可读性。
+
+**第九步：终检与保存**
+14. 每章译文必须保持：
+   ```markdown
+   Chapter 1: English Chapter Title
+
+   Translated chapter body...
+   ```
+   也就是说，章数和章标题同在第一行，空一行后直接写正文。不得写标题标签、正文标签、译者说明、QA 说明或任何额外说明内容。
+15. 按 `manuscript/en/04-qa-checklist.md` 终检：章节顺序、文件命名、纯译文 Markdown 结构、TBD 残留、术语一致性、译者说明残留和 EPUB 可导出性。
 
 ### 术语表格式
 
@@ -918,12 +1072,13 @@ python3 scripts/check_novel_health.py <小说目录路径>
 - 门派与武器：`[中文] → [Pinyin or English]`
 - 中文特有表达：`盏茶 → the time it takes to drink a cup of tea`
 
-### 并行翻译
+### 意译翻译标准
 
-1. 将章节分批（每批 2-3 章，相邻章节在同一批次）
-2. 为每批创建 subagent 并行翻译，携带：小说信息 + 术语表 + 翻译规则（保持叙事节奏、统一译名、对话自然流畅）
-3. 全部完成后派 subagent 做全局校对（术语一致性 + 人名一致性 + 剧情衔接 + 风格统一）
-4. 结果写入 `en/Chapter-XXX.md`
+- **忠于功能，不忠于字面**：一句中文如果承担压迫感、讽刺或悬念，英文应优先复现这个效果。
+- **对白自然**：允许拆句、合句、调整称呼和语气词，避免翻译腔。
+- **动作清晰**：中文省略的主语、动作承接，英文中要补足到不影响阅读。
+- **文化词谨慎处理**：核心设定保留拼音或半解释；普通俗语转成英文自然表达。
+- **禁止改写剧情**：可调整表达方式，不新增事件、不删关键线索、不改变人物关系。
 
 ### 英文版导出
 

@@ -42,18 +42,59 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/c
 2. **自动生成文件**
    - `novels/我的悬疑小说/00-大纲.md`
    - `novels/我的悬疑小说/99-进度仪表盘.md`
+   - `novels/我的悬疑小说/manuscript/zh/`
+   - `novels/我的悬疑小说/manuscript/en/`
+   - `novels/我的悬疑小说/workspace/chapters/`
 
 3. **开始写第 1 章**
    - AI 会自动：
      - 读取大纲
      - 设计首章钩子
-     - 写正文
+     - 把干净正文写入 `manuscript/zh/第001章-标题.md`
+     - 把任务卡、场景拆分和复盘写入 `workspace/chapters/第001章-标题/`
 
 ### 你只需做
 
 - [ ] 回答 10 个极简问题
 - [ ] 确认书名（AI 会生成 3-5 个候选）
 - [ ] 等待 AI 写完第 1 章
+
+---
+
+## Step 1.5: 写一篇短故事（可选）
+
+### 对 AI 说
+
+```text
+使用 chinese-novelist-skill，写一篇悬疑短故事，不少于 6000 字。
+```
+
+### AI 会直接交付
+
+1. **短故事任务卡**
+   - premise、主角欲望、对抗力量、主题和结局类型
+
+2. **完整剧情骨架**
+   - 开端、诱发事件、升级、反转或代价、高潮选择、结局收束
+
+3. **完整正文**
+   - 正文不少于 6000 个中文字符
+   - 可以分段或换行
+   - 不能只是长篇第一章或未完待续片段
+
+4. **完稿复盘**
+   - 字数是否达标
+   - 主角是否变化
+   - 主线是否闭合
+   - 伏笔 / 意象是否回收
+
+如需落盘，推荐保存为 `short-stories/故事标题.md`，模板见 `references/short-story-template.md`。
+
+完成后运行：
+
+```bash
+python scripts/check_short_story.py short-stories/故事标题.md
+```
 
 ---
 
@@ -71,7 +112,7 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/c
 2. 检查悬念过期警告
 3. 提取人物当前状态
 4. 设计下一章钩子
-5. 写正文
+5. 写正文到 `manuscript/zh/`
 
 ### 你只需做
 
@@ -87,10 +128,19 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/c
 
 ```bash
 # 检查字数
-python scripts/check_chapter_wordcount.py novels/我的悬疑小说/第01章.md
+python scripts/check_chapter_wordcount.py novels/我的悬疑小说/manuscript/zh/第001章-标题.md
+
+# 检查短故事质量
+python scripts/check_short_story.py short-stories/我的短故事.md
 
 # 检查 AI味
-python scripts/check_ai_style.py novels/我的悬疑小说/第01章.md
+python scripts/check_ai_style.py novels/我的悬疑小说/manuscript/zh/第001章-标题.md
+```
+
+如果你已有旧版混合章节，先拆分：
+
+```bash
+python scripts/split_chapter_workspace.py novels/我的悬疑小说
 ```
 
 ### AI 味检测报告示例
@@ -174,6 +224,7 @@ python scripts/generate_epub.py novels/我的悬疑小说
 | 你想做 | 对 AI 说 |
 |--------|--------|
 | 开始写新书 | "帮我写一本[题材]小说，[章节数]章" |
+| 写短故事 | "写一篇[题材]短故事，不少于 6000 字" |
 | 继续写 | "继续写" / "下一章" |
 | 写指定章 | "写第 X 章" |
 | 修改某章 | "修改第 X 章，[具体问题]" |
@@ -189,7 +240,11 @@ python scripts/generate_epub.py novels/我的悬疑小说
 |------|------|---------|
 | `00-大纲.md` | 极简大纲 | 开始新项目时 |
 | `99-进度仪表盘.md` | 当前状态 | 每次写作前 |
-| `第XX章.md` | 章节正文 | 阅读/修改时 |
+| `manuscript/zh/第XXX章-标题.md` | 干净章节正文 | 阅读/修改时 |
+| `manuscript/en/Chapter-XXX.md` | 干净英文译文 | 翻译后 |
+| `workspace/chapters/第XXX章-标题/` | 本章任务卡、场景、复盘 | 写作和复盘时 |
+| `references/chapter-workspace-template.md` | 章节工作台模板 | 拆任务卡和复盘时 |
+| `references/short-story-template.md` | 短故事模板 | 写完整短故事时 |
 | `ai-style-examples.md` | AI 味改写范例 | 质量检查后 |
 | `hook-techniques.md` | 钩子技巧 | 设计结尾时 |
 

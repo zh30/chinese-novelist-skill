@@ -52,6 +52,18 @@ class TestUtils(unittest.TestCase):
             extracted = extract_text_from_chapter(path)
         self.assertIn("正文内容", extracted)
 
+    def test_extract_text_from_clean_chapter_excludes_plain_title(self):
+        content = """第001章：干净章节
+
+这里是干净正文。
+第二段继续推进。
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "第001章-干净章节.md"
+            path.write_text(content, encoding="utf-8")
+            extracted = extract_text_from_chapter(path)
+        self.assertEqual(extracted, "这里是干净正文。\n第二段继续推进。")
+
     def test_find_chapter_files(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             (Path(tmpdir) / "第01章-开始.md").write_text("# 第01章", encoding="utf-8")
@@ -71,6 +83,19 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(files[0].name, "第01章-开始.md")
         self.assertEqual(files[1].name, "第03章-中间.md")
         self.assertEqual(files[2].name, "第10章-后半.md")
+
+    def test_find_chapter_files_prefers_manuscript_zh(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            manuscript = root / "manuscript" / "zh"
+            manuscript.mkdir(parents=True)
+            (root / "第01章-旧.md").write_text("第01章：旧\n\n旧正文", encoding="utf-8")
+            (manuscript / "第01章-新.md").write_text("第01章：新\n\n新正文", encoding="utf-8")
+
+            files = find_chapter_files(root)
+
+        self.assertEqual(len(files), 1)
+        self.assertEqual(files[0].name, "第01章-新.md")
 
 
 class CheckAiStyleTests(unittest.TestCase):
@@ -114,6 +139,11 @@ class CheckAiStyleTests(unittest.TestCase):
 
 
 class CheckNovelHealthTests(unittest.TestCase):
+    def test_detect_scene_type_returns_other_when_no_keywords_match(self):
+        from check_novel_health import detect_scene_type
+
+        self.assertEqual(detect_scene_type("灯塔玻璃上映着潮汐表。"), "其他")
+
     def test_novel_health_basic(self):
         from check_novel_health import check_novel
         with tempfile.TemporaryDirectory() as tmpdir:
