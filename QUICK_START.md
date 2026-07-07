@@ -69,7 +69,9 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/c
 使用 chinese-novelist-skill，写一篇悬疑短故事，不少于 6000 字。
 ```
 
-### AI 会直接交付
+### AI 会创建文件
+
+默认创建 `short-stories/YYYYMMDD-<标题>.md`。如果同名文件已存在，追加 `-02`、`-03` 等序号，避免覆盖。完整正文写入 Markdown 文件，对话里只汇报文件路径、正文字数和检查结果。
 
 1. **短故事任务卡**
    - premise、主角欲望、对抗力量、主题和结局类型
@@ -81,6 +83,7 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/c
    - 正文不少于 6000 个中文字符
    - 可以分段或换行
    - 不能只是长篇第一章或未完待续片段
+   - 写入 Markdown 文件，不直接粘贴到对话里
 
 4. **完稿复盘**
    - 字数是否达标
@@ -88,12 +91,12 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/c
    - 主线是否闭合
    - 伏笔 / 意象是否回收
 
-如需落盘，推荐保存为 `short-stories/故事标题.md`，模板见 `references/short-story-template.md`。
+模板见 `references/short-story-template.md`。
 
 完成后运行：
 
 ```bash
-python scripts/check_short_story.py short-stories/故事标题.md
+python scripts/check_short_story.py short-stories/YYYYMMDD-故事标题.md
 ```
 
 ---

@@ -7,7 +7,7 @@
 
 ## 一眼看懂
 
-**chinese-novelist-skill** 是一套给中文小说 / 网文创作使用的 Codex skill。默认面向长篇创作：先建骨架，再按章推进，每章写作前让角色先在“沙盘”里活一次，最后用脚本和红绿灯规则守住质量。用户明确要求“短故事 / 短篇故事 / 写一篇完整故事”时，也可以切换到短故事模式，一次性交付不少于 6000 字且剧情完整的单篇故事。
+**chinese-novelist-skill** 是一套给中文小说 / 网文创作使用的 Codex skill。默认面向长篇创作：先建骨架，再按章推进，每章写作前让角色先在“沙盘”里活一次，最后用脚本和红绿灯规则守住质量。用户明确要求“短故事 / 短篇故事 / 写一篇完整故事”时，也可以切换到短故事模式，创建不少于 6000 字且剧情完整的单篇故事 Markdown 文件。
 
 ```text
 一句话创意
@@ -22,8 +22,8 @@
 短故事请求
   -> 短故事任务卡
   -> 完整剧情骨架
-  -> ≥6000字正文
-  -> 完稿复盘
+  -> 写入 short-stories/YYYYMMDD-标题.md
+  -> 检查并汇报路径
 ```
 
 ### 适合你，如果你正在遇到
@@ -62,16 +62,16 @@ AI 会交付：
 使用 chinese-novelist-skill，写一篇悬疑短故事，不少于 6000 字。
 ```
 
-短故事模式不会进入长篇连载流程。AI 会交付：
+短故事模式不会进入长篇连载流程。AI 会创建命名 Markdown 文件，默认路径为 `short-stories/YYYYMMDD-<标题>.md`，并只在对话中汇报路径、字数和检查结果。
 
 | 产物 | 用途 |
 |------|------|
 | 短故事任务卡 | 锁定 premise、主角欲望、冲突和结局类型 |
 | 完整剧情骨架 | 保证开端、升级、反转、高潮、收束都存在 |
-| ≥6000 字正文 | 可分段或换行，但必须是完整故事 |
+| ≥6000 字正文 | 写入 Markdown 文件，可分段或换行，但必须是完整故事 |
 | 完稿复盘 | 检查字数、主角变化、伏笔 / 意象回收和结尾闭合 |
 
-模板见 [short-story-template.md](references/short-story-template.md)。
+模板见 [short-story-template.md](references/short-story-template.md)。除非你明确要求“直接在对话里输出全文”，否则完整正文不会粘贴到聊天窗口。
 
 ### 3. 继续写下一章
 
@@ -182,7 +182,7 @@ python3 scripts/split_chapter_workspace.py novels/我的小说
 
 当用户明确说“短故事”“短篇故事”“写一篇完整故事”时，skill 进入短故事模式。默认要求正文不少于 6000 个中文字符，可以自然分段或换行，但必须完成完整剧情闭环：开端、诱发事件、升级、反转或代价、高潮选择、结局收束。
 
-短故事不默认创建长篇项目目录，也不运行每章连载循环。需要落盘时推荐使用 `short-stories/<标题>.md`，并套用 [short-story-template.md](references/short-story-template.md)。
+短故事不默认创建长篇项目目录，也不运行每章连载循环。必须写入命名 Markdown 文件，默认使用 `short-stories/YYYYMMDD-<标题>.md`，并套用 [short-story-template.md](references/short-story-template.md)。对话中只汇报文件路径、正文字数和检查结果。
 
 ### 1. 三阶段工作流
 
@@ -284,7 +284,7 @@ PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 
 ### 发版前验证
 
-v2.6.1 发布前已通过以下检查：
+v2.6.2 发布前已通过以下检查：
 
 ```bash
 PYTHONPATH=scripts python3 -m unittest discover tests/ -v
@@ -408,8 +408,8 @@ python3 scripts/split_chapter_workspace.py novels/我的小说 --move-originals
 
 1. 明确说“写一篇短故事 / 短篇故事”
 2. 使用 [short-story-template.md](references/short-story-template.md) 锁定完整剧情骨架
-3. 正文写到不少于 6000 字
-4. 运行 `python3 scripts/check_short_story.py short-stories/标题.md`
+3. 正文写入 `short-stories/YYYYMMDD-标题.md`，不少于 6000 字
+4. 运行 `python3 scripts/check_short_story.py short-stories/YYYYMMDD-标题.md`
 5. 检查结尾是否收束主线，而不是停在“未完待续”
 
 ---
@@ -452,6 +452,7 @@ PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 
 ## 版本
 
+- **v2.6.2**：修复短故事模式输出边界：完整正文必须写入 `short-stories/YYYYMMDD-<标题>.md` 等命名 Markdown 文件，对话只汇报路径、字数和检查结果。
 - **v2.6.1**：发布加固版本。完成全量 Skill 检测、端到端烟测和临时 `.skill` 打包校验；修复小说健康检查 `其他` 场景回退、英文 EPUB 元数据误读翻译流程文件、章节工作台文档引用等问题；移除 `.claude/` 本地配置发布风险。
 - **v2.6.0**：新增 `manuscript/zh` 干净正文和 `workspace/chapters` 章节工作台结构，提供 `scripts/split_chapter_workspace.py` 迁移旧混合章节；英文译文默认写入 `manuscript/en`。
 - **v2.5.0**：新增短故事模式，支持不少于 6000 字的完整单篇故事，提供短故事模板、剧情闭合红灯项和 `scripts/check_short_story.py` 检查脚本。

@@ -1,5 +1,20 @@
 # Changelog
 
+## v2.6.2 (2026-07-07)
+
+### Short Story Output Boundary Fix
+
+#### 🐛 Bug Fixes
+- 修复短故事模式会把 6000 字以上完整正文直接输出到对话的问题。
+- `SKILL.md` 现在要求短故事必须先写入命名 Markdown 文件，默认路径为 `short-stories/YYYYMMDD-<标题>.md`。
+- 明确文件命名规则：用户给标题则使用用户标题，未给标题则先生成短标题；同名文件追加 `-02`、`-03` 避免覆盖；长篇外传写入 `novels/<书名>/short-stories/YYYYMMDD-<标题>.md`。
+- 最终对话只汇报文件路径、标题、正文字数和 `check_short_story.py` 检查结果，不粘贴完整正文。
+
+#### 📚 Documentation & Tests
+- 更新 `README.md`、`QUICK_START.md`、`FILE_INDEX.md`、`AGENTS.md`、`CLAUDE.md` 和 `references/short-story-template.md`，统一短故事文件输出规则。
+- 更新 `test-prompts.json` 的短故事期望行为。
+- 新增文档测试，防止短故事模式退回到“直接在对话里交付全文”。
+
 ## v2.6.1 (2026-07-06)
 
 ### Release Hardening

@@ -64,7 +64,7 @@ python3 scripts/check_ai_style.py --all novels/书名
 ### Short Story Quality Check
 ```bash
 # Single short story
-python3 scripts/check_short_story.py short-stories/故事标题.md
+python3 scripts/check_short_story.py short-stories/YYYYMMDD-故事标题.md
 
 # All short stories in a directory
 python3 scripts/check_short_story.py --all short-stories
@@ -125,6 +125,7 @@ Default: Planning for new projects, Serial for existing chapters.
 Optional short-story mode:
 - Triggered only by explicit requests such as "短故事", "短篇故事", or "写一篇完整故事".
 - Does not enter the long-form serial workflow by default.
+- Must write the complete story to a named Markdown file, defaulting to `short-stories/YYYYMMDD-<标题>.md`; do not paste the full 6000+ character body into chat unless explicitly requested.
 - Must produce a complete plot with at least 6000 Chinese characters.
 - May use paragraphs or line breaks instead of chapter structure.
 
@@ -140,7 +141,7 @@ Create in `novels/<书名>/`:
 - `workspace/chapters/第XXX章-标题/` - Chapter task cards, scene plans, sandbox notes, reviews, revision notes using `references/chapter-workspace-template.md`
 - `第XX章-标题.md` - Legacy mixed chapters only; migrate with `scripts/split_chapter_workspace.py`
 
-For short stories, use `short-stories/<标题>.md` with `references/short-story-template.md`.
+For short stories, use `short-stories/YYYYMMDD-<标题>.md` with `references/short-story-template.md`.
 
 ## Quality Standards
 

@@ -56,7 +56,7 @@
 
 | 文件名 | 适用场景 | 硬标准 |
 |--------|---------|--------|
-| [short-story-template.md](references/short-story-template.md) | 写一篇完整短故事 / 短篇故事 | 正文不少于 6000 字，剧情必须闭合 |
+| [short-story-template.md](references/short-story-template.md) | 写一篇完整短故事 / 短篇故事 | 写入 `short-stories/YYYYMMDD-<标题>.md`，正文不少于 6000 字，剧情必须闭合 |
 
 ### 翻译流程
 
@@ -180,10 +180,11 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 - 不想开长篇，只要一篇完整短故事
 - 需要不少于 6000 字
 - 需要可分段或换行，但剧情完整
+- 需要生成命名 Markdown 文件，而不是把全文贴在对话中
 
 相关文档：
 1. [SKILL.md](SKILL.md) §短故事模式
-2. [short-story-template.md](references/short-story-template.md) - 短故事任务卡和完整剧情骨架
+2. [short-story-template.md](references/short-story-template.md) - 短故事任务卡、完整剧情骨架和 `short-stories/YYYYMMDD-<标题>.md` 命名规则
 3. [check_short_story.py](scripts/check_short_story.py) - 检查 6000 字、正文区、完稿复盘和剧情收束
 
 快速指令：
@@ -479,6 +480,7 @@ chinese-novelist-skill/
 
 ## 📝 更新记录
 
+- **2026-07-07**: v2.6.2 修复短故事模式输出边界，完整正文必须写入命名 Markdown 文件
 - **2026-07-06**: v2.5 新增短故事模式，不少于 6000 字且剧情完整
 - **2026-06-26**: v2.4 新增角色沙盘模式，每章写作前进行角色意志校验
 - **2026-04-01**: 完成三轮优化，新增 13 个文件，更新 README 和文档

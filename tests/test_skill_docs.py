@@ -55,6 +55,25 @@ class SkillDocsTests(unittest.TestCase):
             )
             self.assertIn("短故事", content)
 
+    def test_short_story_mode_writes_named_markdown_file(self):
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        short_story_section = skill.split("## 短故事模式（可选）", 1)[1].split("## 🤖 自动驾驶模式", 1)[0]
+        prompt_expectations = (ROOT / "test-prompts.json").read_text(encoding="utf-8")
+
+        required_phrases = [
+            "short-stories/YYYYMMDD-<标题>.md",
+            "不得在对话中直接输出完整正文",
+            "对话只回复文件路径",
+            "运行 `python3 scripts/check_short_story.py <短故事文件路径>`",
+        ]
+
+        for phrase in required_phrases:
+            self.assertIn(phrase, short_story_section)
+
+        self.assertIn("short-stories/YYYYMMDD-<标题>.md", prompt_expectations)
+        self.assertIn("只在对话中汇报文件路径", prompt_expectations)
+        self.assertNotIn("交付短故事任务卡、完整剧情骨架、不少于6000字的完整正文", prompt_expectations)
+
     def test_translation_mode_uses_current_ai_adaptive_translation(self):
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
         translation_section = skill.split("## Translation", 1)[1]

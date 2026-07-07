@@ -1,15 +1,15 @@
 ---
 name: chinese-novelist-skill
-description: "Chinese novel/web novel writing skill. Plan, write, revise, export EPUB, check quality, run character sandbox, or write complete short stories. Triggers: 写小说，写一本，短故事，短篇故事，写一篇完整故事，继续写，下一章，角色沙盘，修改第 X 章，重写，导出 epub, 字数检查，AI 味检查，质量检查，检查节奏，自动写完整本，autopilot. Also: EPUB export, word count check."
+description: "Chinese novel/web novel writing skill. Plan, write, revise, export EPUB, check quality, run character sandbox, or create complete short-story Markdown files. Triggers: 写小说，写一本，短故事，短篇故事，写一篇完整故事，继续写，下一章，角色沙盘，修改第 X 章，重写，导出 epub, 字数检查，AI 味检查，质量检查，检查节奏，自动写完整本，autopilot. Also: EPUB export, word count check."
 ---
 
 # Chinese Novelist
 
 ## Version
 
-- **Version**: `2.6.1`
-- **Version Date**: `2026-07-06`
-- **Changes**: 发布加固版本：完成全量 Skill 检测和端到端烟测；修复小说健康检查在无场景关键词时的 `其他` 场景回退；修复英文 EPUB 元数据误读翻译流程文件的问题；同步修正章节工作台文档引用。v2.6 干净正文架构、短故事模式和专业意译翻译流程继续可用。
+- **Version**: `2.6.2`
+- **Version Date**: `2026-07-07`
+- **Changes**: 修复短故事模式输出边界：完整短故事必须写入命名 Markdown 文件（默认 `short-stories/YYYYMMDD-<标题>.md`），不得在对话中直接输出 6000 字正文；对话只汇报文件路径、字数和检查结果。v2.6 干净正文架构、短故事模式和专业意译翻译流程继续可用。
 - **Previous Versions**: see [CHANGELOG.md](CHANGELOG.md)
 
 ## Overview
@@ -25,7 +25,7 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 | 用户意图 | 触发词示例 | 进入流程 | 首轮必须交付 |
 |----------|------------|----------|--------------|
 | 新建小说 | "写一本"、"帮我写小说"、"从头开始" | 策划期 | 3-5 个书名候选 + 极简总纲 + 首章任务卡 |
-| 写短故事 | "短故事"、"短篇故事"、"写一篇完整故事"、"6000 字故事" | 短故事模式 | 标题 + 完整剧情骨架 + 不少于 6000 字的完整正文（可分段 / 换行） |
+| 写短故事 | "短故事"、"短篇故事"、"写一篇完整故事"、"6000 字故事" | 短故事模式 | 创建命名 Markdown 文件，写入任务卡、骨架、正文和复盘；对话只返回路径、字数和检查结果 |
 | 继续连载 | "继续写"、"下一章" | 连载期 | 读取/索要小说目录，定位仪表盘、大纲和最近章节，再给下一章任务或正文 |
 | 快速出稿 | "快写"、"先写"、"初稿" | 连载期快速模式 | 跳过场景拆分，直接写正文，并只做字数和基础钩子检查 |
 | 修改章节 | "修改第 X 章"、"重写"、"打磨" | 修改工作流 | 定位章节，诊断问题，判定修改级别，再针对性改写 |
@@ -39,7 +39,7 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 
 1. **先定位阶段**：明确是策划期、连载期、收尾期、短故事模式、修改、导出还是检查。
 2. **再收集缺口**：只追问会阻塞下一步的缺失项；自动驾驶模式不追问，按题材模板推断。
-3. **立刻给可用产物**：新书给书名和总纲，短故事给完整骨架和正文，续写给下一章任务或正文，修改给诊断和修改方案，检查给脚本结果。
+3. **立刻给可用产物**：新书给书名和总纲，短故事创建命名 Markdown 文件并汇报路径，续写给下一章任务或正文，修改给诊断和修改方案，检查给脚本结果。
 4. **少解释流程**：除非用户问方法，不要长篇介绍本 skill；把流程体现在产物里。
 5. **维护文件状态**：凡是创建、续写、修改章节，都把最终正文写入 `manuscript/zh/`，把任务卡 / 场景 / 复盘写入 `workspace/chapters/`，并同步更新 `99-进度仪表盘.md` 中的进度、人物状态和悬念状态。
 
@@ -48,7 +48,7 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 当入口判断完成后，按以下硬规则决定第一步输出，防止只追问、不交付：
 
 1. **用户要新建小说** → 直接给 3-5 个书名候选、极简总纲和第 1 章任务卡；信息不足时用题材模板补齐，并标注“可后续调整”的假设。
-2. **用户要短故事 / 短篇故事** → 不进入长篇策划期；按 [短故事模式](#短故事模式可选) 生成标题、短故事任务卡、完整剧情骨架，并写出不少于 6000 字的完整正文。正文可分段或换行，但必须完成主线收束。
+2. **用户要短故事 / 短篇故事** → 不进入长篇策划期；按 [短故事模式](#短故事模式可选) 生成标题并创建 `short-stories/YYYYMMDD-<标题>.md`，把短故事任务卡、完整剧情骨架、不少于 6000 字的正文和完稿复盘全部写入文件。不得在对话中直接输出完整正文；对话只回复文件路径、正文字数、检查状态和必要说明。
 3. **用户说继续写 / 下一章** → 先在当前工作区查找 `novels/` 和最近的 `99-进度仪表盘.md`。找到项目时，读取仪表盘和最近章节后交付下一章任务卡；找不到项目时，交付“续写恢复清单”（需要的目录 / 大纲 / 最近章节）并提供新建项目 fallback。
 4. **用户要快写 / 初稿** → 不展开完整方法论；只读取必要上下文，给本章正文草稿、基础钩子和字数状态。
 5. **用户要修改章节** → 先定位章节并输出一句诊断 + 修改级别 + 目标段落；只有找不到文件时才索要路径。
@@ -115,7 +115,9 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 
 ## 短故事模式（可选）
 
-短故事模式用于一次性交付完整中文短故事。默认仍是长篇小说 / 网文；只有用户明确说“短故事”“短篇故事”“写一篇完整故事”“6000 字故事”等需求时才进入本模式。
+短故事模式用于一次性创建完整中文短故事 Markdown 文件。默认仍是长篇小说 / 网文；只有用户明确说“短故事”“短篇故事”“写一篇完整故事”“6000 字故事”等需求时才进入本模式。
+
+**输出边界硬规则**：短故事正文不少于 6000 字，不能直接粘贴到对话中作为主要输出。必须先创建或更新 Markdown 文件，再在对话里汇报文件路径、标题、正文字数、检查结果和下一步。除非用户明确要求“直接在对话里输出全文”，否则不得在对话中直接输出完整正文。
 
 ### 触发与边界
 
@@ -128,24 +130,42 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 | 完整性要求 | 必须有开端、诱发事件、升级、反转或代价、高潮选择、结局收束 |
 | 结尾要求 | 可以留余味，但不能只用悬念中断；主线问题必须解决或给出明确情感落点 |
 
+### 文件命名与落盘
+
+短故事是文件事务，不是聊天正文事务：
+
+1. **先定标题**：用户给标题则使用用户标题；用户未给标题时，先生成 1 个简洁标题（2-10 个中文字符为佳）。
+2. **生成安全文件名**：移除 `/ \ : * ? " < > |` 等非法字符，去掉多余空格；标题为空时使用 `未命名短故事`。
+3. **默认路径**：`short-stories/YYYYMMDD-<标题>.md`，例如 `short-stories/20260707-雨夜来信.md`。
+4. **避免覆盖**：如果同名文件已存在，追加 `-02`、`-03` 等序号。
+5. **长篇外传**：如果用户明确要求并入某本书，使用 `novels/<书名>/short-stories/YYYYMMDD-<标题>.md`。
+6. **先建目录**：写入前确保目标目录存在。
+
+文件必须使用 [short-story-template.md](references/short-story-template.md) 的结构，包含：
+- 短故事任务卡
+- 完整剧情骨架
+- `## 正文`
+- 完稿复盘
+
 ### 首轮交付
 
-用户信息不足时，不要把短故事请求升级成长篇策划；按题材推断缺口，直接交付：
+用户信息不足时，不要把短故事请求升级成长篇策划；按题材推断缺口，并直接创建短故事 Markdown 文件：
 
 1. **标题**：可给 1 个确定标题；如果用户要求选择，再给 3-5 个候选。
 2. **短故事任务卡**：一句话 premise、主角欲望、对抗力量、主题、结局类型。
 3. **完整剧情骨架**：至少包含开场钩子、诱发事件、第一次失败、升级、反转、高潮、收束。
-4. **完整正文**：不少于 6000 字；可以分段或换行，但每段都要推进剧情。
-5. **完稿复盘**：字数状态、主角变化、主线是否闭合、伏笔 / 意象是否回收。
+4. **完整正文**：写入文件的 `## 正文` 区块，不少于 6000 字；可以分段或换行，但每段都要推进剧情。
+5. **完稿复盘**：写入文件，记录字数状态、主角变化、主线是否闭合、伏笔 / 意象是否回收。
+6. **对话汇报**：对话只回复文件路径、标题、正文字数、`check_short_story.py` 检查状态和必要的下一步；不要粘贴完整正文。
 
-如果单次输出空间不足，必须把正文落盘为连续分段并继续写到达标；不能只交付大纲，也不能把“后续略”算作完成。
+如果单次输出空间不足，必须继续写同一个 Markdown 文件直到正文达标并完成收束；不能只交付大纲，也不能把“后续略”算作完成。
 
 ### 推荐文件
 
-短故事可不创建长篇项目目录。需要落盘时优先使用：
+短故事可不创建长篇项目目录。必须落盘到 Markdown 文件：
 
-- `short-stories/<标题>.md` → 使用 [short-story-template.md](references/short-story-template.md)
-- 如果用户希望并入某本书的项目目录：`novels/<书名>/短故事-标题.md`
+- `short-stories/YYYYMMDD-<标题>.md` → 默认路径，使用 [short-story-template.md](references/short-story-template.md)
+- `novels/<书名>/short-stories/YYYYMMDD-<标题>.md` → 当短故事属于某个长篇世界观或外传时使用
 
 ### 短故事写作循环
 
@@ -154,8 +174,9 @@ description: "Chinese novel/web novel writing skill. Plan, write, revise, export
 1. **确定核心**：题材、主角、欲望、对抗力量、主题和结局类型。
 2. **压缩结构**：将完整故事压进 6-8 个段落 / 场景，避免铺成长篇第一章。
 3. **埋设意象**：选择 1 个能在开头、中段、结尾回环的物件或场景。
-4. **写正文**：前 10% 进入异常或冲突；中段至少一次失败或认知翻转；结尾兑现开头承诺。
+4. **写正文到文件**：前 10% 进入异常或冲突；中段至少一次失败或认知翻转；结尾兑现开头承诺。
 5. **检查完整性**：运行 `python3 scripts/check_short_story.py <短故事文件路径>`；批量检查使用 `python3 scripts/check_short_story.py --all short-stories`。
+6. **最终回复**：只汇报文件路径、正文字数、检查是否通过；不得把完整正文复制到对话中。
 
 ### 短故事红灯项
 
@@ -349,8 +370,8 @@ while 大纲还有未写章节，且未触发暂停条件:
 - `workspace/chapters/第XXX章-标题/` → 使用 [chapter-workspace-template.md](references/chapter-workspace-template.md)，保存 `task-card.md`、`scene-plan.md`、`sandbox.md`、`review.md`、`revision-notes.md`
 
 **短故事文件（仅短故事模式）：**
-- `short-stories/<标题>.md` → 使用 [short-story-template.md](references/short-story-template.md)（不少于 6000 字，完整剧情闭环）
-- `novels/<书名>/短故事-标题.md` → 当短故事属于某个长篇世界观或外传时使用
+- `short-stories/YYYYMMDD-<标题>.md` → 使用 [short-story-template.md](references/short-story-template.md)（不少于 6000 字，完整剧情闭环；不得在对话中直接输出完整正文）
+- `novels/<书名>/short-stories/YYYYMMDD-<标题>.md` → 当短故事属于某个长篇世界观或外传时使用
 
 **专用文件（按需）：**
 - `03-多线管理.md` → 使用 [references/03-多线管理.md](references/03-多线管理.md)（仅多线叙事小说）
