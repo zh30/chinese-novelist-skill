@@ -1,0 +1,4 @@
+interface:
+  display_name: "中文小说创作与编辑"
+  short_description: "从故事发现到分层修订，创作更独特、更真实、更有余震的中文小说"
+  default_prompt: "Use $chinese-novelist-skill to develop this idea into an original Chinese novel with a creative constitution, causal structure, vivid characters, and layered revision."

@@ -16,13 +16,21 @@
 
 ---
 
+## 🧭 v3 创作核心
+
+| 文件名 | 什么时候读取 | 核心用途 |
+|--------|-------------|---------|
+| [creative-compass.md](references/creative-compass.md) | 新项目、重大转向、故事失去生命力 | 三向故事发现、创作宪章、人物压力、因果脊柱、意象与独创性审计 |
+| [editorial-revision.md](references/editorial-revision.md) | 修改、重写、去 AI 味、完稿 | 体验→结构→人物→场景→语言→连续性分层修订与伟大作品门控 |
+| [quality-checklist.md](references/quality-checklist.md) | 章节交付与终稿门控 | 用正文证据判断，不使用可互相抵消的总分 |
+
 ## 📂 核心模板文件
 
 ### 大纲模板
 
 | 文件名 | 适用场景 | 字段数 | 填写时间 |
 |--------|---------|--------|---------|
-| [outline-template-v1-minimal.md](references/outline-template-v1-minimal.md) | **默认推荐**，快速启动 | 10 个 | 5 分钟 |
+| [outline-template-v1-minimal.md](references/outline-template-v1-minimal.md) | **默认推荐**，快速启动 | 创作宪章 + 12 个短区块 | 10-20 分钟 |
 | [outline-template.md](references/outline-template.md) | 复杂项目，需要详细规划 | 50+ 个 | 30 分钟 + |
 
 **建议**：先用极简版，写了几章后再根据需要补充标准版。
@@ -33,13 +41,14 @@
 
 | 文件名 | 适用场景 | 特点 |
 |--------|---------|------|
-| [character-template-v2.md](references/character-template-v2.md) | **默认推荐**，驱动式引擎 | 欲望 - 恐惧双引擎、声音指纹、缺陷 - 失败映射 |
+| [character-template-v2.md](references/character-template-v2.md) | **默认推荐**，人物压力系统 | 公开追求、保护策略、自我谎言、矛盾、有限信息与可观察关系证据 |
 | [character-template.md](references/character-template.md) | 静态档案，v1 版本 | 基础字段，静态描述 |
 
-**v2 版核心改进**：
+**v3 人物模板核心改进**：
 - 从"填空表格"变成"驱动引擎"
-- 每个字段都能转化为写作约束
-- 包含「声音锚点」保持对白一致性
+- 用保护策略和压力解释选择，而非固定性格词
+- 用可观察证据记录关系，不用信任百分比
+- 允许人物做出惊人但回看合理的选择
 
 ---
 
@@ -93,24 +102,21 @@
 | 文件名 | 用途 | 使用频率 |
 |--------|------|---------|
 | [check_chapter_wordcount.py](scripts/check_chapter_wordcount.py) | 章节 / 短故事字数检查 | 每章必用；短故事用 `6000` 最小字数 |
-| [check_short_story.py](scripts/check_short_story.py) | 短故事质量检查（6000 字 + 正文区 + 完稿复盘 + 剧情收束） | 每篇短故事必用 |
-| [check_ai_style.py](scripts/check_ai_style.py) | **AI 味检测**（9 种症状，支持--all 批量） | 每章必用 |
-| [check_novel_health.py](scripts/check_novel_health.py) | **小说健康体检**（字数 + 节奏 + 场景） | 每 5-10 章 |
+| [check_short_story.py](scripts/check_short_story.py) | 短故事硬边界与结构信号（不能替代通读） | 每篇短故事必用 |
+| [check_ai_style.py](scripts/check_ai_style.py) | **AI 痕迹启发式扫描**（9 种症状，支持--all 批量） | 每章完成后按需复核 |
+| [check_novel_health.py](scripts/check_novel_health.py) | **长篇机械健康信号**（字数 + 关键词场景分布） | 每 5-10 章 |
 | [check_timeline.py](scripts/check_timeline.py) | **时间线一致性检查**（季节/天气/时段） | 每 10 章或完稿时 |
 | [character_tracker.py](scripts/character_tracker.py) | **人物一致性检查**（禁止用语 + 情绪突变） | 每 10 章或完稿时 |
 | [generate_epub.py](scripts/generate_epub.py) | 导出 EPUB 电子书 | 完稿时用 |
 | [translate_to_english.py](scripts/translate_to_english.py) | 生成当前 AI 意译翻译任务包 | 按需 |
 | [split_chapter_workspace.py](scripts/split_chapter_workspace.py) | 拆分旧混合章节为 `manuscript/zh` 正文和 `workspace/chapters` 工作台 | 旧项目迁移时 |
 
-**AI 味检测脚本**（v2 重点）：
+**AI 痕迹启发式扫描**：
 ```bash
 python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标题.md
 ```
 
-检测 9 种 AI 味症状：
-- 🔴 重度：空泛形容词、情绪标签句、视角混乱
-- 🟡 中度：四字成语、解释连接词、书面化对白
-- 🟢 轻度：时间转折词、句式均匀
+检测 9 种机械症状并给出复核优先级。命中不等于错误，低信号也不等于作品成熟；必须结合 POV、人物选择、因果和完整段落人工判断。
 
 ---
 
@@ -154,7 +160,7 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 
 | 文件名 | 用途 | 重点内容 |
 |--------|------|---------|
-| [14-角色沙盘模式.md](references/14-角色沙盘模式.md) | 角色沙盘 | 每章必跑、角色可反抗大纲、单角色运行时记忆、导演裁决 |
+| [14-角色沙盘模式.md](references/14-角色沙盘模式.md) | 角色沙盘 | 复杂章节按需运行、角色可反抗大纲、单角色运行时记忆、导演裁决 |
 
 ---
 
@@ -331,7 +337,7 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 | 极简大纲 | outline-template-v1-minimal.md |
 | 短故事 / 短篇故事 | short-story-template.md, SKILL.md §短故事模式 |
 | 6000 字故事 | short-story-template.md, check_short_story.py |
-| 质量检查 | check_ai_style.py, SKILL.md §红绿灯 |
+| 质量检查 | quality-checklist.md, editorial-revision.md, check_ai_style.py |
 | AI 味 | ai-style-examples.md, ai-style-by-genre.md |
 | 悬念管理 | 09-悬念生命周期管理.md, 10-悬念 - 章节匹配矩阵.md |
 | 角色沙盘 | 14-角色沙盘模式.md, progress-dashboard-template.md |
@@ -350,23 +356,23 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 
 ```
 重要性
- 高 │ 极简大纲   角色沙盘   AI味改写   悬念管理
-     │ (v1)      (v2.4重点) (v2重点)   (v2重点)
+ 高 │ 创作罗盘   极简大纲   分层编辑   证据门控
+     │ (v3)      (v3)       (v3)       (v3)
      │
- 中 │ 人物v2    节奏框架   场景v2
-     │ (v2)      (v2)       (v2)
+ 中 │ 人物v3    角色沙盘   场景v2    悬念管理
+     │ (v3)      (按需)      (启发式)   (按需)
      │
  低 │ 喘息机制  钩子映射   协作v2
-     │ (v2)      (v2)       (v2)
+     │ (启发式)  (启发式)    (按需)
      └──────────────────────────────→
        高频      中频       低频      使用频率
 ```
 
 **建议优先掌握**：
-1. 极简大纲（每次新项目）
-2. 角色沙盘（每章写作前）
-3. AI 味改写（每次质量检查）
-4. 悬念管理（每章规划）
+1. 创作罗盘与创作宪章（每次新项目）
+2. 因果任务卡（每章）
+3. 分层编辑协议（修改与完稿）
+4. 角色沙盘、悬念和脚本工具（问题出现时按需加载）
 
 ---
 
@@ -480,6 +486,7 @@ chinese-novelist-skill/
 
 ## 📝 更新记录
 
+- **2026-07-31**: v3.0.0 引入创作罗盘、分层编辑、独创性审计和伟大作品证据式门控；主入口压缩为渐进式路由
 - **2026-07-07**: v2.6.2 修复短故事模式输出边界，完整正文必须写入命名 Markdown 文件
 - **2026-07-06**: v2.5 新增短故事模式，不少于 6000 字且剧情完整
 - **2026-06-26**: v2.4 新增角色沙盘模式，每章写作前进行角色意志校验

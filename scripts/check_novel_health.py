@@ -160,6 +160,7 @@ def print_report(novel_dir: Path, results: dict):
     print()
 
     print('【评分】')
+    print('  说明：以下是字数与关键词分布的机械信号，不是文学质量或节奏好坏的裁决。')
     print(f'  字数健康：{results["word_score"]}/5 {"✅" if results["word_score"] >= 4 else "⚠️"}')
     print(f'  节奏健康：{results["rhythm_score"]}/5 {"✅" if results["rhythm_score"] >= 4 else "⚠️"}')
     print()
@@ -189,7 +190,8 @@ def print_report(novel_dir: Path, results: dict):
     print()
 
     overall = (results['word_score'] * 0.5 + results['rhythm_score'] * 0.5)
-    print(f'【综合评分】{overall:.1f}/5 {"✅" if overall >= 3.5 else "⚠️"}')
+    print(f'【机械信号汇总】{overall:.1f}/5 {"✅" if overall >= 3.5 else "⚠️"}')
+    print('  请结合全文因果、人物选择、信息控制和读者体验人工复核。')
     print('=' * 60)
 
 

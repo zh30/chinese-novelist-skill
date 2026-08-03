@@ -8,6 +8,47 @@ MARKDOWN_FILES = [ROOT / "SKILL.md", ROOT / "README.md"]
 
 
 class SkillDocsTests(unittest.TestCase):
+    def test_skill_entrypoint_is_concise_and_has_valid_frontmatter(self):
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertLessEqual(
+            len(skill.splitlines()),
+            500,
+            msg="SKILL.md should remain a concise router; detailed craft belongs in references/",
+        )
+
+        parts = skill.split("---", 2)
+        self.assertGreaterEqual(len(parts), 3)
+        frontmatter_keys = {
+            line.split(":", 1)[0].strip()
+            for line in parts[1].splitlines()
+            if ":" in line
+        }
+        self.assertEqual({"name", "description"}, frontmatter_keys)
+
+    def test_great_work_protocol_is_discoverable(self):
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        required_references = {
+            "references/creative-compass.md",
+            "references/editorial-revision.md",
+            "references/quality-checklist.md",
+        }
+
+        for reference in required_references:
+            self.assertIn(reference, skill)
+
+        required_principles = [
+            "独特性",
+            "因果脊柱",
+            "主题保持为问题",
+            "脚本只是烟雾报警器",
+            "不强制章章反转",
+            "伟大作品门控",
+        ]
+        for principle in required_principles:
+            self.assertIn(principle, skill)
+
+        self.assertNotIn("结尾句不完整", skill)
+
     def test_skill_and_readme_reference_opening_and_ending_guides(self):
         required = {"references/opening-design.md", "references/ending-design.md"}
 

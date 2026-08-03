@@ -35,7 +35,7 @@ AI_PATTERNS = {
         ],
         'threshold': 3,
         'severity': 'high',
-        'suggestion': '用具体动作或细节替代抽象形容词，如"他很悲伤"→"他盯着手机屏幕，拇指在玻璃上滑了三次"'
+        'suggestion': '先确认 POV、具体刺激、人物判断与选择；删除空泛修饰，换成只属于该人物和场所的证据'
     },
     'four_char_idioms': {
         'name': '四字成语堆砌',
@@ -54,7 +54,7 @@ AI_PATTERNS = {
         },
         'threshold': 5,
         'severity': 'medium',
-        'suggestion': '减少成语使用，用自然描述替代。如"他喜出望外"→"他差点撞上门框"'
+        'suggestion': '逐处判断成语是否准确且符合声音；只重写堆叠或代替观察的用法，不按词表清空'
     },
     'explanatory_connectors': {
         'name': '解释性连接词',
@@ -101,7 +101,7 @@ AI_PATTERNS = {
         ],
         'threshold': 2,
         'severity': 'high',
-        'suggestion': '用动作和细节展示情绪，而非直接标签。如"他感到悲伤"→"他低下头，盯着地面"'
+        'suggestion': '不要机械换成低头、握拳等模板动作；从刺激、误解、身体注意与后续选择重建情绪经验'
     },
     'stiff_dialogue': {
         'name': '过度书面化对白',
@@ -113,7 +113,7 @@ AI_PATTERNS = {
         ],
         'threshold': 2,
         'severity': 'medium',
-        'suggestion': '对白应口语化，如"我认为这个假设存在漏洞"→"扯淡，这说法有三个问题"'
+        'suggestion': '根据人物职业、权力关系、隐藏目标和说错话的成本重写；书面表达若属于人物可以保留'
     },
     'pov_confusion': {
         'name': '视角混乱',
@@ -370,13 +370,15 @@ def print_report(result: dict):
         return
 
     print('\n' + '=' * 70)
-    print('🤖 AI 味检测报告')
+    print('🤖 AI 痕迹启发式扫描')
     print('=' * 70)
     print(f'\n📄 文件：{Path(result["file"]).name}')
     print(f'📝 字数：{result["word_count"]:,} 字')
 
     severity = result['severity']
-    print(f'\n{severity["rating_emoji"]} AI 味评级：{severity["rating"]} (综合得分：{severity["score"]})')
+    print('⚠️  本报告只标记统计异常和可疑位置，不判断作者身份或文学质量。')
+    print('    必须回到完整语境逐条复核；正确表达可以保留。')
+    print(f'\n{severity["rating_emoji"]} 复核优先级：{severity["rating"]} (启发式得分：{severity["score"]})')
 
     print('\n' + '-' * 70)
     print('详细检测结果：')
@@ -410,21 +412,21 @@ def print_report(result: dict):
     print('\n' + '=' * 70)
 
     if severity['rating'] == '重度':
-        print('\n⚠️  重度 AI 味警告')
-        print('   建议重写本章，重点参考以下改进方向：')
-        print('   1. 用具体动作替代情绪标签（"他很悲伤"→"他低着头"）')
-        print('   2. 减少成语和四字词堆砌')
-        print('   3. 增加句式变化，使用短句、省略句')
+        print('\n⚠️  高优先级复核')
+        print('   不要按指标批量替换。先确认 POV、刺激、人物判断与选择，再重建有问题的段落：')
+        print('   1. 把抽象情绪压回这个人物在这个场所会注意的具体事实')
+        print('   2. 删除重复结论，保留必要概述与准确成语')
+        print('   3. 让句法服从感知和压力，不机械轮换长短句')
         failed = [c for c in result['check_results'].values() if c['status'] == '❌']
         if failed:
             print(f'   4. 重点修复：{", ".join(c["name"] for c in failed[:3])}')
     elif severity['rating'] == '中度':
-        print('\n💡 中度 AI 味，建议优化以下方面：')
+        print('\n💡 中优先级复核，以下命中需结合上下文判断：')
         failed_checks = [c for c in result['check_results'].values() if c['status'] == '❌']
         for i, check in enumerate(failed_checks[:3], 1):
             print(f'   {i}. {check["name"]}: {check["suggestion"][:50]}...')
     else:
-        print('\n✅ AI 味控制良好，保持当前写作风格')
+        print('\n✅ 未发现高密度机械症状；仍需人工通读独特性、因果和情感真实性')
 
     print('\n📚 参考文档：references/ai-style-examples.md')
     print('=' * 70 + '\n')
@@ -433,7 +435,7 @@ def print_report(result: dict):
 def print_batch_summary(results: list):
     """打印批量检测结果摘要"""
     print('\n' + '=' * 70)
-    print('🤖 AI 味批量检测报告')
+    print('🤖 AI 痕迹批量启发式扫描')
     print('=' * 70)
 
     total = len(results)
@@ -442,7 +444,8 @@ def print_batch_summary(results: list):
     severe = sum(1 for r in results if r.get('severity', {}).get('rating') == '重度')
     errors = sum(1 for r in results if 'error' in r and r.get('exists', True))
 
-    print(f'\n📊 总览：{total} 章 | 🟢轻度 {mild} | 🟡中度 {moderate} | 🔴重度 {severe} | ⚠️错误 {errors}')
+    print('⚠️  等级只表示复核优先级，不等于文学质量或作者身份判断。')
+    print(f'\n📊 总览：{total} 章 | 🟢低 {mild} | 🟡中 {moderate} | 🔴高 {severe} | ⚠️错误 {errors}')
 
     # 按严重程度排序
     severity_order = {'重度': 0, '中度': 1, '轻度': 2}
@@ -465,9 +468,9 @@ def print_batch_summary(results: list):
         print(f'{name:<30} {word_count:>6,} {rating:>6} {score:>6} {issues}')
 
     if severe > 0:
-        print(f'\n⚠️  {severe} 章重度 AI 味，建议优先重写')
+        print(f'\n⚠️  {severe} 章命中高密度信号，建议优先人工复核')
     if moderate > 0:
-        print(f'💡 {moderate} 章中度 AI 味，建议针对性优化')
+        print(f'💡 {moderate} 章命中中密度信号，建议结合上下文复核')
 
     print('\n📚 参考文档：references/ai-style-examples.md')
     print('=' * 70 + '\n')

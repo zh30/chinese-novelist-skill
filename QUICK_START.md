@@ -22,7 +22,7 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/c
 
 ---
 
-## Step 1: 创建第一本小说（5 分钟）
+## Step 1: 创建第一本小说（10-20 分钟）
 
 ### 对 AI 说
 
@@ -32,31 +32,34 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/c
 
 ### AI 会引导你
 
-1. **填写极简大纲**（10 个问题，5 分钟）
-   - 主角是谁，想要什么？
-   - 核心冲突是什么？
-   - 结局是什么？
-   - 分几章，每章干嘛？
-   - ...（共 10 个）
+1. **比较 3 个实质故事方向**
+   - 不只更换背景或能力名称
+   - 比较人物选择、对手答案、结局代价和专属性
+   - 推荐一个最有压力、最不落套的方向
 
-2. **自动生成文件**
+2. **建立创作宪章与极简大纲**
+   - 读者契约、戏剧问题与主题问题
+   - 主角保护策略、对手的有效答案
+   - 因果脊柱、结局代价、意象与风格边界
+
+3. **自动生成文件**
    - `novels/我的悬疑小说/00-大纲.md`
    - `novels/我的悬疑小说/99-进度仪表盘.md`
    - `novels/我的悬疑小说/manuscript/zh/`
    - `novels/我的悬疑小说/manuscript/en/`
    - `novels/我的悬疑小说/workspace/chapters/`
 
-3. **开始写第 1 章**
+4. **开始写第 1 章**
    - AI 会自动：
      - 读取大纲
-     - 设计首章钩子
+     - 建立首章压力、人物选择和离场效果
      - 把干净正文写入 `manuscript/zh/第001章-标题.md`
      - 把任务卡、场景拆分和复盘写入 `workspace/chapters/第001章-标题/`
 
 ### 你只需做
 
-- [ ] 回答 10 个极简问题
-- [ ] 确认书名（AI 会生成 3-5 个候选）
+- [ ] 确认或调整推荐故事方向
+- [ ] 确认会改变作品核心的少量选择
 - [ ] 等待 AI 写完第 1 章
 
 ---
@@ -146,12 +149,12 @@ python scripts/check_ai_style.py novels/我的悬疑小说/manuscript/zh/第001�
 python scripts/split_chapter_workspace.py novels/我的悬疑小说
 ```
 
-### AI 味检测报告示例
+### AI 痕迹启发式扫描示例
 
 ```
-🤖 AI味检测报告：第01章
+🤖 AI 痕迹启发式扫描：第01章
 
-🔴 AI味评级：中度（综合得分: 4.2）
+🟡 复核优先级：中（启发式得分: 4.2）
 
 ❌ 空泛形容词: 5/千字 (阈值: <3) 🔴 超标
    示例: "他很悲伤" "她非常开心"
@@ -160,9 +163,9 @@ python scripts/split_chapter_workspace.py novels/我的悬疑小说
 📚 参考文档: references/ai-style-examples.md
 ```
 
-### 修复 AI 味
+### 修复机械文本
 
-打开 `references/ai-style-examples.md`，找到对应症状的改写范例：
+脚本命中不等于错误。先回到完整段落，确认 POV、具体刺激、人物判断与选择，再参考 `references/editorial-revision.md` 和 `references/style-polishing.md` 重建问题段落。不要按关键词批量删除，也不要只换同义词。
 
 | 原句 | 改写 |
 |------|------|

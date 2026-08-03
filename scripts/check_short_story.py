@@ -144,6 +144,7 @@ def print_results(results: list):
     print('\n' + '=' * 60)
     print('短故事质量检查报告')
     print('=' * 60)
+    print('说明：本脚本只验证字数、文件结构和关键词信号；高潮、收束与文学质量仍需人工通读。')
 
     for result in results:
         icon = '✅' if result['status'] == 'pass' else '⚠️ ' if result['status'] == 'fail' else '❌'

@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-This is a Codex skill for Chinese novel/web novel writing. It defaults to a structured workflow for planning, writing, and maintaining long-form Chinese fiction with consistent characters, plot threads, and writing quality. It also supports an optional short-story mode for complete Chinese short stories of at least 6000 characters.
+This is a Codex skill for ambitious Chinese fiction: literary, genre/web, and crossover novels. It combines story discovery, a creative constitution, character pressure, causal long-form state, layered editorial revision, and deterministic smoke checks. It also supports complete Chinese short stories of at least 6000 characters.
 
 The skill is loaded from `SKILL.md` - this is the main entry point that defines the novel writing workflow.
 
@@ -112,9 +112,9 @@ python3 scripts/translate_to_english.py novels/书名 --chapters 1-10
 ## Writing Workflow
 
 When using this skill, work follows three phases:
-1. **策划期** (Planning): Outline, characters, first chapter task card
-2. **连载期** (Serial): Chapter-by-chapter writing with red-light quality checks
-3. **收尾期** (Completion): Final polish, timeline check, publishing gate
+1. **策划期** (Planning): Compare genuinely different directions; establish the creative constitution, causal spine, characters, and first chapter task card
+2. **连载期** (Serial): Chapter-by-chapter causal writing, independent editorial pass, smoke checks, and state updates
+3. **收尾期** (Completion): Reader pass, then separate structure, character, scene, language, ending, and continuity passes
 
 Within **连载期**, two speed modes:
 - **标准模式** (default): Full scene breakdown + red-light check
@@ -132,8 +132,8 @@ Optional short-story mode:
 ## Key Files for Novel Projects
 
 Create in `novels/<书名>/`:
-- `00-大纲.md` - Outline using `references/outline-template-v1-minimal.md` (recommended)
-- `01-人物档案.md` - Characters using `references/character-template-v2.md` (recommended)
+- `00-大纲.md` - Creative constitution + causal outline using `references/outline-template-v1-minimal.md` (recommended)
+- `01-人物档案.md` - Character pressure systems using `references/character-template-v2.md` (recommended)
 - `02-世界观与伏笔.md` - Worldbuilding using `references/story-bible-template.md`
 - `99-进度仪表盘.md` - Progress dashboard (auto-maintained by AI)
 - `manuscript/zh/第XXX章-标题.md` - Clean Chinese manuscript chapters using `references/chapter-template.md`
@@ -146,12 +146,14 @@ For short stories, use `short-stories/YYYYMMDD-<标题>.md` with `references/sho
 ## Quality Standards
 
 Each chapter must have:
-- Meaningful change that advances the plot
-- At least one plot thread resolved, escalated, or deflected
-- Hook strength matching the chapter's position in the book
+- A concrete reason to exist and an irreversible causal, relational, cognitive, or emotional change
+- At least one prior consequence carried forward; suspense threads are advanced only when the story needs them
+- An ending effect appropriate to the chapter: suspense, decision, emotional landing, image, or deliberate closure
 - Character shown through action/dialogue, not just description
-- Multiple scenes with clear tasks (not just summary)
+- One or more scenes with active pressure and strategy change; a single-scene chapter needs sustained escalation and a clear reason
 - ≥3000 Chinese characters (≥2500 in fast mode)
+
+Automated checks are smoke alarms, not aesthetic judges. Never use keyword scores to claim literary quality or authorship, and never force a hook, reversal, sensory quota, or sentence-length pattern merely to satisfy a metric.
 
 Each short story must have:
 - ≥6000 Chinese characters
