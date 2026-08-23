@@ -6,19 +6,19 @@
 
 ## Step 0: 安装（1 分钟）
 
-### 如果你用 Claude Code
+先克隆仓库，再按 Agent 放到 skill 目录或做符号链接：
+
+| Agent | 路径 |
+|-------|------|
+| Claude Code | `~/.claude/skills/chinese-novelist-skill` |
+| Codex | `~/.codex/skills/chinese-novelist-skill` |
+| Cursor | `~/.cursor/skills/chinese-novelist-skill` |
 
 ```bash
-# 克隆到 skill 目录
 git clone https://github.com/henry/chinese-novelist-skill.git ~/.claude/skills/chinese-novelist-skill
-
-# 重启 Claude Code
-# 或者重新加载 skill（具体命令取决于你的工具）
 ```
 
-### 如果你用其他工具
-
-参考你的工具文档，将本仓库放到 skill 目录即可。
+Grok Build、Hermes、Pi 等无 skill 机制的 Agent：把仓库放到工作区，然后说“读取 SKILL.md 并遵循其路由”。
 
 ---
 
@@ -114,11 +114,10 @@ python scripts/check_short_story.py short-stories/YYYYMMDD-故事标题.md
 
 ### AI 会自动
 
-1. 读取 `99-进度仪表盘.md` 获取当前状态
-2. 检查悬念过期警告
-3. 提取人物当前状态
-4. 设计下一章钩子
-5. 写正文到 `manuscript/zh/`
+1. 读取 `99-进度仪表盘.md` 的滚动前情摘要
+2. 只读大纲宪章区、本章 POV 人物卡、上一章末尾 800 字
+3. 写正文到 `manuscript/zh/`
+4. 回写复盘和仪表盘，运行 `check_chapter_transaction.py`
 
 ### 你只需做
 
@@ -135,6 +134,9 @@ python scripts/check_short_story.py short-stories/YYYYMMDD-故事标题.md
 ```bash
 # 检查字数
 python scripts/check_chapter_wordcount.py novels/我的悬疑小说/manuscript/zh/第001章-标题.md
+
+# 验收本章事务是否真正落盘
+python scripts/check_chapter_transaction.py novels/我的悬疑小说 1
 
 # 检查短故事质量
 python scripts/check_short_story.py short-stories/我的短故事.md
@@ -231,6 +233,7 @@ python scripts/generate_epub.py novels/我的悬疑小说
 |--------|--------|
 | 开始写新书 | "帮我写一本[题材]小说，[章节数]章" |
 | 写短故事 | "写一篇[题材]短故事，不少于 6000 字" |
+| 批量写 | "批量写 3 本不同题材的小说，每本 20 章" |
 | 继续写 | "继续写" / "下一章" |
 | 写指定章 | "写第 X 章" |
 | 修改某章 | "修改第 X 章，[具体问题]" |

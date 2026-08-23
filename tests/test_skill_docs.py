@@ -23,7 +23,13 @@ class SkillDocsTests(unittest.TestCase):
             for line in parts[1].splitlines()
             if ":" in line
         }
-        self.assertEqual({"name", "description"}, frontmatter_keys)
+        self.assertTrue({"name", "description"}.issubset(frontmatter_keys))
+        allowed = {"name", "description", "compatibility", "license", "metadata", "allowed-tools"}
+        self.assertLessEqual(frontmatter_keys, allowed)
+        self.assertIn("compatibility", frontmatter_keys)
+        self.assertIn("metadata", frontmatter_keys)
+        self.assertIn('version: "3.1.0"', parts[1])
+        self.assertIn("当前版本：3.1.0", skill)
 
     def test_great_work_protocol_is_discoverable(self):
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
@@ -31,6 +37,7 @@ class SkillDocsTests(unittest.TestCase):
             "references/creative-compass.md",
             "references/editorial-revision.md",
             "references/quality-checklist.md",
+            "references/batch-production.md",
         }
 
         for reference in required_references:
@@ -43,6 +50,10 @@ class SkillDocsTests(unittest.TestCase):
             "脚本只是烟雾报警器",
             "不强制章章反转",
             "伟大作品门控",
+            "有界冷启动",
+            "滚动前情摘要",
+            "check_chapter_transaction.py",
+            "check_cross_book_similarity.py",
         ]
         for principle in required_principles:
             self.assertIn(principle, skill)
@@ -143,6 +154,29 @@ class SkillDocsTests(unittest.TestCase):
         self.assertNotIn("## Title", translation_section)
         self.assertNotIn("## Body", translation_section)
 
+    def test_batch_production_mode_is_discoverable(self):
+        required_reference = "references/batch-production.md"
+        required_scripts = [
+            "scripts/check_chapter_transaction.py",
+            "scripts/check_cross_book_similarity.py",
+        ]
+        required_files = [
+            ROOT / "SKILL.md",
+            ROOT / "README.md",
+            ROOT / "FILE_INDEX.md",
+        ]
+
+        for path in required_files:
+            content = path.read_text(encoding="utf-8")
+            self.assertIn(required_reference, content, msg=f"{path.name} should link to {required_reference}")
+            for script in required_scripts:
+                self.assertIn(script, content, msg=f"{path.name} should link to {script}")
+            self.assertIn("批量", content)
+
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("novels/00-批量任务清单.md", skill)
+        self.assertIn("禁止默认重读最近 1–3 章全文", skill)
+
     def test_clean_manuscript_workspace_structure_is_discoverable(self):
         required_files = [
             ROOT / "SKILL.md",
@@ -172,6 +206,7 @@ class SkillDocsTests(unittest.TestCase):
         TEMPLATE_LINKS = {
             '00-大纲.md', '01-人物档案.md', '02-世界观与伏笔.md',
             '03-悬念追踪表.md', '04-角色沙盘/00-角色索引.md',
+            '00-批量任务清单.md',
         }
 
         for path in ROOT.rglob("*.md"):

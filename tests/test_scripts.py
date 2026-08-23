@@ -5,7 +5,17 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from utils import extract_text_from_chapter, count_chinese_words, find_chapter_files
+from utils import (
+    count_chinese_words,
+    extract_labeled_value,
+    extract_markdown_section,
+    extract_text_from_chapter,
+    find_chapter_files,
+    find_chapter_workspace,
+    find_novel_project_dirs,
+    is_placeholder,
+    parse_chapter_number,
+)
 
 
 class TestUtils(unittest.TestCase):
@@ -96,6 +106,39 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(len(files), 1)
         self.assertEqual(files[0].name, "第01章-新.md")
+
+    def test_parse_chapter_number_and_placeholders(self):
+        self.assertEqual(parse_chapter_number("第001章-标题.md"), 1)
+        self.assertEqual(parse_chapter_number(12), 12)
+        self.assertTrue(is_placeholder("___"))
+        self.assertTrue(is_placeholder("待填"))
+        self.assertFalse(is_placeholder("她把钥匙藏进外套"))
+
+    def test_extract_section_and_labeled_value(self):
+        content = """# 标题
+
+## 滚动前情摘要
+
+- 第001章：旧钥匙不见了
+
+## 其他
+
+- **三句以内摘要**：阁楼少了一页日志。
+"""
+        self.assertIn("第001章", extract_markdown_section(content, "## 滚动前情摘要"))
+        self.assertEqual(extract_labeled_value(content, ["三句以内摘要"]), "阁楼少了一页日志。")
+
+    def test_find_workspace_and_novel_dirs(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            novel = root / "书名"
+            workspace = novel / "workspace" / "chapters" / "第001章-标题"
+            workspace.mkdir(parents=True)
+            (novel / "00-大纲.md").write_text("# 大纲", encoding="utf-8")
+            (root / "00-批量任务清单.md").write_text("# 清单", encoding="utf-8")
+
+            self.assertEqual(find_chapter_workspace(novel, 1).name, "第001章-标题")
+            self.assertEqual([path.name for path in find_novel_project_dirs(root)], ["书名"])
 
 
 class CheckAiStyleTests(unittest.TestCase):

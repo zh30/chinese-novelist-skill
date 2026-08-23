@@ -12,6 +12,9 @@ from pathlib import Path
 
 BODY_SECTION_MARKERS = {'## 正文', '##正文', '## Body', '##Body'}
 MANUSCRIPT_DIR = 'manuscript'
+DASHBOARD_FILENAME = '99-进度仪表盘.md'
+CHAPTER_NUM_RE = re.compile(r'第\s*(\d+)\s*章')
+PLACEHOLDER_RE = re.compile(r'^[_\-—–\s（）()\.\*待填待写TBDN/\\?？]*$', re.IGNORECASE)
 
 
 def extract_text_from_chapter(file_path: Path) -> str:
@@ -180,6 +183,119 @@ def _looks_like_plain_chapter_title(line: str) -> bool:
     return bool(
         re.match(r'^(?:第\s*\d+\s*章|Chapter[-_ ]?\d+|Chapter\s+\d+)\b', line, re.IGNORECASE)
     )
+
+
+def parse_chapter_number(value) -> int:
+    """从文件名、路径或数字中提取章节号。"""
+    if isinstance(value, int):
+        return value
+    text = str(value)
+    match = CHAPTER_NUM_RE.search(text)
+    if match:
+        return int(match.group(1))
+    match = re.search(r'(\d+)', Path(text).name)
+    return int(match.group(1)) if match else 0
+
+
+def extract_markdown_section(content: str, heading: str) -> str:
+    """提取指定标题下的内容，直到同级或更高级标题。"""
+    heading = heading.strip()
+    lines = content.split('\n')
+    section_start = None
+    heading_level = heading.count('#', 0, heading.find(' ') if ' ' in heading else len(heading)) or 2
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped == heading:
+            section_start = i + 1
+            continue
+        if section_start is not None and stripped.startswith('#'):
+            level = len(stripped) - len(stripped.lstrip('#'))
+            if level <= heading_level:
+                return '\n'.join(lines[section_start:i]).strip()
+
+    if section_start is None:
+        return ''
+    return '\n'.join(lines[section_start:]).strip()
+
+
+def extract_labeled_value(content: str, labels) -> str:
+    """提取 `- **标签**：值` 或 `## 标签` 区块的内容。"""
+    if isinstance(labels, str):
+        labels = [labels]
+
+    for label in labels:
+        pattern = re.compile(
+            rf'^[\-\*]\s*\*\*{re.escape(label)}\*\*[ \t]*[：:][ \t]*(.*)$',
+            re.MULTILINE,
+        )
+        match = pattern.search(content)
+        if match:
+            return match.group(1).strip()
+
+        for prefix in ('## ', '### '):
+            section = extract_markdown_section(content, f'{prefix}{label}')
+            if section:
+                return section
+    return ''
+
+
+def is_placeholder(value: str) -> bool:
+    """判断字段是否仍为空白或占位符。"""
+    return not value or bool(PLACEHOLDER_RE.match(value.strip()))
+
+
+def find_progress_dashboard(novel_dir: Path) -> Path:
+    """返回小说目录中的进度仪表盘路径（可能尚不存在）。"""
+    return Path(novel_dir) / DASHBOARD_FILENAME
+
+
+def find_chapter_workspace(novel_dir: Path, chapter_num: int):
+    """按章节号查找 `workspace/chapters/第XXX章*` 目录。"""
+    workspace = Path(novel_dir) / 'workspace' / 'chapters'
+    if not workspace.exists():
+        return None
+
+    prefixes = (
+        f'第{chapter_num:03d}章',
+        f'第{chapter_num:02d}章',
+        f'第{chapter_num}章',
+    )
+    for child in sorted(workspace.iterdir()):
+        if child.is_dir() and child.name.startswith(prefixes):
+            return child
+    return None
+
+
+def find_novel_project_dirs(root: Path) -> list:
+    """查找小说项目目录。
+
+    若 `root` 本身是一本小说则只返回它；否则扫描子目录。
+    忽略批量清单等非项目文件。
+    """
+    root = Path(root)
+    if not root.exists():
+        return []
+
+    if _looks_like_novel_dir(root):
+        return [root]
+
+    novels = []
+    for child in sorted(root.iterdir()):
+        if child.is_dir() and _looks_like_novel_dir(child):
+            novels.append(child)
+    return novels
+
+
+def _looks_like_novel_dir(path: Path) -> bool:
+    if not path.is_dir():
+        return False
+    return any((
+        (path / DASHBOARD_FILENAME).exists(),
+        (path / '00-大纲.md').exists(),
+        (path / MANUSCRIPT_DIR / 'zh').exists(),
+        (path / '01-人物档案.md').exists(),
+    ))
 
 
 def setup_windows_encoding():

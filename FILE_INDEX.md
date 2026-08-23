@@ -31,7 +31,7 @@
 | 文件名 | 适用场景 | 字段数 | 填写时间 |
 |--------|---------|--------|---------|
 | [outline-template-v1-minimal.md](references/outline-template-v1-minimal.md) | **默认推荐**，快速启动 | 创作宪章 + 12 个短区块 | 10-20 分钟 |
-| [outline-template.md](references/outline-template.md) | 复杂项目，需要详细规划 | 50+ 个 | 30 分钟 + |
+| [outline-template.md](docs/legacy/outline-template.md) | 已归档的 v1 详细大纲 | 50+ 个 | 仅作历史参考 |
 
 **建议**：先用极简版，写了几章后再根据需要补充标准版。
 
@@ -42,7 +42,7 @@
 | 文件名 | 适用场景 | 特点 |
 |--------|---------|------|
 | [character-template-v2.md](references/character-template-v2.md) | **默认推荐**，人物压力系统 | 公开追求、保护策略、自我谎言、矛盾、有限信息与可观察关系证据 |
-| [character-template.md](references/character-template.md) | 静态档案，v1 版本 | 基础字段，静态描述 |
+| [character-template.md](docs/legacy/character-template.md) | 已归档的静态档案 v1 | 基础字段，静态描述 |
 
 **v3 人物模板核心改进**：
 - 从"填空表格"变成"驱动引擎"
@@ -58,8 +58,9 @@
 |--------|------|
 | [chapter-template.md](references/chapter-template.md) | 干净章节正文模板，仅用于 `manuscript/zh` |
 | [chapter-workspace-template.md](references/chapter-workspace-template.md) | 章节任务卡、场景拆分、沙盘、复盘和修改记录 |
-| [progress-dashboard-template.md](references/progress-dashboard-template.md) | 进度仪表盘，AI 自动维护 |
+| [progress-dashboard-template.md](references/progress-dashboard-template.md) | 精简进度仪表盘与滚动前情摘要 |
 | [story-bible-template.md](references/story-bible-template.md) | 世界观与伏笔台账（复杂项目） |
+| [batch-production.md](references/batch-production.md) | 批量任务清单、原子事务和冷启动协议 |
 
 ### 短故事模板
 
@@ -97,16 +98,18 @@
 
 ---
 
-## 🛠️ 工具脚本（9 个）
+## 🛠️ 工具脚本（11 个）
 
 | 文件名 | 用途 | 使用频率 |
 |--------|------|---------|
 | [check_chapter_wordcount.py](scripts/check_chapter_wordcount.py) | 章节 / 短故事字数检查 | 每章必用；短故事用 `6000` 最小字数 |
+| [check_chapter_transaction.py](scripts/check_chapter_transaction.py) | 章节事务验收（正文、复盘、仪表盘回写） | 每章必用，自动驾驶停机条件 |
 | [check_short_story.py](scripts/check_short_story.py) | 短故事硬边界与结构信号（不能替代通读） | 每篇短故事必用 |
 | [check_ai_style.py](scripts/check_ai_style.py) | **AI 痕迹启发式扫描**（9 种症状，支持--all 批量） | 每章完成后按需复核 |
 | [check_novel_health.py](scripts/check_novel_health.py) | **长篇机械健康信号**（字数 + 关键词场景分布） | 每 5-10 章 |
 | [check_timeline.py](scripts/check_timeline.py) | **时间线一致性检查**（季节/天气/时段） | 每 10 章或完稿时 |
 | [character_tracker.py](scripts/character_tracker.py) | **人物一致性检查**（禁止用语 + 情绪突变） | 每 10 章或完稿时 |
+| [check_cross_book_similarity.py](scripts/check_cross_book_similarity.py) | **跨书同质化线索**（4-gram、意象、开篇结尾、人名） | 批量完本时 |
 | [generate_epub.py](scripts/generate_epub.py) | 导出 EPUB 电子书 | 完稿时用 |
 | [translate_to_english.py](scripts/translate_to_english.py) | 生成当前 AI 意译翻译任务包 | 按需 |
 | [split_chapter_workspace.py](scripts/split_chapter_workspace.py) | 拆分旧混合章节为 `manuscript/zh` 正文和 `workspace/chapters` 工作台 | 旧项目迁移时 |
@@ -201,6 +204,24 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 
 ---
 
+### 场景 2.5：批量写多本
+
+需要解决的问题：
+- 一次推进多本长篇或多篇短故事
+- 无人值守时章节事务没有真正落盘
+- 多本书写得越来越像
+
+相关文档：
+1. [batch-production.md](references/batch-production.md) - 清单、原子事务、认领和重试
+2. [check_chapter_transaction.py](scripts/check_chapter_transaction.py) - 章节事务验收
+3. [check_cross_book_similarity.py](scripts/check_cross_book_similarity.py) - 跨书同质化线索
+
+快速指令：
+```text
+批量写 3 本不同题材的小说，每本 20 章
+批量写 5 篇短故事，题材不要重复
+```
+
 ### 场景 3：每章写作时
 
 需要解决的问题：
@@ -294,7 +315,7 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 
 相关文档：
 1. [scene-design-v2.md](references/scene-design-v2.md) - 场景设计工具
-2. [scene-design.md](references/scene-design.md) - 基础指南（v1）
+2. [scene-design.md](docs/legacy/scene-design.md) - 已归档的基础指南（v1）
 
 重点阅读：
 - 场景任务检查卡 §场景任务检查卡
@@ -341,6 +362,7 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 | AI 味 | ai-style-examples.md, ai-style-by-genre.md |
 | 悬念管理 | 09-悬念生命周期管理.md, 10-悬念 - 章节匹配矩阵.md |
 | 角色沙盘 | 14-角色沙盘模式.md, progress-dashboard-template.md |
+| 批量生产 | batch-production.md, check_chapter_transaction.py, check_cross_book_similarity.py |
 | 角色反抗大纲 | 14-角色沙盘模式.md |
 | 节奏设计 | 11-叙事节奏框架.md, 13-钩子映射表.md |
 | 人物塑造 | character-template-v2.md, 14-角色沙盘模式.md |
@@ -415,10 +437,7 @@ chinese-novelist-skill/
 │   ├── 🎭 v2.4角色沙盘
 │   │   └── 14-角色沙盘模式.md               ⭐⭐ 每章角色意志校验
 │   │
-│   └── 📖 v1原始文档
-│       ├── outline-template.md              标准大纲
-│       ├── character-template.md            人物v1
-│       ├── scene-design.md                  场景v1
+│   └── 📖 仍在使用的写作指南
 │       ├── chapter-guide.md                 章节指南
 │       ├── opening-design.md                首章设计
 │       ├── hook-techniques.md               钩子技巧
@@ -432,9 +451,13 @@ chinese-novelist-skill/
 │
 ├── 📁 scripts/                      🛠️ 工具脚本
 │   ├── check_chapter_wordcount.py   ⭐ 字数检查
+│   ├── check_chapter_transaction.py ⭐ 章节事务验收
 │   ├── check_short_story.py         ⭐ 短故事检查
 │   ├── check_ai_style.py            ⭐⭐ AI味检测
+│   ├── check_cross_book_similarity.py 跨书同质化
 │   └── generate_epub.py             EPUB导出
+│
+├── 📁 docs/legacy/                  📦 已归档的 v1 模板
 │
 ├── 📁 novels/                       📝 小说目录
     └── （你的小说项目）
@@ -486,6 +509,7 @@ chinese-novelist-skill/
 
 ## 📝 更新记录
 
+- **2026-08-23**: v3.1.0 批量生产协议、章节事务验收、跨书同质化检测、有界冷启动；v1 模板归档到 `docs/legacy/`
 - **2026-07-31**: v3.0.0 引入创作罗盘、分层编辑、独创性审计和伟大作品证据式门控；主入口压缩为渐进式路由
 - **2026-07-07**: v2.6.2 修复短故事模式输出边界，完整正文必须写入命名 Markdown 文件
 - **2026-07-06**: v2.5 新增短故事模式，不少于 6000 字且剧情完整

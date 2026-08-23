@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.1.0 (2026-08-23)
+
+### Batch Production and Bounded Recovery
+
+- 新增 `references/batch-production.md`：批量任务清单、原子事务、认领规则、失败重试和外部 CLI 循环。
+- 重写进度仪表盘模板为机器优先状态文件，增加滚动前情摘要、卷摘要和既定事实。
+- 连载期改为有界冷启动：仪表盘 + 宪章 + POV 人物卡 + 上一章末尾 800 字，禁止默认重读最近 1–3 章全文。
+- 新增 `scripts/check_chapter_transaction.py`：验收正文、`review.md` 必填项和仪表盘回写；自动驾驶连续 2 次失败停机。
+- 新增 `scripts/check_cross_book_similarity.py`：跨书 4-gram、意象、开篇结尾和人名撞车的烟雾报警。
+- 每 10 章或卷末要求写出 `workspace/audits/卷X-审计.md`。
+- 将 `CLAUDE.md` 与 `AGENTS.md` 收成指向 `SKILL.md` 的薄指针；压缩 `SKILL.md`；归档 4 份 v1 参考到 `docs/legacy/`。
+- README / QUICK_START 补充 Claude Code、Codex、Cursor 安装路径，以及 Grok Build、Hermes、Pi 等无 skill 机制 Agent 的引导提示词。
+
 ## v3.0.0 (2026-07-31)
 
 ### Creative System Rewrite

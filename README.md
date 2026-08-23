@@ -24,6 +24,13 @@
   -> 完整剧情骨架
   -> 写入 short-stories/YYYYMMDD-标题.md
   -> 检查并汇报路径
+
+批量请求
+  -> novels/00-批量任务清单.md
+  -> 认领一本 / 一篇
+  -> 一个原子事务
+  -> check_chapter_transaction.py 或 check_short_story.py
+  -> 回写状态
 ```
 
 ### 适合你，如果你正在遇到
@@ -37,6 +44,7 @@
 | 每章不知道该推进什么 | 因果任务卡 + 人物压力与不可逆变化 |
 | 长篇文件越来越乱 | `manuscript/` 干净正文 + `workspace/` 创作工作台 |
 | 只想写一篇完整短故事 | 短故事模式 + 6000 字红灯线 + 剧情闭合检查 |
+| 想一次写多本，又怕越写越像 | [批量生产协议](references/batch-production.md) + 事务验收 + 跨书同质化检测 |
 
 ---
 
@@ -97,6 +105,14 @@ AI 会交付：
 ```
 
 快速模式会压缩场景拆分，但仍保留最小沙盘：POV 角色深度发言 + 核心人物轻量心跳。
+
+### 5. 批量写多本或短篇
+
+```text
+使用 chinese-novelist-skill，批量写 3 本不同题材的小说，每本 20 章。
+```
+
+AI 会创建或更新 `novels/00-批量任务清单.md`，为每本书登记宪章差异，然后按原子事务推进：一章或一篇短故事写完后，必须通过 `scripts/check_chapter_transaction.py` 或 `scripts/check_short_story.py`。冷启动只读仪表盘滚动前情摘要，不默认重读最近数章全文。完本后再跑 `scripts/check_cross_book_similarity.py`。协议见 [batch-production.md](references/batch-production.md)。
 
 ---
 
@@ -287,7 +303,7 @@ PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 
 ### 发版前验证
 
-v2.6.2 发布前已通过以下检查：
+v3.1.0 发布前已通过以下检查：
 
 ```bash
 PYTHONPATH=scripts python3 -m unittest discover tests/ -v
@@ -303,6 +319,8 @@ git diff --check
 ```bash
 python3 scripts/check_chapter_wordcount.py novels/我的小说/manuscript/zh/第001章-标题.md
 python3 scripts/check_chapter_wordcount.py --all novels/我的小说
+python3 scripts/check_chapter_transaction.py novels/我的小说 1
+python3 scripts/check_cross_book_similarity.py novels
 ```
 
 ### 检查短故事
@@ -366,7 +384,8 @@ python3 scripts/split_chapter_workspace.py novels/我的小说 --move-originals
 | [chapter-template.md](references/chapter-template.md) | 干净章节正文模板 |
 | [chapter-workspace-template.md](references/chapter-workspace-template.md) | 章节任务卡、场景拆分、沙盘和复盘 |
 | [short-story-template.md](references/short-story-template.md) | 短故事任务卡和完整剧情骨架 |
-| [progress-dashboard-template.md](references/progress-dashboard-template.md) | 进度仪表盘 |
+| [progress-dashboard-template.md](references/progress-dashboard-template.md) | 进度仪表盘与滚动前情摘要 |
+| [batch-production.md](references/batch-production.md) | 批量任务清单和原子事务 |
 | [story-bible-template.md](references/story-bible-template.md) | 世界观与伏笔 |
 
 ### 进阶机制
@@ -443,18 +462,44 @@ python3 scripts/split_chapter_workspace.py novels/我的小说 --move-originals
 
 ## 安装
 
+本仓库符合 Agent Skills 开放标准：根目录 `SKILL.md` + `references/` + `scripts/`。先克隆一次，再按你的 Agent 放到对应 skill 目录，或做符号链接。
+
 ```bash
 git clone https://github.com/henry/chinese-novelist-skill.git
 cd chinese-novelist-skill
 PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 ```
 
-支持作为通用 Markdown skill 使用；安装路径按你的 AI 工具约定放置即可。
+| Agent | 建议路径 |
+|-------|----------|
+| Claude Code | `~/.claude/skills/chinese-novelist-skill` |
+| Codex | `~/.codex/skills/chinese-novelist-skill` 或 `.agents/skills/chinese-novelist-skill` |
+| Cursor | `~/.cursor/skills/chinese-novelist-skill` |
+| 其他支持 SKILL.md 的 Agent | 按其文档中的 personal / project skills 目录 |
+
+符号链接示例：
+
+```bash
+ln -s /Users/you/code/chinese-novelist-skill ~/.claude/skills/chinese-novelist-skill
+ln -s /Users/you/code/chinese-novelist-skill ~/.codex/skills/chinese-novelist-skill
+ln -s /Users/you/code/chinese-novelist-skill ~/.cursor/skills/chinese-novelist-skill
+```
+
+无独立 skill 机制的 Agent（Grok Build、Hermes、Pi 等）把仓库放到工作区后，用这段引导提示词：
+
+```text
+读取 SKILL.md 并遵循其意图路由。不要一次加载全部 references/。
+把可恢复产物写入文件；中文正文只写 manuscript/zh/。
+脚本只是烟雾报警器。不要把已落盘的长篇或 6000 字以上短故事正文粘贴到对话里。
+```
+
+`AGENTS.md` 和 `CLAUDE.md` 是指向 `SKILL.md` 的薄指针，供会自动读取这些文件的 Agent 使用。
 
 ---
 
 ## 版本
 
+- **v3.1.0**：新增批量生产协议、章节事务验收、跨书同质化检测和有界冷启动；压缩 `SKILL.md` / `AGENTS.md` / `CLAUDE.md`，并补充多 Agent 安装矩阵。
 - **v3.0.0**：重构为创作罗盘 + 因果章节事务 + 分层编辑系统；新增独创性审计和伟大作品证据式门控，将自动检查明确降级为启发式信号，移除机械钩子、题材套模和总分崇拜。
 - **v2.6.2**：修复短故事模式输出边界：完整正文必须写入 `short-stories/YYYYMMDD-<标题>.md` 等命名 Markdown 文件，对话只汇报路径、字数和检查结果。
 - **v2.6.1**：发布加固版本。完成全量 Skill 检测、端到端烟测和临时 `.skill` 打包校验；修复小说健康检查 `其他` 场景回退、英文 EPUB 元数据误读翻译流程文件、章节工作台文档引用等问题；移除 `.claude/` 本地配置发布风险。

@@ -1,4 +1,4 @@
-> ⚠️ **此为完整版大纲模板（50+ 字段），适用于复杂项目。快速启动请使用 [outline-template-v1-minimal.md](outline-template-v1-minimal.md)（10 字段，5 分钟完成）。**
+> ⚠️ **此为完整版大纲模板（50+ 字段），适用于复杂项目。快速启动请使用 [outline-template-v1-minimal.md](../../references/outline-template-v1-minimal.md)（10 字段，5 分钟完成）。**
 
 # [小说名称] 大纲
 
