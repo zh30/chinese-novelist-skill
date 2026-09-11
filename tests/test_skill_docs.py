@@ -28,8 +28,8 @@ class SkillDocsTests(unittest.TestCase):
         self.assertLessEqual(frontmatter_keys, allowed)
         self.assertIn("compatibility", frontmatter_keys)
         self.assertIn("metadata", frontmatter_keys)
-        self.assertIn('version: "3.1.0"', parts[1])
-        self.assertIn("当前版本：3.1.0", skill)
+        self.assertIn('version: "3.4.0"', parts[1])
+        self.assertIn("当前版本：3.4.0", skill)
 
     def test_great_work_protocol_is_discoverable(self):
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
@@ -38,6 +38,8 @@ class SkillDocsTests(unittest.TestCase):
             "references/editorial-revision.md",
             "references/quality-checklist.md",
             "references/batch-production.md",
+            "references/blind-read.md",
+            "references/voice-lock-template.md",
         }
 
         for reference in required_references:
@@ -52,6 +54,13 @@ class SkillDocsTests(unittest.TestCase):
             "伟大作品门控",
             "有界冷启动",
             "滚动前情摘要",
+            "盲读",
+            "隔离",
+            "感知包",
+            "声音锁",
+            "作者模式",
+            "工厂模式",
+            "禁止同上下文填写盲读",
             "check_chapter_transaction.py",
             "check_cross_book_similarity.py",
         ]
@@ -59,6 +68,17 @@ class SkillDocsTests(unittest.TestCase):
             self.assertIn(principle, skill)
 
         self.assertNotIn("结尾句不完整", skill)
+        archived = (
+            "13-钩子映射表.md",
+            "hook-techniques.md",
+            "07-叙事节奏曲线.md",
+            "05-节奏健康报告.md",
+            "06-出版门控.md",
+            "content-expansion.md",
+        )
+        load_section = skill.split("## 按问题加载", 1)[1].split("## 工具", 1)[0]
+        for name in archived:
+            self.assertNotIn(name, load_section)
 
     def test_skill_and_readme_reference_opening_and_ending_guides(self):
         required = {"references/opening-design.md", "references/ending-design.md"}
@@ -175,7 +195,9 @@ class SkillDocsTests(unittest.TestCase):
 
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("novels/00-批量任务清单.md", skill)
-        self.assertIn("禁止默认重读最近 1–3 章全文", skill)
+        self.assertIn("上一章末尾 800 字", skill)
+        self.assertIn("上一章全文", skill)
+        self.assertNotIn("禁止默认重读最近 1–3 章全文", skill)
 
     def test_clean_manuscript_workspace_structure_is_discoverable(self):
         required_files = [
@@ -207,11 +229,12 @@ class SkillDocsTests(unittest.TestCase):
             '00-大纲.md', '01-人物档案.md', '02-世界观与伏笔.md',
             '03-悬念追踪表.md', '04-角色沙盘/00-角色索引.md',
             '00-批量任务清单.md',
+            '05-声音锁.md',
         }
 
         for path in ROOT.rglob("*.md"):
             # Skip historical design docs (their links don't resolve from docs/plans/)
-            if 'docs/plans' in str(path):
+            if 'docs/plans' in str(path) or 'docs/legacy' in str(path):
                 continue
             content = path.read_text(encoding="utf-8")
             for target in pattern.findall(content):

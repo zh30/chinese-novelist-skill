@@ -112,12 +112,13 @@ python scripts/check_short_story.py short-stories/YYYYMMDD-故事标题.md
 继续写
 ```
 
-### AI 会自动
+### AI 会自动（作者模式）
 
-1. 读取 `99-进度仪表盘.md` 的滚动前情摘要
-2. 只读大纲宪章区、本章 POV 人物卡、上一章末尾 800 字
+1. 冷启动：创作宪章、`05-声音锁.md`、POV 声音样本与“首先会注意的细节”、上一章全文
+2. 写感知包到 `workspace/chapters/.../perception.md`
 3. 写正文到 `manuscript/zh/`
-4. 回写复盘和仪表盘，运行 `check_chapter_transaction.py`
+4. 派出隔离盲读（禁止同上下文填写）
+5. 按盲读改稿后写复盘，回写仪表盘，运行 `check_chapter_transaction.py`
 
 ### 你只需做
 
@@ -255,7 +256,7 @@ python scripts/generate_epub.py novels/我的悬疑小说
 | `references/chapter-workspace-template.md` | 章节工作台模板 | 拆任务卡和复盘时 |
 | `references/short-story-template.md` | 短故事模板 | 写完整短故事时 |
 | `ai-style-examples.md` | AI 味改写范例 | 质量检查后 |
-| `hook-techniques.md` | 钩子技巧 | 设计结尾时 |
+| `ending-design.md` | 结局与余震 | 设计结尾时 |
 
 ---
 
@@ -350,9 +351,9 @@ AI 会生成一页「精简总纲」后开始写第 1 章。
    - 运行 `check_ai_style.py`
    - 对照 `ai-style-examples.md` 改写
 
-3. **第三遍润**，打磨节奏和钩子
-   - 对照 `hook-techniques.md`
-   - 检查每章结尾钩子
+3. **第三遍润**，打磨节奏和余震
+   - 对照 `ending-design.md`
+   - 检查每章是否停在余震处
 
 **三遍之后，你的小说已经比 90% 的 AI 生成内容更像人类写的。**
 

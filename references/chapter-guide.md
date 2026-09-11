@@ -162,7 +162,7 @@
 
 ### 4. 结尾钩子（最后 5-10%）
 
-留下悬念，让读者想看下一章。详见 [hook-techniques.md](hook-techniques.md)
+留下余震或未完成的选择，让读者想看下一章。详见 [ending-design.md](ending-design.md)
 
 ---
 
