@@ -66,8 +66,8 @@ class BatchProductionE2ETests(unittest.TestCase):
             (south / '99-进度仪表盘.md').write_text('# 南园\n\n还没写摘要\n', encoding='utf-8')
             (south / '01-人物档案.md').write_text('## 主角：苏晚\n\n- **姓名**：苏晚\n', encoding='utf-8')
 
-            passed = check_chapter_transaction(north, 1, min_words=40)
-            failed = check_chapter_transaction(south, 1, min_words=40)
+            passed = check_chapter_transaction(north, 1, min_words=40, factory=True)
+            failed = check_chapter_transaction(south, 1, min_words=40, factory=True)
             similarity = check_cross_book_similarity(novels)
 
             self.assertTrue((novels / '00-批量任务清单.md').exists())

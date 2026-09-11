@@ -91,6 +91,35 @@ class CheckChapterWordcountTests(unittest.TestCase):
         self.assertEqual(result["status"], "pass")
         self.assertEqual(result["word_count"], 18)
 
+    def test_default_does_not_fail_under_habit_minimum(self):
+        content = """第001章：短章
+
+这是正文。
+这里还有第二句。
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "第001章-短章.md"
+            path.write_text(content, encoding="utf-8")
+            result = check_chapter(str(path))
+
+        self.assertEqual(result["status"], "pass")
+        self.assertLess(result["word_count"], 3000)
+
+    def test_strict_min_fails_under_minimum(self):
+        content = """第001章：短章
+
+这是正文。
+这里还有第二句。
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "第001章-短章.md"
+            path.write_text(content, encoding="utf-8")
+            result = check_chapter(str(path), min_words=3000, strict=True)
+
+        self.assertEqual(result["status"], "fail")
+        self.assertLess(result["word_count"], 3000)
+
 
 if __name__ == "__main__":
     unittest.main()
+

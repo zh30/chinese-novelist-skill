@@ -21,7 +21,9 @@
 | 文件名 | 什么时候读取 | 核心用途 |
 |--------|-------------|---------|
 | [creative-compass.md](references/creative-compass.md) | 新项目、重大转向、故事失去生命力 | 三向故事发现、创作宪章、人物压力、因果脊柱、意象与独创性审计 |
-| [editorial-revision.md](references/editorial-revision.md) | 修改、重写、去 AI 味、完稿 | 体验→结构→人物→场景→语言→连续性分层修订与伟大作品门控 |
+| [blind-read.md](references/blind-read.md) | 每章/短篇交付前 | 隔离盲读：只给正文，禁止同上下文填写 |
+| [voice-lock-template.md](references/voice-lock-template.md) | 策划期与每章冷启动 | `05-声音锁.md` 例句，优先级高于场景计划 |
+| [editorial-revision.md](references/editorial-revision.md) | 修改、重写、去 AI 味、完稿 | 盲读→结构→人物→场景→语言→连续性分层修订与伟大作品门控 |
 | [quality-checklist.md](references/quality-checklist.md) | 章节交付与终稿门控 | 用正文证据判断，不使用可互相抵消的总分 |
 
 ## 📂 核心模板文件
@@ -57,7 +59,7 @@
 | 文件名 | 用途 |
 |--------|------|
 | [chapter-template.md](references/chapter-template.md) | 干净章节正文模板，仅用于 `manuscript/zh` |
-| [chapter-workspace-template.md](references/chapter-workspace-template.md) | 章节任务卡、场景拆分、沙盘、复盘和修改记录 |
+| [chapter-workspace-template.md](references/chapter-workspace-template.md) | 感知包、任务卡、盲读、复盘和修改记录 |
 | [progress-dashboard-template.md](references/progress-dashboard-template.md) | 精简进度仪表盘与滚动前情摘要 |
 | [story-bible-template.md](references/story-bible-template.md) | 世界观与伏笔台账（复杂项目） |
 | [batch-production.md](references/batch-production.md) | 批量任务清单、原子事务和冷启动协议 |
@@ -66,7 +68,7 @@
 
 | 文件名 | 适用场景 | 硬标准 |
 |--------|---------|--------|
-| [short-story-template.md](references/short-story-template.md) | 写一篇完整短故事 / 短篇故事 | 写入 `short-stories/YYYYMMDD-<标题>.md`，正文不少于 6000 字，剧情必须闭合 |
+| [short-story-template.md](references/short-story-template.md) | 写一篇完整短故事 / 短篇故事 | 写入 `short-stories/YYYYMMDD-<标题>.md`，剧情必须闭合；6000 字为习惯参考 |
 
 ### 翻译流程
 
@@ -102,8 +104,8 @@
 
 | 文件名 | 用途 | 使用频率 |
 |--------|------|---------|
-| [check_chapter_wordcount.py](scripts/check_chapter_wordcount.py) | 章节 / 短故事字数检查 | 每章必用；短故事用 `6000` 最小字数 |
-| [check_chapter_transaction.py](scripts/check_chapter_transaction.py) | 章节事务验收（正文、复盘、仪表盘回写） | 每章必用，自动驾驶停机条件 |
+| [check_chapter_wordcount.py](scripts/check_chapter_wordcount.py) | 章节字数报告；`--strict-min` 才失败 | 每章可跑 |
+| [check_chapter_transaction.py](scripts/check_chapter_transaction.py) | 章节事务验收（正文、盲读、感知包、复盘、仪表盘） | 每章必用；工厂加 `--factory` |
 | [check_short_story.py](scripts/check_short_story.py) | 短故事硬边界与结构信号（不能替代通读） | 每篇短故事必用 |
 | [check_ai_style.py](scripts/check_ai_style.py) | **AI 痕迹启发式扫描**（9 种症状，支持--all 批量） | 每章完成后按需复核 |
 | [check_novel_health.py](scripts/check_novel_health.py) | **长篇机械健康信号**（字数 + 关键词场景分布） | 每 5-10 章 |
@@ -155,7 +157,7 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 | [ai-style-by-genre.md](references/ai-style-by-genre.md) | **题材专项** | 悬疑/言情/玄幻/都市的 AI 味防治 |
 | [08-人机协作-v2.md](references/08-人机协作-v2.md) | 协作协议 | 快速续写、信息提取 |
 | [12-喘息机制.md](references/12-喘息机制.md) | 喘息章设计 | 黄金结构、情绪控制 |
-| [13-钩子映射表.md](references/13-钩子映射表.md) | 钩子选择 | 关键节点 - 钩子类型映射 |
+| [13-钩子映射表.md](docs/legacy/13-钩子映射表.md) | 已归档钩子课 | 仅当用户明确要网文钩子课时再读 |
 
 ---
 
@@ -274,13 +276,13 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 
 相关文档：
 1. [11-叙事节奏框架.md](references/11-叙事节奏框架.md) - 三层体系 + 题材模板
-2. [13-钩子映射表.md](references/13-钩子映射表.md) - 关键节点 - 钩子映射
+2. [ending-design.md](references/ending-design.md) - 结局与余震
 3. [12-喘息机制.md](references/12-喘息机制.md) - 喘息章设计
 
 快速查找：
 - 悬疑节奏 → 11-叙事节奏框架.md §悬疑/推理
 - 玄幻节奏 → 11-叙事节奏框架.md §玄幻升级流
-- 钩子选择 → 13-钩子映射表.md
+- 章末停在余震 → ending-design.md
 - 什么时候喘息 → 12-喘息机制.md
 
 ---
@@ -364,11 +366,11 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 | 角色沙盘 | 14-角色沙盘模式.md, progress-dashboard-template.md |
 | 批量生产 | batch-production.md, check_chapter_transaction.py, check_cross_book_similarity.py |
 | 角色反抗大纲 | 14-角色沙盘模式.md |
-| 节奏设计 | 11-叙事节奏框架.md, 13-钩子映射表.md |
+| 节奏设计 | 11-叙事节奏框架.md |
 | 人物塑造 | character-template-v2.md, 14-角色沙盘模式.md |
 | 场景设计 | scene-design-v2.md |
 | 喘息章 | 12-喘息机制.md |
-| 钩子技巧 | 13-钩子映射表.md, hook-techniques.md |
+| 钩子技巧 | 已归档，见 docs/legacy/ |
 | 对白写作 | dialogue-writing.md, ai-style-by-genre.md §言情 |
 | 导出 epub | generate_epub.py, README.md §导出 EPUB |
 
@@ -406,10 +408,8 @@ chinese-novelist-skill/
 ├── 📄 根目录文档
 │   ├── README.md                    ⭐ 项目总览
 │   ├── QUICK_START.md               ⭐ 快速上手
-│   ├── WORKFLOW_GUIDE.md            ⭐ 工作流可视化
 │   ├── FILE_INDEX.md                📍 本文件
-│   ├── SKILL.md                     ⭐ 主技能文件
-│   └── OPTIMIZATION_PLAN.md         📋 优化计划
+│   └── SKILL.md                     ⭐ 主技能文件
 │
 ├── 📁 references/                   📚 参考文档
 │   ├── ⭐ 核心模板
@@ -431,8 +431,7 @@ chinese-novelist-skill/
 │   │   ├── ai-style-examples.md             ⭐⭐ AI味改写
 │   │   ├── ai-style-by-genre.md             ⭐ 题材专项
 │   │   ├── 08-人机协作-v2.md                协作协议
-│   │   ├── 12-喘息机制.md                   喘息章
-│   │   └── 13-钩子映射表.md                 钩子选择
+│   │   └── 12-喘息机制.md                   喘息章
 │   │
 │   ├── 🎭 v2.4角色沙盘
 │   │   └── 14-角色沙盘模式.md               ⭐⭐ 每章角色意志校验
@@ -440,13 +439,13 @@ chinese-novelist-skill/
 │   └── 📖 仍在使用的写作指南
 │       ├── chapter-guide.md                 章节指南
 │       ├── opening-design.md                首章设计
-│       ├── hook-techniques.md               钩子技巧
 │       ├── dialogue-writing.md              对白写作
 │       ├── style-polishing.md               文风打磨
 │       ├── plot-structures.md               剧情结构
 │       ├── consistency.md                   一致性
-│       ├── content-expansion.md             内容扩写
 │       ├── ending-design.md                 结局设计
+│       ├── blind-read.md                    隔离盲读
+│       └── voice-lock-template.md           声音锁
 │       └── ...（其他）
 │
 ├── 📁 scripts/                      🛠️ 工具脚本
@@ -509,6 +508,7 @@ chinese-novelist-skill/
 
 ## 📝 更新记录
 
+- **2026-09-11**: v3.4.0 作者模式感知包、声音锁、隔离盲读；字数不再否决作者章节；钩子课归档
 - **2026-08-23**: v3.1.0 批量生产协议、章节事务验收、跨书同质化检测、有界冷启动；v1 模板归档到 `docs/legacy/`
 - **2026-07-31**: v3.0.0 引入创作罗盘、分层编辑、独创性审计和伟大作品证据式门控；主入口压缩为渐进式路由
 - **2026-07-07**: v2.6.2 修复短故事模式输出边界，完整正文必须写入命名 Markdown 文件

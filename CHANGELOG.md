@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.4.0 (2026-09-11)
+
+### Author-mode quality gates
+
+- 默认进入作者模式：冷启动读声音锁与上一章全文；每章先写感知包，再写正文，再派出隔离盲读，最后写复盘。
+- 新增 [blind-read.md](references/blind-read.md)、[voice-lock-template.md](references/voice-lock-template.md)；工作台增加 `perception.md` 与 `blind-read.md`。
+- `check_chapter_transaction.py` 作者模式不再因低于 3000 字失败；缺盲读、复述不出、空感知包会失败。工厂模式用 `--factory` / `--fast` 恢复字数下限。
+- 字数与短篇脚本默认只报告；`--strict-min` 才把下限当成失败。
+- 批量与自动驾驶明确为工厂模式，不再宣称与单书作者路径质量相同。
+- 钩子映射、旧出版门控、扩写表、旧节奏曲线退出默认加载，归档到 `docs/legacy/`。
+- 对白不再把“传递信息”当作独立任务。
+
 ## v3.1.0 (2026-08-23)
 
 ### Batch Production and Bounded Recovery

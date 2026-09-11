@@ -378,6 +378,7 @@ def print_report(result: dict):
     severity = result['severity']
     print('⚠️  本报告只标记统计异常和可疑位置，不判断作者身份或文学质量。')
     print('    必须回到完整语境逐条复核；正确表达可以保留。')
+    print('    禁止为降低“然而 / 因为 / 四字”计数而改文；只处理解释句、均匀句式、情绪标签。')
     print(f'\n{severity["rating_emoji"]} 复核优先级：{severity["rating"]} (启发式得分：{severity["score"]})')
 
     print('\n' + '-' * 70)

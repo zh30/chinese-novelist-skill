@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 短故事质量检查脚本
-检查短故事正文是否满足 6000 字、结构完整、完稿复盘和非未完待续等红灯项。
+检查短故事结构完整、完稿复盘和非未完待续。6000 字是习惯参考；--strict-min 才把字数当下限失败。
 """
 
 import sys
@@ -61,7 +61,7 @@ def _make_check(passed: bool, message: str) -> dict:
     return {'passed': passed, 'message': message}
 
 
-def check_short_story(file_path: str, min_words: int = 6000) -> dict:
+def check_short_story(file_path: str, min_words: int = 6000, strict: bool = False) -> dict:
     """检查单篇短故事的硬性质量项。"""
     path = Path(file_path)
 
@@ -91,8 +91,10 @@ def check_short_story(file_path: str, min_words: int = 6000) -> dict:
             '找到 ## 正文 区块' if has_body else '缺少 ## 正文 区块或正文为空',
         ),
         'word_count': _make_check(
-            word_count >= min_words,
-            f'字数：{word_count}，最低要求：{min_words}',
+            (not strict) or word_count >= min_words,
+            f'字数：{word_count}，习惯参考：{min_words}'
+            if not strict
+            else f'字数：{word_count}，最低要求：{min_words}',
         ),
         'completion_review': _make_check(
             has_review,
@@ -120,7 +122,7 @@ def check_short_story(file_path: str, min_words: int = 6000) -> dict:
     }
 
 
-def check_all_short_stories(directory: str, min_words: int = 6000) -> list:
+def check_all_short_stories(directory: str, min_words: int = 6000, strict: bool = False) -> list:
     """检查目录下所有 Markdown 短故事文件。"""
     dir_path = Path(directory)
     if not dir_path.exists():
@@ -128,7 +130,7 @@ def check_all_short_stories(directory: str, min_words: int = 6000) -> list:
         return []
 
     short_story_files = sorted(path for path in dir_path.glob('*.md') if path.is_file())
-    return [check_short_story(str(path), min_words=min_words) for path in short_story_files]
+    return [check_short_story(str(path), min_words=min_words, strict=strict) for path in short_story_files]
 
 
 def print_results(results: list):
@@ -144,7 +146,7 @@ def print_results(results: list):
     print('\n' + '=' * 60)
     print('短故事质量检查报告')
     print('=' * 60)
-    print('说明：本脚本只验证字数、文件结构和关键词信号；高潮、收束与文学质量仍需人工通读。')
+    print('说明：结构、复盘和未完待续是硬项；字数默认只报告。高潮、收束与文学质量仍需盲读。')
 
     for result in results:
         icon = '✅' if result['status'] == 'pass' else '⚠️ ' if result['status'] == 'fail' else '❌'
@@ -160,35 +162,44 @@ def print_results(results: list):
     print('-' * 60)
 
 
-def main():
-    """主函数"""
+def main() -> int:
+    """主函数。默认不因字数失败；--strict-min 时低于下限返回 1。"""
+    args = list(sys.argv[1:])
+    strict = False
     min_words = 6000
+    if '--strict-min' in args:
+        idx = args.index('--strict-min')
+        if idx + 1 >= len(args) or not args[idx + 1].isdigit():
+            print('错误：--strict-min 需要一个整数')
+            return 2
+        min_words = int(args[idx + 1])
+        strict = True
+        del args[idx:idx + 2]
 
-    if len(sys.argv) < 2:
+    if not args:
         print('用法：')
-        print('  检查单篇短故事：python scripts/check_short_story.py <短故事文件路径> [最小字数]')
-        print('  批量检查短故事：python scripts/check_short_story.py --all <目录路径> [最小字数]')
-        print('')
-        print('示例：')
-        print('  python scripts/check_short_story.py short-stories/故事标题.md')
-        print('  python scripts/check_short_story.py short-stories/故事标题.md 6000')
-        print('  python scripts/check_short_story.py --all short-stories')
-        return
+        print('  python scripts/check_short_story.py <短故事文件路径>')
+        print('  python scripts/check_short_story.py --all <目录路径>')
+        print('  python scripts/check_short_story.py <短故事文件路径> --strict-min 6000')
+        return 2
 
-    if sys.argv[1] == '--all':
-        if len(sys.argv) < 3:
+    if args[0] == '--all':
+        if len(args) < 2:
             print('错误：使用 --all 时需要指定目录路径')
-            return
-        directory = sys.argv[2]
-        min_words = int(sys.argv[3]) if len(sys.argv) > 3 else 6000
-        results = check_all_short_stories(directory, min_words=min_words)
-        print_results(results)
+            return 2
+        if not strict and len(args) > 2 and args[2].isdigit():
+            min_words = int(args[2])
+        results = check_all_short_stories(args[1], min_words=min_words, strict=strict)
     else:
-        file_path = sys.argv[1]
-        min_words = int(sys.argv[2]) if len(sys.argv) > 2 else 6000
-        result = check_short_story(file_path, min_words=min_words)
-        print_results([result])
+        if not strict and len(args) > 1 and args[1].isdigit():
+            min_words = int(args[1])
+        results = [check_short_story(args[0], min_words=min_words, strict=strict)]
+
+    print_results(results)
+    if any(result['status'] != 'pass' for result in results):
+        return 1
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())
