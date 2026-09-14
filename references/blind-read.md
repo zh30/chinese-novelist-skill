@@ -4,14 +4,16 @@
 
 ## 派出方式（硬）
 
-使用 subagent 或新的隔离调用。该次调用的可读文件白名单：
+使用独立 subagent 或新的隔离调用。该次调用的可读文件白名单：
 
 - 长篇：`manuscript/zh/` 本章全文；若非第 1 章，加上上一章全文。
 - 短篇：该短篇文件中的 `## 正文` 区块。
 
 禁止打开：`00-大纲.md`、`01-人物档案.md`、`05-声音锁.md`、`99-进度仪表盘.md`、`workspace/`、`04-角色沙盘/`、`02-世界观与伏笔.md`、任何任务卡 / 场景计划 / 感知包 / 复盘。
 
-禁止同上下文填写盲读。写作 agent 不得自己写 `blind-read.md`。
+禁止同上下文填写盲读。写作 agent 不得自己写 `blind-read.md`。隔离 agent 只返回填写后的模板；写作 agent 把返回原文写入 `blind-read.md`，不改写评语。Spawn prompt 只列白名单绝对或仓库相对路径。
+
+宿主实现见 [harness-grok-antigravity.md](harness-grok-antigravity.md)：Grok Build 用 `spawn_subagent`（优先 `blind-reader`，否则 `explore`）；Antigravity 用 `invoke_subagent`（优先 `blind-reader`）。不要用 git worktree 当隔离——工作树仍含大纲。
 
 若当前宿主无法派出隔离 agent：停止交付，向用户说明，并给出“请另开一次只读这两份正文的对话”的恢复指令。不准在写作上下文里假装盲读。
 

@@ -1,13 +1,18 @@
 ---
 name: chinese-novelist-skill
-description: "Create, continue, revise, diagnose, finish, and batch-produce original Chinese fiction, including literary novels, genre/web novels, complete short stories, character and plot development, style editing, continuity management, EPUB export, and adaptive English translation. Use for requests such as 写小说、写一本、短故事、短篇故事、完整故事、继续写、下一章、角色沙盘、修改或重写章节、润色、去 AI 味、检查节奏或质量、自动写完整本、批量写、批量生产、自动写多本、导出 EPUB、翻译小说."
+description: "Create, continue, revise, diagnose, finish, and batch-produce original Chinese fiction, including literary novels, genre/web novels, complete short stories, character and plot development, style editing, continuity management, EPUB export, and adaptive English translation. Use for requests such as 写小说、写一本、短故事、短篇故事、完整故事、继续写、下一章、角色沙盘、修改或重写章节、润色、去 AI 味、检查节奏或质量、自动写完整本、批量写、批量生产、自动写多本、导出 EPUB、翻译小说. Also /chinese-novelist-skill, /next-chapter, /new-novel."
+when-to-use: "写小说, 写一本, 短故事, 继续写, 下一章, 角色沙盘, 润色, 去 AI 味, 批量写, 自动写完整本, 导出 EPUB, 翻译小说, /chinese-novelist-skill, /next-chapter, /new-novel"
+argument-hint: "[写一本|继续写|短故事|批量写|润色|翻译|导出]"
 compatibility: Requires python3 and filesystem access. No extra Python packages.
-metadata: {version: "3.4.0"}
+license: MIT
+metadata:
+  version: "3.5.0"
+  short-description: "Ambitious Chinese fiction"
 ---
 
 # Chinese Novelist
 
-当前版本：3.4.0。详情见 [CHANGELOG.md](CHANGELOG.md)。
+当前版本：3.5.0。详情见 [CHANGELOG.md](CHANGELOG.md)。Grok Build / Antigravity 宿主映射见 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)。
 
 ## 使命
 
@@ -54,7 +59,7 @@ metadata: {version: "3.4.0"}
 | 新建长篇 / 网文 | 策划期：比较方向，建立创作宪章、因果脊柱和首章任务 | [creative-compass.md](references/creative-compass.md)、[outline-template-v1-minimal.md](references/outline-template-v1-minimal.md) |
 | 写短故事 / 短篇 | 走短故事旁路，完成全文并落盘 | [short-story-template.md](references/short-story-template.md)、[blind-read.md](references/blind-read.md) |
 | 继续写 / 下一章 | 作者模式冷启动后执行章节事务 | [chapter-workspace-template.md](references/chapter-workspace-template.md)、[blind-read.md](references/blind-read.md) |
-| 批量写 / 自动写多本 / 快写 / 自动写完整本 | 工厂模式：认领清单或按章推进 | [batch-production.md](references/batch-production.md) |
+| 批量写 / 自动写多本 / 快写 / 自动写完整本 | 工厂模式：认领清单或按章推进 | [batch-production.md](references/batch-production.md)、[harness-grok-antigravity.md](references/harness-grok-antigravity.md) |
 | 人物僵硬 / 群像 / 角色沙盘 | 感知包即沙盘产物，允许人物反抗大纲 | [14-角色沙盘模式.md](references/14-角色沙盘模式.md) |
 | 修改 / 重写 / 润色 / 去 AI 味 | 先诊断最高杠杆问题，再做单一职责修订 | [editorial-revision.md](references/editorial-revision.md) |
 | 完稿 / 质量审计 | 分层通读，完成整书门控 | [editorial-revision.md](references/editorial-revision.md)、[ending-design.md](references/ending-design.md) |
@@ -146,7 +151,7 @@ novels/<书名>/
 
 ### 5. 派出盲读
 
-按 [blind-read.md](references/blind-read.md) 派出**隔离** subagent 或新会话，只给本章正文（非首章加上一章全文）。禁止打开大纲、档案、仪表盘和工作台。禁止同上下文填写盲读。无法隔离则停止交付，请用户另开只读正文的对话。
+按 [blind-read.md](references/blind-read.md) 派出**隔离** subagent 或新会话，只给本章正文（非首章加上一章全文）。禁止打开大纲、档案、仪表盘和工作台。禁止同上下文填写盲读。Grok 用 `spawn_subagent`（优先 `blind-reader`）；Antigravity 用 `invoke_subagent`（优先 `blind-reader`）。细则见 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)。无法隔离则停止交付，请用户另开只读正文的对话。
 
 盲读复述不出不可逆变化，必须改正文后重新派出，不得只改复盘。处理走神、复述失败和作者腔后，把问题句与好句回写 `05-声音锁.md`。
 
@@ -196,7 +201,7 @@ python3 scripts/check_chapter_transaction.py <小说目录> <章节号>
 4. 每次推进只完成一个原子事务：一章长篇或一篇完整短篇，再验收、回写。
 5. 失败按批量协议重试；连续失败标记恢复点，改认领下一条或停机。
 
-同一协议可用于会话内连写、外部 CLI 循环或多实例并行。
+同一协议可用于会话内连写、外部 CLI 循环或多实例并行。Grok 用 `/workflow chinese-novelist-factory` 或 `grok -p`；Antigravity 用 `/factory-chapter`、`/goal` 或 `agy -p`。每个原子事务仍须验收。
 
 ## 修改与重写
 
@@ -229,6 +234,7 @@ python3 scripts/check_chapter_transaction.py <小说目录> <章节号>
 - 盲读与感知：[blind-read.md](references/blind-read.md)、[chapter-workspace-template.md](references/chapter-workspace-template.md)
 - 深度修订与门控：[editorial-revision.md](references/editorial-revision.md)、[quality-checklist.md](references/quality-checklist.md)
 - 批量编排与跨书差异：[batch-production.md](references/batch-production.md)
+- Grok Build / Antigravity 宿主：[harness-grok-antigravity.md](references/harness-grok-antigravity.md)
 
 网文钩子课、旧出版门控和扩写表已退出默认加载，见 `docs/legacy/`。
 

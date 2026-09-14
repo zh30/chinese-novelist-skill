@@ -21,15 +21,27 @@ class SkillDocsTests(unittest.TestCase):
         frontmatter_keys = {
             line.split(":", 1)[0].strip()
             for line in parts[1].splitlines()
-            if ":" in line
+            if ":" in line and not line.startswith((" ", "\t"))
         }
         self.assertTrue({"name", "description"}.issubset(frontmatter_keys))
-        allowed = {"name", "description", "compatibility", "license", "metadata", "allowed-tools"}
+        allowed = {
+            "name",
+            "description",
+            "compatibility",
+            "license",
+            "metadata",
+            "allowed-tools",
+            "when-to-use",
+            "argument-hint",
+        }
         self.assertLessEqual(frontmatter_keys, allowed)
         self.assertIn("compatibility", frontmatter_keys)
         self.assertIn("metadata", frontmatter_keys)
-        self.assertIn('version: "3.4.0"', parts[1])
-        self.assertIn("当前版本：3.4.0", skill)
+        self.assertIn("when-to-use", frontmatter_keys)
+        self.assertIn("argument-hint", frontmatter_keys)
+        self.assertIn('version: "3.5.0"', parts[1])
+        self.assertIn("当前版本：3.5.0", skill)
+        self.assertIn("references/harness-grok-antigravity.md", skill)
 
     def test_great_work_protocol_is_discoverable(self):
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
@@ -218,6 +230,55 @@ class SkillDocsTests(unittest.TestCase):
             content = path.read_text(encoding="utf-8")
             for phrase in required_phrases:
                 self.assertIn(phrase, content, msg=f"{path.name} should mention {phrase}")
+
+    def test_grok_and_antigravity_harness_is_discoverable(self):
+        required = [
+            ROOT / "references" / "harness-grok-antigravity.md",
+            ROOT / "GEMINI.md",
+            ROOT / ".grok" / "agents" / "blind-reader.md",
+            ROOT / ".grok" / "agents" / "chinese-novelist.md",
+            ROOT / ".grok" / "commands" / "next-chapter.md",
+            ROOT / ".grok" / "commands" / "new-novel.md",
+            ROOT / ".grok" / "workflows" / "chinese-novelist-factory.rhai",
+            ROOT / ".agents" / "agents" / "blind-reader.md",
+            ROOT / ".agents" / "agents" / "chinese-novelist.md",
+            ROOT / ".agents" / "workflows" / "next-chapter.md",
+            ROOT / ".agents" / "workflows" / "factory-chapter.md",
+            ROOT / ".agents" / "skills" / "chinese-novelist-skill" / "SKILL.md",
+        ]
+        for path in required:
+            self.assertTrue(path.is_file(), msg=f"missing harness file: {path.relative_to(ROOT)}")
+
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        quick = (ROOT / "QUICK_START.md").read_text(encoding="utf-8")
+        for text in (readme, quick):
+            self.assertIn("~/.grok/skills/chinese-novelist-skill", text)
+            self.assertIn("Antigravity", text)
+            self.assertNotIn("Grok Build、Hermes、Pi 等无 skill 机制", text)
+            self.assertNotIn("无独立 skill 机制的 Agent（Grok Build", text)
+
+        harness = (ROOT / "references" / "harness-grok-antigravity.md").read_text(encoding="utf-8")
+        self.assertIn("spawn_subagent", harness)
+        self.assertIn("invoke_subagent", harness)
+        self.assertIn("blind-reader", harness)
+        self.assertIn("chinese-novelist-factory", harness)
+
+        grok_reader = (ROOT / ".grok" / "agents" / "blind-reader.md").read_text(encoding="utf-8")
+        agy_reader = (ROOT / ".agents" / "agents" / "blind-reader.md").read_text(encoding="utf-8")
+        self.assertIn("read_file", grok_reader)
+        self.assertIn("view_file", agy_reader)
+        self.assertIn("复述不出", grok_reader)
+        self.assertIn("复述不出", agy_reader)
+
+        wrapper = (
+            ROOT / ".agents" / "skills" / "chinese-novelist-skill" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        root_skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("../../../SKILL.md", wrapper)
+        self.assertIn("when-to-use", wrapper)
+        root_desc = root_skill.split("description:", 1)[1].split("when-to-use:", 1)[0].strip()
+        wrap_desc = wrapper.split("description:", 1)[1].split("when-to-use:", 1)[0].strip()
+        self.assertEqual(root_desc, wrap_desc)
 
     def test_local_markdown_links_resolve(self):
         pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")

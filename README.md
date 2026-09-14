@@ -306,7 +306,7 @@ PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 
 ### 发版前验证
 
-v3.4.0 发布前已通过以下检查：
+v3.5.0 发布前应通过以下检查：
 
 ```bash
 PYTHONPATH=scripts python3 -m unittest discover tests/ -v
@@ -475,6 +475,8 @@ PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 
 | Agent | 建议路径 |
 |-------|----------|
+| Grok Build CLI | `~/.grok/skills/chinese-novelist-skill`；本仓库作工作区时用 `.agents/skills/` |
+| Gemini Antigravity / `agy` | `~/.gemini/config/skills/chinese-novelist-skill` 或 `~/.gemini/antigravity-cli/skills/`；工作区 `.agents/skills/` |
 | Claude Code | `~/.claude/skills/chinese-novelist-skill` |
 | Codex | `~/.codex/skills/chinese-novelist-skill` 或 `.agents/skills/chinese-novelist-skill` |
 | Cursor | `~/.cursor/skills/chinese-novelist-skill` |
@@ -483,12 +485,16 @@ PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 符号链接示例：
 
 ```bash
+ln -s /Users/you/code/chinese-novelist-skill ~/.grok/skills/chinese-novelist-skill
+ln -s /Users/you/code/chinese-novelist-skill ~/.gemini/config/skills/chinese-novelist-skill
 ln -s /Users/you/code/chinese-novelist-skill ~/.claude/skills/chinese-novelist-skill
 ln -s /Users/you/code/chinese-novelist-skill ~/.codex/skills/chinese-novelist-skill
 ln -s /Users/you/code/chinese-novelist-skill ~/.cursor/skills/chinese-novelist-skill
 ```
 
-无独立 skill 机制的 Agent（Grok Build、Hermes、Pi 等）把仓库放到工作区后，用这段引导提示词：
+Grok 可选：`/chinese-novelist-skill`、`/next-chapter`、`/new-novel`、`/workflow chinese-novelist-factory`，以及 `grok -p "继续写下一章" --yolo`。Antigravity 可选：同样的 slash、`/factory-chapter`、`agy --agent chinese-novelist`、`agy -p`。细则见 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)。
+
+Hermes、Pi 等无独立 skill 机制的 Agent 把仓库放到工作区后，用这段引导提示词：
 
 ```text
 读取 SKILL.md 并遵循其意图路由。不要一次加载全部 references/。
@@ -496,12 +502,13 @@ ln -s /Users/you/code/chinese-novelist-skill ~/.cursor/skills/chinese-novelist-s
 脚本只是烟雾报警器。不要把已落盘的长篇或 6000 字以上短故事正文粘贴到对话里。
 ```
 
-`AGENTS.md` 和 `CLAUDE.md` 是指向 `SKILL.md` 的薄指针，供会自动读取这些文件的 Agent 使用。
+`AGENTS.md`、`CLAUDE.md` 和 `GEMINI.md` 是指向 `SKILL.md` 的薄指针，供会自动读取这些文件的 Agent 使用。
 
 ---
 
 ## 版本
 
+- **v3.5.0**：Grok Build CLI 与 Gemini Antigravity 宿主适配：slash、隔离盲读 agent、工厂 workflow、headless 循环。
 - **v3.4.0**：作者模式默认：感知包、声音锁、隔离盲读；字数不再否决作者章节；工厂模式承接批量与自动驾驶。
 - **v3.1.0**：新增批量生产协议、章节事务验收、跨书同质化检测和有界冷启动；压缩 `SKILL.md` / `AGENTS.md` / `CLAUDE.md`，并补充多 Agent 安装矩阵。
 - **v3.0.0**：重构为创作罗盘 + 因果章节事务 + 分层编辑系统；新增独创性审计和伟大作品证据式门控，将自动检查明确降级为启发式信号，移除机械钩子、题材套模和总分崇拜。
