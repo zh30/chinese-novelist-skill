@@ -93,4 +93,8 @@ Codex 示例：`codex exec "<上面那段>"`
 
 Claude Code 示例：`claude -p "<上面那段>"`
 
-无 skill 机制的 Agent：先把仓库放到工作区，再用同一段提示词，并要求先读 `SKILL.md`。
+Grok Build CLI：`/workflow chinese-novelist-factory`，或 `grok -p "<上面那段>" --yolo`。可选参数：`{"novel":"novels/书名","chapter":3}`。
+
+Antigravity CLI：`/factory-chapter`，或 `agy -p "<上面那段>"`。长程无人值守用 `/goal`，仍须一章一验收。
+
+无 skill 机制的 Agent：先把仓库放到工作区，再用同一段提示词，并要求先读 `SKILL.md`。Grok / Antigravity 安装路径见 [harness-grok-antigravity.md](harness-grok-antigravity.md)。

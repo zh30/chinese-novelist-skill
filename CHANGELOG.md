@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.5.0 (2026-09-14)
+
+### Grok Build CLI and Gemini Antigravity
+
+- 新增 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)：slash、隔离盲读派出、工厂循环、工具名对照。
+- Grok：`.grok/agents/`（`chinese-novelist`、`blind-reader`）、`.grok/commands/`（`/next-chapter`、`/new-novel`）、`.grok/workflows/chinese-novelist-factory.rhai`。
+- Antigravity：`.agents/skills/` 发现入口、`.agents/agents/`、`.agents/workflows/`（含 `/factory-chapter`）、`GEMINI.md`。
+- `SKILL.md` 增加 `when-to-use`、`argument-hint`；盲读改为隔离 agent 只返回模板、写作 agent 原样落盘。
+- README / QUICK_START 安装矩阵改为 Grok / Antigravity 正式 skill 路径，不再把它们写成无 skill 机制。
+
 ## v3.4.0 (2026-09-11)
 
 ### Author-mode quality gates

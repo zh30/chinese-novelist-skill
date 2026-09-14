@@ -1,6 +1,6 @@
 # chinese-novelist-skill
 
-Version: 3.4.0. This repository is an Agent Skill for ambitious Chinese fiction.
+Version: 3.5.0. This repository is an Agent Skill for ambitious Chinese fiction.
 
 1. Read `SKILL.md` and follow its intent routing. Do not load every file in `references/` by default.
 2. Write recoverable artifacts to disk. `manuscript/zh/` is the only source of truth for Chinese chapter text.
@@ -20,4 +20,4 @@ python3 scripts/check_cross_book_similarity.py novels
 - Do not paste completed chapter or 6000+ character short-story bodies into chat unless the user explicitly asks.
 - Author mode cold start: constitution + voice lock + POV voice samples + previous chapter full text. Factory mode may use the last 800 characters.
 
-See `README.md` for install paths across agents.
+See `README.md` for install paths across agents. Grok Build / Antigravity mapping: `references/harness-grok-antigravity.md`.
