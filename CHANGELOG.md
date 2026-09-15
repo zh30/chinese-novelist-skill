@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.6.0 (2026-09-15)
+
+### Pi
+
+- [harness-grok-antigravity.md](references/harness-grok-antigravity.md) 增加 Pi：`/skill:chinese-novelist-skill`、`.pi/prompts/`（`/next-chapter`、`/new-novel`、`/factory-chapter`）、`pi -p` 工厂循环。
+- 盲读：默认 `pi -p --no-context-files --no-skills`（Pi 无内置 subagent）；可选 `.pi/agents/blind-reader.md` 供 subagent 包使用。
+- README / QUICK_START 安装矩阵加入 `~/.pi/agent/skills/`，不再把 Pi 写成无 skill 机制。
+
 ## v3.5.0 (2026-09-14)
 
 ### Grok Build CLI and Gemini Antigravity

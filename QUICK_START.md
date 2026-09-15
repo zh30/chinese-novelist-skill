@@ -12,6 +12,7 @@
 |-------|------|
 | Grok Build CLI | `~/.grok/skills/chinese-novelist-skill` |
 | Gemini Antigravity | `~/.gemini/config/skills/chinese-novelist-skill` 或工作区 `.agents/skills/` |
+| Pi | `~/.pi/agent/skills/chinese-novelist-skill`；slash 见 `.pi/prompts/` |
 | Claude Code | `~/.claude/skills/chinese-novelist-skill` |
 | Codex | `~/.codex/skills/chinese-novelist-skill` |
 | Cursor | `~/.cursor/skills/chinese-novelist-skill` |
@@ -21,9 +22,9 @@ git clone https://github.com/henry/chinese-novelist-skill.git ~/.grok/skills/chi
 ln -s ~/.grok/skills/chinese-novelist-skill ~/.gemini/config/skills/chinese-novelist-skill
 ```
 
-Grok：`/next-chapter`、`/new-novel`、`/workflow chinese-novelist-factory`。Antigravity：同样 slash，或 `agy --agent chinese-novelist`。细则见 `references/harness-grok-antigravity.md`。
+Grok：`/next-chapter`、`/new-novel`、`/workflow chinese-novelist-factory`。Antigravity：同样 slash，或 `agy --agent chinese-novelist`。Pi：`/skill:chinese-novelist-skill`、`/next-chapter`、`pi -p`。细则见 `references/harness-grok-antigravity.md`。
 
-Hermes、Pi 等无 skill 机制的 Agent：把仓库放到工作区，然后说“读取 SKILL.md 并遵循其路由”。
+Hermes 等无 skill 机制的 Agent：把仓库放到工作区，然后说“读取 SKILL.md 并遵循其路由”。
 
 ---
 

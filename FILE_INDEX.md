@@ -63,7 +63,7 @@
 | [progress-dashboard-template.md](references/progress-dashboard-template.md) | 精简进度仪表盘与滚动前情摘要 |
 | [story-bible-template.md](references/story-bible-template.md) | 世界观与伏笔台账（复杂项目） |
 | [batch-production.md](references/batch-production.md) | 批量任务清单、原子事务和冷启动协议 |
-| [harness-grok-antigravity.md](references/harness-grok-antigravity.md) | Grok Build CLI 与 Gemini Antigravity：slash、隔离盲读、工厂循环 |
+| [harness-grok-antigravity.md](references/harness-grok-antigravity.md) | Grok / Antigravity / Pi：slash、隔离盲读、工厂循环 |
 
 ### 短故事模板
 
@@ -366,7 +366,7 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 | 悬念管理 | 09-悬念生命周期管理.md, 10-悬念 - 章节匹配矩阵.md |
 | 角色沙盘 | 14-角色沙盘模式.md, progress-dashboard-template.md |
 | 批量生产 | batch-production.md, check_chapter_transaction.py, check_cross_book_similarity.py |
-| Grok Build / Antigravity | harness-grok-antigravity.md, SKILL.md |
+| Grok Build / Antigravity / Pi | harness-grok-antigravity.md, SKILL.md |
 | 角色反抗大纲 | 14-角色沙盘模式.md |
 | 节奏设计 | 11-叙事节奏框架.md |
 | 人物塑造 | character-template-v2.md, 14-角色沙盘模式.md |
@@ -413,8 +413,9 @@ chinese-novelist-skill/
 │   ├── FILE_INDEX.md                📍 本文件
 │   ├── SKILL.md                     ⭐ 主技能文件
 │   ├── AGENTS.md / CLAUDE.md / GEMINI.md  薄指针
-│   ├── .agents/                     Antigravity + Grok：skills、agents、workflows
-│   └── .grok/                       Grok：agents、commands、factory workflow
+│   ├── .agents/                     Antigravity + Grok + Pi：skills、agents、workflows
+│   ├── .grok/                       Grok：agents、commands、factory workflow
+│   └── .pi/                         Pi：prompt templates、可选 blind-reader agent
 │
 ├── 📁 references/                   📚 参考文档
 │   ├── ⭐ 核心模板
@@ -513,6 +514,7 @@ chinese-novelist-skill/
 
 ## 📝 更新记录
 
+- **2026-09-15**: v3.6.0 Pi 宿主适配：`/skill:`、prompt templates、`pi -p` 隔离盲读
 - **2026-09-14**: v3.5.0 Grok Build CLI 与 Gemini Antigravity 宿主适配
 - **2026-09-11**: v3.4.0 作者模式感知包、声音锁、隔离盲读；字数不再否决作者章节；钩子课归档
 - **2026-08-23**: v3.1.0 批量生产协议、章节事务验收、跨书同质化检测、有界冷启动；v1 模板归档到 `docs/legacy/`

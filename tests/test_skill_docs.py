@@ -39,8 +39,8 @@ class SkillDocsTests(unittest.TestCase):
         self.assertIn("metadata", frontmatter_keys)
         self.assertIn("when-to-use", frontmatter_keys)
         self.assertIn("argument-hint", frontmatter_keys)
-        self.assertIn('version: "3.5.0"', parts[1])
-        self.assertIn("当前版本：3.5.0", skill)
+        self.assertIn('version: "3.6.0"', parts[1])
+        self.assertIn("当前版本：3.6.0", skill)
         self.assertIn("references/harness-grok-antigravity.md", skill)
 
     def test_great_work_protocol_is_discoverable(self):
@@ -245,6 +245,10 @@ class SkillDocsTests(unittest.TestCase):
             ROOT / ".agents" / "workflows" / "next-chapter.md",
             ROOT / ".agents" / "workflows" / "factory-chapter.md",
             ROOT / ".agents" / "skills" / "chinese-novelist-skill" / "SKILL.md",
+            ROOT / ".pi" / "prompts" / "next-chapter.md",
+            ROOT / ".pi" / "prompts" / "new-novel.md",
+            ROOT / ".pi" / "prompts" / "factory-chapter.md",
+            ROOT / ".pi" / "agents" / "blind-reader.md",
         ]
         for path in required:
             self.assertTrue(path.is_file(), msg=f"missing harness file: {path.relative_to(ROOT)}")
@@ -253,8 +257,10 @@ class SkillDocsTests(unittest.TestCase):
         quick = (ROOT / "QUICK_START.md").read_text(encoding="utf-8")
         for text in (readme, quick):
             self.assertIn("~/.grok/skills/chinese-novelist-skill", text)
+            self.assertIn("~/.pi/agent/skills/chinese-novelist-skill", text)
             self.assertIn("Antigravity", text)
             self.assertNotIn("Grok Build、Hermes、Pi 等无 skill 机制", text)
+            self.assertNotIn("Hermes、Pi 等无 skill 机制", text)
             self.assertNotIn("无独立 skill 机制的 Agent（Grok Build", text)
 
         harness = (ROOT / "references" / "harness-grok-antigravity.md").read_text(encoding="utf-8")
@@ -262,13 +268,19 @@ class SkillDocsTests(unittest.TestCase):
         self.assertIn("invoke_subagent", harness)
         self.assertIn("blind-reader", harness)
         self.assertIn("chinese-novelist-factory", harness)
+        self.assertIn("pi -p", harness)
+        self.assertIn("--no-context-files", harness)
+        self.assertIn("/skill:chinese-novelist-skill", harness)
 
         grok_reader = (ROOT / ".grok" / "agents" / "blind-reader.md").read_text(encoding="utf-8")
         agy_reader = (ROOT / ".agents" / "agents" / "blind-reader.md").read_text(encoding="utf-8")
+        pi_reader = (ROOT / ".pi" / "agents" / "blind-reader.md").read_text(encoding="utf-8")
         self.assertIn("read_file", grok_reader)
         self.assertIn("view_file", agy_reader)
+        self.assertIn("  - read", pi_reader)
         self.assertIn("复述不出", grok_reader)
         self.assertIn("复述不出", agy_reader)
+        self.assertIn("复述不出", pi_reader)
 
         wrapper = (
             ROOT / ".agents" / "skills" / "chinese-novelist-skill" / "SKILL.md"
