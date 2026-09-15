@@ -13,7 +13,7 @@
 
 禁止同上下文填写盲读。写作 agent 不得自己写 `blind-read.md`。隔离 agent 只返回填写后的模板；写作 agent 把返回原文写入 `blind-read.md`，不改写评语。Spawn prompt 只列白名单绝对或仓库相对路径。
 
-宿主实现见 [harness-grok-antigravity.md](harness-grok-antigravity.md)：Grok Build 用 `spawn_subagent`（优先 `blind-reader`，否则 `explore`）；Antigravity 用 `invoke_subagent`（优先 `blind-reader`）。不要用 git worktree 当隔离——工作树仍含大纲。
+宿主实现见 [harness-grok-antigravity.md](harness-grok-antigravity.md)：Grok Build 用 `spawn_subagent`（优先 `blind-reader`，否则 `explore`）；Antigravity 用 `invoke_subagent`（优先 `blind-reader`）；Pi 用 `pi -p --no-context-files --no-skills`（或可选 `blind-reader` subagent 包）。不要用 git worktree 当隔离——工作树仍含大纲。
 
 若当前宿主无法派出隔离 agent：停止交付，向用户说明，并给出“请另开一次只读这两份正文的对话”的恢复指令。不准在写作上下文里假装盲读。
 

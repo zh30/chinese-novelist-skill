@@ -97,4 +97,6 @@ Grok Build CLI：`/workflow chinese-novelist-factory`，或 `grok -p "<上面那
 
 Antigravity CLI：`/factory-chapter`，或 `agy -p "<上面那段>"`。长程无人值守用 `/goal`，仍须一章一验收。
 
-无 skill 机制的 Agent：先把仓库放到工作区，再用同一段提示词，并要求先读 `SKILL.md`。Grok / Antigravity 安装路径见 [harness-grok-antigravity.md](harness-grok-antigravity.md)。
+Pi：`/factory-chapter`，或 `pi -p "<上面那段>"`。盲读隔离用 `pi -p --no-context-files --no-skills`。
+
+无 skill 机制的 Agent：先把仓库放到工作区，再用同一段提示词，并要求先读 `SKILL.md`。Grok / Antigravity / Pi 安装路径见 [harness-grok-antigravity.md](harness-grok-antigravity.md)。
