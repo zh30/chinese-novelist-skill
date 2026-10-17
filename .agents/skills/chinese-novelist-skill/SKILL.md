@@ -6,7 +6,7 @@ argument-hint: "[写一本|继续写|短故事|批量写|润色|翻译|导出]"
 compatibility: Requires python3 and filesystem access. No extra Python packages.
 license: MIT
 metadata:
-  version: "3.6.0"
+  version: "3.7.0"
   short-description: "Ambitious Chinese fiction"
 ---
 

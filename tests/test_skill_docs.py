@@ -39,8 +39,8 @@ class SkillDocsTests(unittest.TestCase):
         self.assertIn("metadata", frontmatter_keys)
         self.assertIn("when-to-use", frontmatter_keys)
         self.assertIn("argument-hint", frontmatter_keys)
-        self.assertIn('version: "3.6.0"', parts[1])
-        self.assertIn("当前版本：3.6.0", skill)
+        self.assertIn('version: "3.7.0"', parts[1])
+        self.assertIn("当前版本：3.7.0", skill)
         self.assertIn("references/harness-grok-antigravity.md", skill)
 
     def test_great_work_protocol_is_discoverable(self):
@@ -73,6 +73,9 @@ class SkillDocsTests(unittest.TestCase):
             "作者模式",
             "工厂模式",
             "禁止同上下文填写盲读",
+            "禁止句",
+            "未隔离",
+            "subagent_type",
             "check_chapter_transaction.py",
             "check_cross_book_similarity.py",
         ]
@@ -267,6 +270,9 @@ class SkillDocsTests(unittest.TestCase):
         self.assertIn("spawn_subagent", harness)
         self.assertIn("invoke_subagent", harness)
         self.assertIn("blind-reader", harness)
+        self.assertIn("subagent_type", harness)
+        self.assertIn("本章的不可逆变化是", harness)
+        self.assertIn("`Read`", harness)
         self.assertIn("chinese-novelist-factory", harness)
         self.assertIn("pi -p", harness)
         self.assertIn("--no-context-files", harness)
@@ -277,6 +283,7 @@ class SkillDocsTests(unittest.TestCase):
         pi_reader = (ROOT / ".pi" / "agents" / "blind-reader.md").read_text(encoding="utf-8")
         self.assertIn("read_file", grok_reader)
         self.assertIn("view_file", agy_reader)
+        self.assertIn("  - Read", agy_reader)
         self.assertIn("  - read", pi_reader)
         self.assertIn("复述不出", grok_reader)
         self.assertIn("复述不出", agy_reader)
@@ -291,6 +298,20 @@ class SkillDocsTests(unittest.TestCase):
         root_desc = root_skill.split("description:", 1)[1].split("when-to-use:", 1)[0].strip()
         wrap_desc = wrapper.split("description:", 1)[1].split("when-to-use:", 1)[0].strip()
         self.assertEqual(root_desc, wrap_desc)
+
+    def test_public_docs_do_not_sell_retired_gates(self):
+        banned = (
+            "红灯线",
+            "每章先跑角色沙盘",
+            "不少于 6000",
+            "不少于6000",
+            "6000 个中文字符",
+            "≥6000",
+        )
+        for name in ("README.md", "QUICK_START.md", "FILE_INDEX.md"):
+            text = (ROOT / name).read_text(encoding="utf-8")
+            for phrase in banned:
+                self.assertNotIn(phrase, text, msg=f"{name} still sells {phrase}")
 
     def test_local_markdown_links_resolve(self):
         pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")

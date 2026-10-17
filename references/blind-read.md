@@ -13,7 +13,7 @@
 
 禁止同上下文填写盲读。写作 agent 不得自己写 `blind-read.md`。隔离 agent 只返回填写后的模板；写作 agent 把返回原文写入 `blind-read.md`，不改写评语。Spawn prompt 只列白名单绝对或仓库相对路径。
 
-宿主实现见 [harness-grok-antigravity.md](harness-grok-antigravity.md)：Grok Build 用 `spawn_subagent`（优先 `blind-reader`，否则 `explore`）；Antigravity 用 `invoke_subagent`（优先 `blind-reader`）；Pi 用 `pi -p --no-context-files --no-skills`（或可选 `blind-reader` subagent 包）。不要用 git worktree 当隔离——工作树仍含大纲。
+宿主实现见 [harness-grok-antigravity.md](harness-grok-antigravity.md)：Grok Build 用 `spawn_subagent`（优先 `blind-reader`，否则 `explore`）；Antigravity 用 `invoke_subagent`（优先 `blind-reader`）；Pi 用 `pi -p --no-context-files --no-skills`（或可选 `blind-reader` subagent 包）；Cursor 用 Task，`subagent_type` 为 `blind-reader`。提示词禁止写「本章的不可逆变化是」。不要用 git worktree 当隔离——工作树仍含大纲。
 
 若当前宿主无法派出隔离 agent：停止交付，向用户说明，并给出“请另开一次只读这两份正文的对话”的恢复指令。不准在写作上下文里假装盲读。
 
@@ -43,4 +43,6 @@
 4. 不得把盲读失败写成“读者理解有误”。
 5. 把“像作者腔”的句子追加进 `05-声音锁.md` 禁止列表；把改后仍有判断力的普通句追加进好句子（上限见声音锁模板，先进先出）。
 
-工厂模式每 5 章抽检一次完整隔离盲读；未抽检的章节若仍写盲读文件，必须标注“未隔离”，事务验收不把它当作作者硬门。
+工厂模式第 5、10、15… 章必须做完整隔离盲读，不能标注「未隔离」。其余章缺少盲读时，复盘或盲读文件必须写「未隔离」；写了「未隔离」的盲读不当作作者硬门。
+
+`check_chapter_transaction.py` 与 `check_short_story.py` 会核对：走神起点和作者腔的引文是正文里的连续原文，或写「无」；不可逆变化里不得有连续 8 个汉字只出现在大纲、感知包或任务卡、正文里没有。短篇不把「终于 / 后来 / 收束」当通过条件。这些检查证明不了隔离调用已经发生。`05-声音锁.md` 里列出的禁止句若原样出现在长篇正文，事务失败。

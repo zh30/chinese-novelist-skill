@@ -1,6 +1,6 @@
 # chinese-novelist-skill
 
-Version: 3.6.0. This repository is an Agent Skill for ambitious Chinese fiction.
+Version: 3.7.0. This repository is an Agent Skill for ambitious Chinese fiction.
 
 1. Read `SKILL.md` and follow its intent routing. Do not load every file in `references/` by default.
 2. Write recoverable artifacts to disk. `manuscript/zh/` is the only source of truth for Chinese chapter text.

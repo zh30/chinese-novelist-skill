@@ -37,7 +37,9 @@ Slash：`/chinese-novelist-skill`、`/next-chapter`、`/new-novel`。Pi 另用 `
 
 写作 agent 禁止自己写 `blind-read.md`。隔离调用只返回填写后的模板；写作 agent 原样落盘。
 
-白名单路径写进 spawn prompt，不要写“读上一章”这种需再搜索的句子。
+白名单路径写进 spawn prompt，不要写“读上一章”这种需再搜索的句子。禁止在提示词里写大纲、感知包、任务卡，或「本章的不可逆变化是」。
+
+**Cursor**：用 Task 工具派出，`subagent_type` 为 `blind-reader`。提示词只列本章路径；非第 1 章再列上一章路径。读者只用 `Read` 打开这些路径。返回模板后，写作 agent 原样写入 `blind-read.md`。Task 或 `blind-reader` 不可用时停止交付，不要在写作上下文里补写盲读。
 
 **Grok Build**：`spawn_subagent`。优先 `subagent_type: blind-reader`（仅 `read_file`）。否则用 `explore`，prompt 写明：只对列出的路径调用 `read_file`；禁止 `grep`、`list_dir`、shell。不要用 `isolation: worktree`——工作树仍含大纲。
 
@@ -77,11 +79,11 @@ EOF
 
 ## 工具对应
 
-| 动作 | Grok Build | Antigravity | Pi |
-|------|------------|-------------|-----|
-| 读文件 | `read_file` | `view_file` | `read` |
-| 写 / 改文件 | `write` / `search_replace` | `replace_file_content` 等写工具 | `write` / `edit` |
-| 跑脚本 | `run_terminal_command` | `run_command` | `bash` |
-| 隔离子代理 | `spawn_subagent` | `invoke_subagent` | `pi -p --no-context-files --no-skills`（或可选 subagent 包） |
+| 动作 | Grok Build | Antigravity | Pi | Cursor |
+|------|------------|-------------|-----|--------|
+| 读文件 | `read_file` | `view_file` | `read` | `Read` |
+| 写 / 改文件 | `write` / `search_replace` | `replace_file_content` 等写工具 | `write` / `edit` | 写作 agent 的写文件工具 |
+| 跑脚本 | `run_terminal_command` | `run_command` | `bash` | 终端 |
+| 隔离子代理 | `spawn_subagent` | `invoke_subagent` | `pi -p --no-context-files --no-skills`（或可选 subagent 包） | Task，`subagent_type` 为 `blind-reader` |
 
 脚本仍用 `python3 scripts/...`。不要把已落盘的长篇或 6000 字以上短故事正文粘贴到对话里。

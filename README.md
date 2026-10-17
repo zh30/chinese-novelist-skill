@@ -7,7 +7,7 @@
 
 ## 一眼看懂
 
-**chinese-novelist-skill** 是一套中文小说创作与编辑系统。它先比较真正不同的故事方向，建立创作宪章、人物压力与因果脊柱，再按章写作、独立修订并维护长篇状态。脚本只负责发现机械风险，不冒充审美裁判。用户明确要求“短故事 / 短篇故事 / 写一篇完整故事”时，也可以切换到短故事模式，创建不少于 6000 字且剧情完整的单篇故事 Markdown 文件。
+**chinese-novelist-skill** 是一套中文小说创作与编辑系统。它先比较真正不同的故事方向，建立创作宪章、人物压力与因果脊柱，再按章写作、独立修订并维护长篇状态。脚本只负责发现机械风险，不冒充审美裁判。用户明确要求“短故事 / 短篇故事 / 写一篇完整故事”时，也可以切换到短故事模式，创建剧情完整的单篇故事 Markdown 文件。6000 字是习惯参考。
 
 ```text
 一句话创意
@@ -43,7 +43,7 @@
 | AI 写出来有解释腔、空洞情绪、四字堆砌 | 启发式扫描 + 从 POV 和具体经验重建 |
 | 每章不知道该推进什么 | 因果任务卡 + 人物压力与不可逆变化 |
 | 长篇文件越来越乱 | `manuscript/` 干净正文 + `workspace/` 创作工作台 |
-| 只想写一篇完整短故事 | 短故事模式 + 6000 字红灯线 + 剧情闭合检查 |
+| 只想写一篇完整短故事 | 短故事模式 + 习惯参考篇幅 + 盲读复述 |
 | 想一次写多本，又怕越写越像 | [批量生产协议](references/batch-production.md) + 事务验收 + 跨书同质化检测 |
 
 ---
@@ -68,7 +68,7 @@ AI 会交付：
 ### 2. 写一篇短故事
 
 ```text
-使用 chinese-novelist-skill，写一篇悬疑短故事，不少于 6000 字。
+使用 chinese-novelist-skill，写一篇悬疑短故事。
 ```
 
 短故事模式不会进入长篇连载流程。AI 会创建命名 Markdown 文件，默认路径为 `short-stories/YYYYMMDD-<标题>.md`，并只在对话中汇报路径、字数和检查结果。
@@ -77,7 +77,7 @@ AI 会交付：
 |------|------|
 | 短故事任务卡 | 锁定 premise、主角欲望、冲突和结局类型 |
 | 完整剧情骨架 | 保证开端、升级、反转、高潮、收束都存在 |
-| ≥6000 字正文 | 写入 Markdown 文件，可分段或换行，但必须是完整故事 |
+| 完整正文 | 写入 Markdown 文件，可分段或换行；6000 字只是习惯参考 |
 | 完稿复盘 | 检查字数、主角变化、伏笔 / 意象回收和结尾闭合 |
 
 模板见 [short-story-template.md](references/short-story-template.md)。除非你明确要求“直接在对话里输出全文”，否则完整正文不会粘贴到聊天窗口。
@@ -206,7 +206,7 @@ python3 scripts/split_chapter_workspace.py novels/我的小说
 
 ### 短故事模式（可选）
 
-当用户明确说“短故事”“短篇故事”“写一篇完整故事”时，skill 进入短故事模式。默认要求正文不少于 6000 个中文字符，可以自然分段或换行，但必须完成完整剧情闭环：开端、诱发事件、升级、反转或代价、高潮选择、结局收束。
+当用户明确说“短故事”“短篇故事”“写一篇完整故事”时，skill 进入短故事模式。6000 字是习惯参考，不是验收失败项。正文可以自然分段或换行，但必须完成完整剧情闭环：开端、诱发事件、升级、反转或代价、高潮选择、结局收束。隔离盲读要能复述不可逆变化。
 
 短故事不默认创建长篇项目目录，也不运行每章连载循环。必须写入命名 Markdown 文件，默认使用 `short-stories/YYYYMMDD-<标题>.md`，并套用 [short-story-template.md](references/short-story-template.md)。对话中只汇报文件路径、正文字数和检查结果。
 
@@ -306,7 +306,7 @@ PYTHONPATH=scripts python3 -m unittest discover tests/ -v
 
 ### 发版前验证
 
-v3.6.0 发布前应通过以下检查：
+v3.7.0 发布前应通过以下检查：
 
 ```bash
 PYTHONPATH=scripts python3 -m unittest discover tests/ -v
@@ -395,7 +395,7 @@ python3 scripts/split_chapter_workspace.py novels/我的小说 --move-originals
 
 | 文档 | 作用 |
 |------|------|
-| [14-角色沙盘模式.md](references/14-角色沙盘模式.md) | 每章角色沙盘、角色文件、导演裁决 |
+| [14-角色沙盘模式.md](references/14-角色沙盘模式.md) | 感知包、复杂章沙盘与导演裁决 |
 | [09-悬念生命周期管理.md](references/09-悬念生命周期管理.md) | 悬念追踪和过期预警 |
 | [11-叙事节奏框架.md](references/11-叙事节奏框架.md) | 三层节奏体系 |
 | [12-喘息机制.md](references/12-喘息机制.md) | 喘息章设计 |
@@ -417,7 +417,7 @@ python3 scripts/split_chapter_workspace.py novels/我的小说 --move-originals
 ### 连载路径
 
 1. 维护 `99-进度仪表盘.md`
-2. 每章先跑角色沙盘
+2. 每章先写感知包；复杂冲突再展开角色沙盘
 3. 每章处理至少一条悬念：推进、保温、回收或延后
 4. 每 5-10 章运行 `check_novel_health.py`
 5. 阶段结束时检查人物弧线和伏笔状态
@@ -433,7 +433,7 @@ python3 scripts/split_chapter_workspace.py novels/我的小说 --move-originals
 
 1. 明确说“写一篇短故事 / 短篇故事”
 2. 使用 [short-story-template.md](references/short-story-template.md) 锁定完整剧情骨架
-3. 正文写入 `short-stories/YYYYMMDD-标题.md`，不少于 6000 字
+3. 正文写入 `short-stories/YYYYMMDD-标题.md`；6000 字只是习惯参考
 4. 运行 `python3 scripts/check_short_story.py short-stories/YYYYMMDD-标题.md`
 5. 检查结尾是否收束主线，而不是停在“未完待续”
 
@@ -510,6 +510,7 @@ Hermes 等无独立 skill 机制的 Agent 把仓库放到工作区后，用这�
 
 ## 版本
 
+- **v3.7.0**：Cursor 用 Task 派出 `blind-reader`。事务验收核对引文、计划抄袭和禁止句；工厂抽检章不能标「未隔离」。短故事不再靠关键词判断收束。
 - **v3.6.0**：Pi 宿主适配：`/skill:`、prompt templates、`pi -p` 隔离盲读与工厂循环。
 - **v3.5.0**：Grok Build CLI 与 Gemini Antigravity 宿主适配：slash、隔离盲读 agent、工厂 workflow、headless 循环。
 - **v3.4.0**：作者模式默认：感知包、声音锁、隔离盲读；字数不再否决作者章节；工厂模式承接批量与自动驾驶。
@@ -518,7 +519,7 @@ Hermes 等无独立 skill 机制的 Agent 把仓库放到工作区后，用这�
 - **v2.6.2**：修复短故事模式输出边界：完整正文必须写入 `short-stories/YYYYMMDD-<标题>.md` 等命名 Markdown 文件，对话只汇报路径、字数和检查结果。
 - **v2.6.1**：发布加固版本。完成全量 Skill 检测、端到端烟测和临时 `.skill` 打包校验；修复小说健康检查 `其他` 场景回退、英文 EPUB 元数据误读翻译流程文件、章节工作台文档引用等问题；移除 `.claude/` 本地配置发布风险。
 - **v2.6.0**：新增 `manuscript/zh` 干净正文和 `workspace/chapters` 章节工作台结构，提供 `scripts/split_chapter_workspace.py` 迁移旧混合章节；英文译文默认写入 `manuscript/en`。
-- **v2.5.0**：新增短故事模式，支持不少于 6000 字的完整单篇故事，提供短故事模板、剧情闭合红灯项和 `scripts/check_short_story.py` 检查脚本。
+- **v2.5.0**：新增短故事模式和 `scripts/check_short_story.py`。篇幅要求后来改为习惯参考。
 - **v2.4.0**：新增角色沙盘模式，每章写作前进行角色意志校验；支持每个角色独立运行时文件和沙盘记录。
 - **v2.3.1**：强化执行入口、自动驾驶边界和修改工作流。
 - **v2.3.0**：引入角色状态推演机制。

@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 短故事质量检查脚本
-检查短故事结构完整、完稿复盘和非未完待续。6000 字是习惯参考；--strict-min 才把字数当下限失败。
+
+检查正文区、完稿复盘、未完待续，以及盲读复述和引文是否对得上正文。
+不把「终于 / 后来 / 收束」当作通过条件。6000 字是习惯参考；--strict-min 才把字数当下限失败。
+引文对得上不能证明盲读来自另一次隔离调用。
 """
 
 import sys
@@ -11,20 +14,11 @@ from pathlib import Path
 # Ensure scripts/ directory is in path for utils import
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from check_chapter_transaction import assess_blind_read_text
 from utils import count_chinese_words, setup_windows_encoding
 
 setup_windows_encoding()
 
-
-CLIMAX_TERMS = [
-    '高潮', '最终', '最后一次', '终于', '选择', '决定', '摊牌',
-    '真相大白', '冲突爆发', '对峙',
-]
-
-RESOLUTION_TERMS = [
-    '收束', '解决', '结束', '天亮以后', '后来', '重新', '答案',
-    '闭合', '归于', '尘埃落定',
-]
 
 TO_BE_CONTINUED_TERMS = [
     '未完待续', '待续', '下回', '下一章', '后续再说',
@@ -61,6 +55,33 @@ def _make_check(passed: bool, message: str) -> dict:
     return {'passed': passed, 'message': message}
 
 
+def _drop_sections(content: str, headings: set) -> str:
+    """去掉指定二级标题及其正文，留下任务卡等计划文本。"""
+    kept = []
+    skipping = False
+    for line in content.split('\n'):
+        stripped = line.strip()
+        if stripped.startswith('## '):
+            skipping = stripped in headings
+            if skipping:
+                continue
+        if skipping:
+            continue
+        kept.append(line)
+    return '\n'.join(kept)
+
+
+def _load_blind_read(content: str, path: Path):
+    """优先读同目录 blind-read.md；否则读故事文件里的 ## 盲读。"""
+    sidecar = path.parent / 'blind-read.md'
+    if sidecar.is_file() and sidecar.resolve() != path.resolve():
+        return sidecar.read_text(encoding='utf-8'), f'盲读：{sidecar.name}'
+    section = _extract_section(content, '## 盲读')
+    if section:
+        return section, '盲读在故事文件的 ## 盲读'
+    return '', ''
+
+
 def check_short_story(file_path: str, min_words: int = 6000, strict: bool = False) -> dict:
     """检查单篇短故事的硬性质量项。"""
     path = Path(file_path)
@@ -81,9 +102,9 @@ def check_short_story(file_path: str, min_words: int = 6000, strict: bool = Fals
 
     has_body = bool(body.strip())
     has_review = _has_heading(content, '## 完稿复盘')
-    has_climax = any(term in body for term in CLIMAX_TERMS)
-    has_resolution = any(term in body for term in RESOLUTION_TERMS)
     to_be_continued_matches = [term for term in TO_BE_CONTINUED_TERMS if term in body or term in content]
+    blind_text, blind_where = _load_blind_read(content, path)
+    plan_text = _drop_sections(content, {'## 正文', '## 盲读'})
 
     checks = {
         'body_section': _make_check(
@@ -100,15 +121,16 @@ def check_short_story(file_path: str, min_words: int = 6000, strict: bool = Fals
             has_review,
             '找到 ## 完稿复盘' if has_review else '缺少 ## 完稿复盘',
         ),
-        'plot_completion': _make_check(
-            has_climax and has_resolution,
-            '检测到高潮与收束信号' if has_climax and has_resolution else '缺少高潮或收束信号',
-        ),
         'no_to_be_continued': _make_check(
             not to_be_continued_matches,
             '未发现未完待续信号' if not to_be_continued_matches else f'发现未完待续信号：{", ".join(to_be_continued_matches)}',
         ),
     }
+    if not blind_text:
+        checks['blind_read'] = _make_check(False, '缺少同目录 blind-read.md 或 ## 盲读')
+    else:
+        checks['blind_read'] = _make_check(True, blind_where)
+        checks.update(assess_blind_read_text(blind_text, body, plan_text))
 
     status = 'pass' if all(check['passed'] for check in checks.values()) else 'fail'
 
@@ -146,7 +168,7 @@ def print_results(results: list):
     print('\n' + '=' * 60)
     print('短故事质量检查报告')
     print('=' * 60)
-    print('说明：结构、复盘和未完待续是硬项；字数默认只报告。高潮、收束与文学质量仍需盲读。')
+    print('说明：正文、复盘、未完待续和盲读复述是硬项。引文必须在正文里，复述不得只存在于任务卡。字数默认只报告。这不能证明隔离调用已经发生。')
 
     for result in results:
         icon = '✅' if result['status'] == 'pass' else '⚠️ ' if result['status'] == 'fail' else '❌'
