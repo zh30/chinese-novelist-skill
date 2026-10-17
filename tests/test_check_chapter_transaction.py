@@ -290,6 +290,141 @@ class CheckChapterTransactionTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['status'], 'pass')
 
+    def test_quote_not_in_manuscript_fails(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            novel = _write_novel(
+                Path(tmpdir),
+                blind_read=BLIND_READ.replace(
+                    '- **走神起点**：无',
+                    '- **走神起点**：「她跳下了码头的天台」',
+                ),
+            )
+            result = check_chapter_transaction(novel, 1)
+
+        self.assertEqual(result['status'], 'fail')
+        self.assertFalse(result['checks']['quote_走神起点']['passed'])
+
+    def test_quote_from_pass_fixture_binds(self):
+        fixture = Path(__file__).resolve().parent / 'fixtures' / 'literary' / 'pass.md'
+        prose = fixture.read_text(encoding='utf-8').split('\n\n', 1)[1]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            novel = _write_novel(
+                Path(tmpdir),
+                blind_read=BLIND_READ.replace(
+                    '- **走神起点**：无',
+                    '- **走神起点**：「她把剩下的纸页卷进外套里侧」',
+                ),
+            )
+            chapter = novel / 'manuscript' / 'zh' / '第001章-旧钥匙.md'
+            chapter.write_text(f'第001章：旧钥匙\n\n{prose}\n', encoding='utf-8')
+            result = check_chapter_transaction(novel, 1)
+
+        self.assertTrue(result['checks']['quote_走神起点']['passed'])
+        self.assertEqual(result['status'], 'pass')
+
+    def test_fail_shell_cannot_restate_fails(self):
+        fixture = Path(__file__).resolve().parent / 'fixtures' / 'literary' / 'fail-shell.md'
+        prose = '\n'.join(
+            line for line in fixture.read_text(encoding='utf-8').splitlines()
+            if line.strip() and not line.startswith('#') and not line.startswith('>')
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            novel = _write_novel(
+                Path(tmpdir),
+                blind_read=BLIND_READ.replace(
+                    '她没有报警，把日志藏进外套，从此不能回家',
+                    '复述不出',
+                ),
+            )
+            chapter = novel / 'manuscript' / 'zh' / '第001章-旧钥匙.md'
+            chapter.write_text(f'第001章：空壳\n\n{prose}\n', encoding='utf-8')
+            result = check_chapter_transaction(novel, 1)
+
+        self.assertEqual(result['status'], 'fail')
+        self.assertFalse(result['checks']['irreversible_change']['passed'])
+
+    def test_restatement_copied_from_perception_fails(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            novel = _write_novel(
+                Path(tmpdir),
+                blind_read=BLIND_READ.replace(
+                    '她没有报警，把日志藏进外套，从此不能回家',
+                    '把缺页藏进外套装成无事发生',
+                ),
+            )
+            result = check_chapter_transaction(novel, 1)
+
+        self.assertEqual(result['status'], 'fail')
+        self.assertFalse(result['checks']['plan_leak']['passed'])
+
+    def test_forbidden_sentence_in_manuscript_fails(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            novel = _write_novel(Path(tmpdir))
+            (novel / '05-声音锁.md').write_text(
+                '# 声音锁\n\n## 本书不准再写的句子\n\n1. 她把旧钥匙按进掌心，决定今晚不再回家。\n',
+                encoding='utf-8',
+            )
+            result = check_chapter_transaction(novel, 1)
+
+        self.assertEqual(result['status'], 'fail')
+        self.assertFalse(result['checks']['voice_lock']['passed'])
+
+    def test_forbidden_sentence_absent_from_manuscript_passes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            novel = _write_novel(Path(tmpdir))
+            (novel / '05-声音锁.md').write_text(
+                '# 声音锁\n\n## 本书不准再写的句子\n\n1. 一种复杂的情绪涌上心头\n',
+                encoding='utf-8',
+            )
+            result = check_chapter_transaction(novel, 1)
+
+        self.assertTrue(result['checks']['voice_lock']['passed'])
+        self.assertEqual(result['status'], 'pass')
+
+    def test_factory_chapter_without_blind_read_needs_unisolated_mark(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            novel = _write_novel(Path(tmpdir), min_words=40, writing_mode='工厂')
+            workspace = novel / 'workspace' / 'chapters' / '第001章-旧钥匙'
+            (workspace / 'blind-read.md').unlink()
+            missing = check_chapter_transaction(novel, 1, factory=True, min_words=40)
+            review = workspace / 'review.md'
+            review.write_text(review.read_text(encoding='utf-8') + '\n- **抽检**：未隔离\n', encoding='utf-8')
+            marked = check_chapter_transaction(novel, 1, factory=True, min_words=40)
+
+        self.assertEqual(missing['status'], 'fail')
+        self.assertFalse(missing['checks']['factory_blind']['passed'])
+        self.assertEqual(marked['status'], 'pass')
+        self.assertTrue(marked['checks']['factory_blind']['passed'])
+
+    def test_factory_sample_chapter_cannot_skip_blind_read(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            novel = _write_novel(Path(tmpdir), min_words=80, writing_mode='工厂')
+            old_chapter = novel / 'manuscript' / 'zh' / '第001章-旧钥匙.md'
+            old_workspace = novel / 'workspace' / 'chapters' / '第001章-旧钥匙'
+            chapter = novel / 'manuscript' / 'zh' / '第005章-旧钥匙.md'
+            workspace = novel / 'workspace' / 'chapters' / '第005章-旧钥匙'
+            chapter.write_text(old_chapter.read_text(encoding='utf-8').replace('第001章', '第005章'), encoding='utf-8')
+            workspace.mkdir()
+            (workspace / 'review.md').write_text(
+                (old_workspace / 'review.md').read_text(encoding='utf-8') + '\n- **抽检**：未隔离\n',
+                encoding='utf-8',
+            )
+            (workspace / 'perception.md').write_text(
+                (old_workspace / 'perception.md').read_text(encoding='utf-8'),
+                encoding='utf-8',
+            )
+            dash = novel / '99-进度仪表盘.md'
+            dash.write_text(
+                dash.read_text(encoding='utf-8').replace('第001章', '第005章'),
+                encoding='utf-8',
+            )
+            result = check_chapter_transaction(novel, 5, factory=True, min_words=40)
+
+        self.assertEqual(result['chapter'], 5)
+        self.assertEqual(result['status'], 'fail')
+        self.assertFalse(result['checks']['factory_sample']['passed'])
+        self.assertFalse(result['checks']['blind_read_file']['passed'])
+
 
 if __name__ == '__main__':
     unittest.main()

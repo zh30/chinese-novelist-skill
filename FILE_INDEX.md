@@ -106,8 +106,8 @@
 | 文件名 | 用途 | 使用频率 |
 |--------|------|---------|
 | [check_chapter_wordcount.py](scripts/check_chapter_wordcount.py) | 章节字数报告；`--strict-min` 才失败 | 每章可跑 |
-| [check_chapter_transaction.py](scripts/check_chapter_transaction.py) | 章节事务验收（正文、盲读、感知包、复盘、仪表盘） | 每章必用；工厂加 `--factory` |
-| [check_short_story.py](scripts/check_short_story.py) | 短故事硬边界与结构信号（不能替代通读） | 每篇短故事必用 |
+| [check_chapter_transaction.py](scripts/check_chapter_transaction.py) | 章节事务验收（正文、盲读引文、计划片段、禁止句、感知包、复盘、仪表盘） | 每章必用；工厂加 `--factory` |
+| [check_short_story.py](scripts/check_short_story.py) | 短故事正文、复盘、盲读复述和引文（不能替代通读） | 每篇短故事必用 |
 | [check_ai_style.py](scripts/check_ai_style.py) | **AI 痕迹启发式扫描**（9 种症状，支持--all 批量） | 每章完成后按需复核 |
 | [check_novel_health.py](scripts/check_novel_health.py) | **长篇机械健康信号**（字数 + 关键词场景分布） | 每 5-10 章 |
 | [check_timeline.py](scripts/check_timeline.py) | **时间线一致性检查**（季节/天气/时段） | 每 10 章或完稿时 |
@@ -190,18 +190,18 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 
 需要解决的问题：
 - 不想开长篇，只要一篇完整短故事
-- 需要不少于 6000 字
+- 6000 字只是习惯参考
 - 需要可分段或换行，但剧情完整
 - 需要生成命名 Markdown 文件，而不是把全文贴在对话中
 
 相关文档：
 1. [SKILL.md](SKILL.md) §短故事模式
 2. [short-story-template.md](references/short-story-template.md) - 短故事任务卡、完整剧情骨架和 `short-stories/YYYYMMDD-<标题>.md` 命名规则
-3. [check_short_story.py](scripts/check_short_story.py) - 检查 6000 字、正文区、完稿复盘和剧情收束
+3. [check_short_story.py](scripts/check_short_story.py) - 检查正文区、完稿复盘、盲读复述和引文
 
 快速指令：
 ```text
-写一篇悬疑短故事，不少于 6000 字
+写一篇悬疑短故事
 写一个完整短篇故事，可以分段
 ```
 
@@ -360,7 +360,7 @@ python scripts/check_ai_style.py novels/我的小说/manuscript/zh/第001章-标
 | 快速开始 | QUICK_START.md |
 | 极简大纲 | outline-template-v1-minimal.md |
 | 短故事 / 短篇故事 | short-story-template.md, SKILL.md §短故事模式 |
-| 6000 字故事 | short-story-template.md, check_short_story.py |
+| 短故事 | short-story-template.md, check_short_story.py |
 | 质量检查 | quality-checklist.md, editorial-revision.md, check_ai_style.py |
 | AI 味 | ai-style-examples.md, ai-style-by-genre.md |
 | 悬念管理 | 09-悬念生命周期管理.md, 10-悬念 - 章节匹配矩阵.md |
@@ -514,13 +514,14 @@ chinese-novelist-skill/
 
 ## 📝 更新记录
 
+- **2026-10-17**: v3.7.0 Cursor 盲读派出；引文、计划片段和禁止句进入事务验收
 - **2026-09-15**: v3.6.0 Pi 宿主适配：`/skill:`、prompt templates、`pi -p` 隔离盲读
 - **2026-09-14**: v3.5.0 Grok Build CLI 与 Gemini Antigravity 宿主适配
 - **2026-09-11**: v3.4.0 作者模式感知包、声音锁、隔离盲读；字数不再否决作者章节；钩子课归档
 - **2026-08-23**: v3.1.0 批量生产协议、章节事务验收、跨书同质化检测、有界冷启动；v1 模板归档到 `docs/legacy/`
 - **2026-07-31**: v3.0.0 引入创作罗盘、分层编辑、独创性审计和伟大作品证据式门控；主入口压缩为渐进式路由
 - **2026-07-07**: v2.6.2 修复短故事模式输出边界，完整正文必须写入命名 Markdown 文件
-- **2026-07-06**: v2.5 新增短故事模式，不少于 6000 字且剧情完整
+- **2026-07-06**: v2.5 新增短故事模式，剧情必须完整
 - **2026-06-26**: v2.4 新增角色沙盘模式，每章写作前进行角色意志校验
 - **2026-04-01**: 完成三轮优化，新增 13 个文件，更新 README 和文档
 - **2026-03-20**: v1.0.0 版本发布

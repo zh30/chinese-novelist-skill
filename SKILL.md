@@ -6,13 +6,13 @@ argument-hint: "[写一本|继续写|短故事|批量写|润色|翻译|导出]"
 compatibility: Requires python3 and filesystem access. No extra Python packages.
 license: MIT
 metadata:
-  version: "3.6.0"
+  version: "3.7.0"
   short-description: "Ambitious Chinese fiction"
 ---
 
 # Chinese Novelist
 
-当前版本：3.6.0。详情见 [CHANGELOG.md](CHANGELOG.md)。Grok Build / Antigravity / Pi 宿主映射见 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)。
+当前版本：3.7.0。详情见 [CHANGELOG.md](CHANGELOG.md)。Grok Build / Antigravity / Pi / Cursor 宿主映射见 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)。
 
 ## 使命
 
@@ -151,7 +151,7 @@ novels/<书名>/
 
 ### 5. 派出盲读
 
-按 [blind-read.md](references/blind-read.md) 派出**隔离** subagent 或新会话，只给本章正文（非首章加上一章全文）。禁止打开大纲、档案、仪表盘和工作台。禁止同上下文填写盲读。Grok 用 `spawn_subagent`（优先 `blind-reader`）；Antigravity 用 `invoke_subagent`（优先 `blind-reader`）；Pi 用 `pi -p --no-context-files --no-skills`。细则见 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)。无法隔离则停止交付，请用户另开只读正文的对话。
+按 [blind-read.md](references/blind-read.md) 派出**隔离** subagent 或新会话，只给本章正文（非首章加上一章全文）。禁止打开大纲、档案、仪表盘和工作台。禁止同上下文填写盲读。提示词只列正文路径，禁止写「本章的不可逆变化是」。Grok 用 `spawn_subagent`（优先 `blind-reader`）；Antigravity 用 `invoke_subagent`（优先 `blind-reader`）；Pi 用 `pi -p --no-context-files --no-skills`；Cursor 用 Task，`subagent_type` 为 `blind-reader`。细则见 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)。无法隔离则停止交付，请用户另开只读正文的对话。
 
 盲读复述不出不可逆变化，必须改正文后重新派出，不得只改复盘。处理走神、复述失败和作者腔后，把问题句与好句回写 `05-声音锁.md`。
 
@@ -165,7 +165,7 @@ python3 scripts/check_ai_style.py <章节文件>
 python3 scripts/check_chapter_transaction.py <小说目录> <章节号>
 ```
 
-工厂模式验收加 `--factory` 或 `--fast`。逐条查看命中原句：正确表达可以保留。禁止为降低“然而 / 因为 / 四字”计数而改文。把摘要、选择、代价、状态写入复盘与仪表盘滚动前情摘要。验收失败则补写后重跑。
+工厂模式验收加 `--factory` 或 `--fast`。第 5、10、15… 章与作者模式同样要求盲读；其余章缺少盲读时，复盘或盲读文件必须写「未隔离」。逐条查看命中原句：正确表达可以保留。禁止为降低“然而 / 因为 / 四字”计数而改文。走神与作者腔的引文必须是正文连续原文，或写「无」；不可逆变化不得含只出现在大纲、感知包或任务卡里的连续 8 字。`05-声音锁.md` 的禁止句若原样出现在正文，事务失败。这些检查证明不了隔离调用已经发生。把摘要、选择、代价、状态写入复盘与仪表盘滚动前情摘要。验收失败则补写后重跑。
 
 ## 短故事模式（可选）
 
@@ -175,7 +175,7 @@ python3 scripts/check_chapter_transaction.py <小说目录> <章节号>
 2. 选一个能在单篇内完成压力升级、不可逆选择和情感收束的核心。
 3. 创建 `short-stories/YYYYMMDD-<标题>.md`；同名时追加 `-02`、`-03`。完整正文、任务卡、骨架和复盘都写入文件。
 4. 写到压力变化与收束完成即停；6000 字是习惯参考，不是作者模式验收失败项。不得在对话中直接输出完整正文；除非用户明确要求聊天全文。
-5. 按 [blind-read.md](references/blind-read.md) 派出隔离盲读，再运行 `python3 scripts/check_short_story.py <短故事文件路径>`，人工复核高潮是否由人物选择触发、主线是否闭合、结尾是否改变了开头意象。
+5. 按 [blind-read.md](references/blind-read.md) 派出隔离盲读，写入同目录 `blind-read.md` 或故事文件的 `## 盲读`，再运行 `python3 scripts/check_short_story.py <短故事文件路径>`。脚本核对盲读复述和引文，不把「终于 / 后来 / 收束」当通过条件。人工复核高潮是否由人物选择触发、主线是否闭合、结尾是否改变了开头意象。
 6. 对话只回复文件路径、标题、正文字数、检查状态和仍需说明的风险，不复制全文。
 
 批量短篇时，每篇仍是一个原子事务：完整落盘 + 短故事检查通过后，才更新清单。

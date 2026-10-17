@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.7.0 (2026-10-17)
+
+### Blind-read gates that a same-context fill cannot cheaply fake
+
+- Cursor 盲读派出写进 [harness-grok-antigravity.md](references/harness-grok-antigravity.md)：Task，`subagent_type` 为 `blind-reader`，提示词只列正文路径，禁止写「本章的不可逆变化是」。`.agents/agents/blind-reader.md` 同时允许 `Read` 与 `view_file`。
+- `check_chapter_transaction.py`：走神起点和作者腔的引文必须是正文连续原文，或写「无」；不可逆变化不得包含只出现在大纲、感知包或任务卡里的连续 8 字；`05-声音锁.md` 的禁止句原样出现在正文则失败。
+- 工厂模式第 5、10、15… 章必须有隔离盲读，不能标注「未隔离」；其余章缺少盲读时必须标注「未隔离」。
+- `check_short_story.py` 不再用「终于 / 后来 / 收束」判断收束。短篇必须有同目录 `blind-read.md` 或 `## 盲读`，并接受同样的引文和计划片段核对。
+- 这些检查证明不了隔离调用已经发生。README、QUICK_START、FILE_INDEX 不再把 6000 字或「每章先跑角色沙盘」写成现行门槛。
+
 ## v3.6.0 (2026-09-15)
 
 ### Pi
